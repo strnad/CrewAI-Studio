@@ -3,6 +3,7 @@ from streamlit import session_state as ss
 import zipfile
 import os
 import re
+import db_utils
 from crewai_tools import (
     ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, DirectoryReadTool,
     CodeDocsSearchTool, YoutubeVideoSearchTool, SerperDevTool, YoutubeChannelSearchTool, WebsiteSearchTool
@@ -10,7 +11,7 @@ from crewai_tools import (
 
 class PageExportCrew:
     def __init__(self):
-        self.name = "Export Crew"
+        self.name = "Import/export"
 
     def extract_placeholders(self, text):
         return re.findall(r'\{(.*?)\}', text)
@@ -239,12 +240,32 @@ python-dotenv
     def draw(self):
         st.subheader(self.name)
 
+        # Full JSON Export Button
+        if st.button("Export everything to json"):
+            file_path = "all_crews.json"
+            db_utils.export_to_json(file_path)
+            with open(file_path, "rb") as fp:
+                st.download_button(
+                    label="Download All Crews JSON",
+                    data=fp,
+                    file_name=file_path,
+                    mime="application/json"
+                )
+
+        # JSON Import Button
+        uploaded_file = st.file_uploader("Import JSON file", type="json")
+        if uploaded_file is not None:
+            with open("uploaded_file.json", "wb") as f:
+                f.write(uploaded_file.getvalue())
+            db_utils.import_from_json("uploaded_file.json")
+            st.success("JSON file imported successfully!")
+
         if 'crews' not in ss or len(ss.crews) == 0:
             st.write("No crews defined yet.")
         else:
             crew_names = [crew.name for crew in ss.crews]
-            selected_crew_name = st.selectbox("Select crew to export", crew_names)
-            if st.button("Export"):
+            selected_crew_name = st.selectbox("Select crew to export as singlepage app (doesn't support tools yet)", crew_names)
+            if st.button("Export singlepage app"):
                 zip_path = self.create_export(selected_crew_name)
                 with open(zip_path, "rb") as fp:
                     st.download_button(
@@ -253,3 +274,16 @@ python-dotenv
                         file_name=f"{selected_crew_name}_app.zip",
                         mime="application/zip"
                     )
+
+            # JSON Export Button
+            # if st.button("Export crew to json"):
+            #     file_path = f"{selected_crew_name}_crew.json"
+            #     db_utils.export_crew_to_json(selected_crew_name,file_path)
+            #     with open(file_path, "rb") as fp:
+            #         st.download_button(
+            #             label="Download Crew JSON",
+            #             data=fp,
+            #             file_name=file_path,
+            #             mime="application/json"
+            #         )
+
