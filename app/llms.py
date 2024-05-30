@@ -17,7 +17,7 @@ def create_groq_llm(model, temperature):
     else:
         raise ValueError("Groq API key not set in .env file")
 
-def create_lmstudio_llm(temperature):
+def create_lmstudio_llm(model, temperature):
     api_base = os.getenv('LMSTUDIO_API_BASE')
     if api_base:
         return ChatOpenAI(openai_api_key='lm-studio', openai_api_base=api_base, temperature=temperature)
