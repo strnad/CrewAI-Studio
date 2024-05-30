@@ -16,7 +16,7 @@ def pages():
         'Crews': PageCrews(),
         'Tools': PageTools(),
         'Let crews work!': PageCrewRun(),
-        'Export Crew': PageExportCrew()
+        'Import/export': PageExportCrew()
     }
 
 def load_data():
