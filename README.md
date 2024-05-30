@@ -11,13 +11,14 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface fo
 
 ## Installation
 
-### Prerequisites
-
-- **For Virtual Environment**: Ensure you have Python installed.
 
 ### Using Virtual Environment
 
-1. **Clone the repository**:
+**For Virtual Environment**: Ensure you have Python installed. If you dont have python instaled, you can simply use the conda installer.
+
+#### On Linux
+
+1. **Clone the repository (or use downloaded ZIP file)**:
    ```bash
    git clone https://github.com/yourusername/crewai-studio.git
    cd crewai-studio
@@ -33,13 +34,31 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface fo
    ./run_venv.sh
    ```
 
+#### On Windows
+
+1. **Clone the repository (or use downloaded ZIP file)**:
+   ```powershell
+   git clone https://github.com/yourusername/crewai-studio.git
+   cd crewai-studio
+   ```
+
+2. **Run the Conda installation script**:
+   ```powershell
+   .\install_venv.bat
+   ```
+
+3. **Run the application**:
+   ```powershell
+   .run_venv.bat
+   ```
+
 ### Using Conda
 
 Conda will be installed locally in the project folder. No need for a pre-existing Conda installation.
 
 #### On Linux
 
-1. **Clone the repository**:
+1. **Clone the repository (or use downloaded ZIP file)**:
    ```bash
    git clone https://github.com/yourusername/crewai-studio.git
    cd crewai-studio
@@ -57,7 +76,7 @@ Conda will be installed locally in the project folder. No need for a pre-existin
 
 #### On Windows
 
-1. **Clone the repository**:
+1. **Clone the repository (or use downloaded ZIP file)**:
    ```powershell
    git clone https://github.com/yourusername/crewai-studio.git
    cd crewai-studio
