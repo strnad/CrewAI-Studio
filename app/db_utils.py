@@ -138,6 +138,7 @@ def save_crew(crew):
         'task_ids': [task.id for task in crew.tasks],
         'memory': crew.memory,
         'manager_llm': crew.manager_llm,
+        'manager_agent_id': crew.manager_agent.id if crew.manager_agent else None,
         'created_at': crew.created_at
     }
     save_entity('crew', crew.id, data)
@@ -150,7 +151,16 @@ def load_crews():
     crews = []
     for row in rows:
         data = row[1]
-        crew = MyCrew(id=row[0], name=data['name'], process=data['process'], verbose=data['verbose'], created_at=data['created_at'], memory=data.get('memory'), manager_llm=data.get('manager_llm'))
+        crew = MyCrew(
+            id=row[0], 
+            name=data['name'], 
+            process=data['process'], 
+            verbose=data['verbose'], 
+            created_at=data['created_at'], 
+            memory=data.get('memory'), 
+            manager_llm=data.get('manager_llm'),
+            manager_agent=agents_dict.get(data.get('manager_agent_id'))
+        )
         crew.agents = [agents_dict[agent_id] for agent_id in data['agent_ids'] if agent_id in agents_dict]
         crew.tasks = [tasks_dict[task_id] for task_id in data['task_ids'] if task_id in tasks_dict]
         crews.append(crew)
