@@ -1,6 +1,7 @@
 import sqlite3
 import os
 import json
+from my_tools import TOOL_CLASSES
 
 DB_NAME = 'crewai.db'
 
@@ -177,8 +178,6 @@ def save_tool(tool):
     }
     save_entity('tool', tool.tool_id, data)
 
-import importlib
-from my_tools import TOOL_CLASSES
 
 def load_tools():
     rows = load_entities('tool')
@@ -191,6 +190,41 @@ def load_tools():
         tools.append(tool)
     return tools
 
-
 def delete_tool(tool_id):
     delete_entity('tool', tool_id)
+
+
+def export_to_json(file_path):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM entities')
+    rows = cursor.fetchall()
+    conn.close()
+
+    data = []
+    for row in rows:
+        entity = {
+            'id': row['id'],
+            'entity_type': row['entity_type'],
+            'data': json.loads(row['data'])
+        }
+        data.append(entity)
+
+    with open(file_path, 'w') as f:
+        json.dump(data, f, indent=4)
+
+def import_from_json(file_path):
+    with open(file_path, 'r') as f:
+        data = json.load(f)
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    for entity in data:
+        cursor.execute('''
+            INSERT OR REPLACE INTO entities (id, entity_type, data)
+            VALUES (?, ?, ?)
+        ''', (entity['id'], entity['entity_type'], json.dumps(entity['data'])))
+
+    conn.commit()
+    conn.close()
