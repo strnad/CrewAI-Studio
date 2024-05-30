@@ -7,7 +7,7 @@ from llms import llm_providers_and_models, create_llm
 import db_utils
 
 class MyCrew:
-    def __init__(self, id=None, name="Crew name", agents=None, tasks=None, process=Process.sequential, verbose=2, manager_llm=None, created_at=None, memory=False):
+    def __init__(self, id=None, name="Crew name", agents=None, tasks=None, process=Process.sequential, verbose=2, manager_llm=None, manager_agent=None, created_at=None, memory=False):
         self.id = id or rnd_id()
         self.name = name
         self.agents = agents if agents is not None else []
@@ -15,6 +15,7 @@ class MyCrew:
         self.process = process
         self.verbose = verbose
         self.manager_llm = manager_llm
+        self.manager_agent = manager_agent
         self.memory = memory
         self.created_at = created_at or datetime.now().isoformat()
         self.edit_key = f'edit_{self.id}'
@@ -35,15 +36,16 @@ class MyCrew:
     def get_crewai_crew(self, *args, **kwargs):
         crewai_agents = [agent.get_crewai_agent() for agent in self.agents]
         crewai_tasks = [task.get_crewai_task() for task in self.tasks]
-        
+
         if self.manager_llm:
             return Crew(agents=crewai_agents, tasks=crewai_tasks, process=self.process, verbose=self.verbose, manager_llm=create_llm(self.manager_llm), memory=self.memory, *args, **kwargs)
+        elif self.manager_agent:
+            return Crew(agents=crewai_agents, tasks=crewai_tasks, process=self.process, verbose=self.verbose, manager_agent=self.manager_agent.get_crewai_agent(), memory=self.memory, *args, **kwargs)
         return Crew(agents=crewai_agents, tasks=crewai_tasks, process=self.process, verbose=self.verbose, memory=self.memory, *args, **kwargs)
 
     def delete(self):
         ss.crews = [crew for crew in ss.crews if crew.id != self.id]
         db_utils.delete_crew(self.id)
-        #st.rerun()
 
     def update_name(self):
         self.name = ss[f'name_{self.id}']
@@ -70,7 +72,17 @@ class MyCrew:
         db_utils.save_crew(self)
 
     def update_manager_llm(self):
-        self.manager_llm = ss[f'manager_llm_{self.id}']
+        selected_llm = ss[f'manager_llm_{self.id}']
+        self.manager_llm = selected_llm if selected_llm != "None" else None
+        if self.manager_llm:
+            self.manager_agent = None
+        db_utils.save_crew(self)
+
+    def update_manager_agent(self):
+        selected_agent_role = ss[f'manager_agent_{self.id}']
+        self.manager_agent = next((agent for agent in ss.agents if agent.role == selected_agent_role), None) if selected_agent_role != "None" else None
+        if self.manager_agent:
+            self.manager_llm = None
         db_utils.save_crew(self)
 
     def update_memory(self):
@@ -90,8 +102,11 @@ class MyCrew:
             return False
         if any([not task.is_valid(show_warning=show_warning) for task in self.tasks]):
             return False
+        if self.process == Process.hierarchical and not (self.manager_llm or self.manager_agent):
+            if show_warning:
+                st.warning(f"Crew {self.name} has no manager agent or manager llm set for hierarchical process")
+            return False
         return True
-        #return (len(self.agents) > 0 and len(self.tasks) > 0) and all([agent.is_valid() for agent in self.agents]) and all([task.is_valid() for task in self.tasks])
 
     def draw(self):
         name_key = f"name_{self.id}"
@@ -100,6 +115,7 @@ class MyCrew:
         agents_key = f"agents_{self.id}"
         tasks_key = f"tasks_{self.id}"
         manager_llm_key = f"manager_llm_{self.id}"
+        manager_agent_key = f"manager_agent_{self.id}"
         memory_key = f"memory_{self.id}"
 
         expander_title = f"Crew: {self.name}" if self.is_valid() else f"❗ Crew: {self.name}"
@@ -111,10 +127,10 @@ class MyCrew:
                 st.slider("Verbosity", min_value=0, max_value=2, value=self.verbose, key=verbose_key, on_change=self.update_verbose)
                 st.multiselect("Agents", options=[agent.role for agent in ss.agents], default=[agent.role for agent in self.agents], key=agents_key, on_change=self.update_agents)
                 st.multiselect("Tasks", options=[task.id for task in ss.tasks], default=[task.id for task in self.tasks], format_func=lambda x: next(task.description for task in ss.tasks if task.id == x), key=tasks_key, on_change=self.update_tasks)
-                st.selectbox("Manager LLM", options=llm_providers_and_models(), index=0 if self.manager_llm is None else llm_providers_and_models().index(self.manager_llm), key=manager_llm_key, on_change=self.update_manager_llm, disabled=(self.process != Process.hierarchical))
+                st.selectbox("Manager LLM", options=["None"] + llm_providers_and_models(), index=0 if self.manager_llm is None else llm_providers_and_models().index(self.manager_llm) + 1, key=manager_llm_key, on_change=self.update_manager_llm, disabled=(self.process != Process.hierarchical))
+                st.selectbox("Manager Agent", options=["None"] + [agent.role for agent in ss.agents], index=0 if self.manager_agent is None else [agent.role for agent in ss.agents].index(self.manager_agent.role) + 1, key=manager_agent_key, on_change=self.update_manager_agent, disabled=(self.process != Process.hierarchical))
                 st.checkbox("Memory", value=self.memory, key=memory_key, on_change=self.update_memory)
                 st.button("Save", on_click=self.set_editable, args=(False,), key=rnd_id())
-
 
         else:
             fix_columns_width()
@@ -125,6 +141,7 @@ class MyCrew:
                 st.markdown(f"**Agents:** {[agent.role for agent in self.agents]}")
                 st.markdown(f"**Tasks:** {[task.description for task in self.tasks]}")
                 st.markdown(f"**Manager LLM:** {self.manager_llm}")
+                st.markdown(f"**Manager Agent:** {self.manager_agent.role if self.manager_agent else 'None'}")
                 st.markdown(f"**Memory:** {self.memory}")
                 col1, col2 = st.columns(2)
                 with col1:
@@ -136,6 +153,3 @@ class MyCrew:
     def set_editable(self, edit):
         self.edit = edit
         db_utils.save_crew(self)
-        # if not edit:
-        #     st.rerun()
-
