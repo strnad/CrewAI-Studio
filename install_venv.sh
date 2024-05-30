@@ -1,5 +1,6 @@
 #!/bin/bash
-
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+cd $SCRIPT_DIR
 # Create a virtual environment
 python -m venv venv || { echo "Failed to create venv"; exit 1; }
 
@@ -15,4 +16,4 @@ if [ ! -f "$SCRIPT_DIR/.env" ]; then
     cp "$SCRIPT_DIR/.env_example" "$SCRIPT_DIR/.env"
 fi
 
-echo "echo "Installation completed successfully. Do not forget to update the .env file with your credentials. Then run run_venv.sh to start the app""
+echo "Installation completed successfully. Do not forget to update the .env file with your credentials. Then run run_venv.sh to start the app""
