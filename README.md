@@ -28,7 +28,7 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 
 1. **Clone the repository (or use downloaded ZIP file)**:
    ```bash
-   git clone https://github.com/yourusername/crewai-studio.git
+   git clone https://github.com/strnad/CrewAI-Studio.git
    cd crewai-studio
    ```
 
@@ -46,7 +46,7 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 
 1. **Clone the repository (or use downloaded ZIP file)**:
    ```powershell
-   git clone https://github.com/yourusername/crewai-studio.git
+   git clone https://github.com/strnad/CrewAI-Studio.git
    cd crewai-studio
    ```
 
@@ -57,7 +57,7 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 
 3. **Run the application**:
    ```powershell
-   .run_venv.bat
+   .\run_venv.bat
    ```
 
 ### Using Conda
@@ -68,7 +68,7 @@ Conda will be installed locally in the project folder. No need for a pre-existin
 
 1. **Clone the repository (or use downloaded ZIP file)**:
    ```bash
-   git clone https://github.com/yourusername/crewai-studio.git
+   git clone https://github.com/strnad/CrewAI-Studio.git
    cd crewai-studio
    ```
 
@@ -86,7 +86,7 @@ Conda will be installed locally in the project folder. No need for a pre-existin
 
 1. **Clone the repository (or use downloaded ZIP file)**:
    ```powershell
-   git clone https://github.com/yourusername/crewai-studio.git
+   git clone https://github.com/strnad/CrewAI-Studio.git
    cd crewai-studio
    ```
 
@@ -97,7 +97,7 @@ Conda will be installed locally in the project folder. No need for a pre-existin
 
 3. **Run the application**:
    ```powershell
-   .run_conda.bat
+   .\run_conda.bat
    ```
 
 If you do not have Git installed, you can download the repository as a ZIP file from the GitHub page and extract it.
