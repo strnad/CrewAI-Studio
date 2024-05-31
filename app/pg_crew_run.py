@@ -4,7 +4,7 @@ from streamlit import session_state as ss
 
 class PageCrewRun:
     def __init__(self):
-        self.name = "Let crews work!"
+        self.name = "Kickoff!"
     
     @staticmethod
     def extract_placeholders(text):

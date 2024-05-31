@@ -15,7 +15,7 @@ def pages():
         'Tasks': PageTasks(),
         'Crews': PageCrews(),
         'Tools': PageTools(),
-        'Let crews work!': PageCrewRun(),
+        'Kickoff!': PageCrewRun(),
         'Import/export': PageExportCrew()
     }
 
