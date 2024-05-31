@@ -1,13 +1,21 @@
 
 # CrewAI Studio
 
-Welcome to CrewAI Studio! This application provides a user-friendly interface for interacting with CrewAI, suitable even for those who don't want to write any code. Follow the steps below to install and run the application on Windows or Linux using either Conda or a virtual environment.
+Welcome to CrewAI Studio! This application provides a user-friendly interface written in Streamlit for interacting with CrewAI, suitable even for those who don't want to write any code. Follow the steps below to install and run the application on Windows or Linux (probably also MacOS) using either Conda or a virtual environment.
 
 ## Features
 
 - **Multi-platform support**: Works on Windows and Linux.
 - **No coding required**: User-friendly interface for interacting with CrewAI.
 - **Conda and virtual environment support**: Choose between Conda and a Python virtual environment for installation.
+- **CrewAI tools** You can use crewai tools to interact with real world.
+- **Exporting single page apps**: You can export defined crew as a single page app.
+
+## Screenshots
+
+<img src="https://raw.githubusercontent.com/strnad/CrewAI-Studio/main/img/crews.png" alt="crews definition" style="width:50%;"/>
+<img src="https://raw.githubusercontent.com/strnad/CrewAI-Studio/main/img/kickoff.png" alt="kickoff" style="width:50%;"/>
+
 
 ## Installation
 
