@@ -29,7 +29,7 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 1. **Clone the repository (or use downloaded ZIP file)**:
    ```bash
    git clone https://github.com/strnad/CrewAI-Studio.git
-   cd crewai-studio
+   cd CrewAI-Studio
    ```
 
 2. **Run the installation script**:
@@ -47,7 +47,7 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 1. **Clone the repository (or use downloaded ZIP file)**:
    ```powershell
    git clone https://github.com/strnad/CrewAI-Studio.git
-   cd crewai-studio
+   cd CrewAI-Studio
    ```
 
 2. **Run the Conda installation script**:
@@ -69,7 +69,7 @@ Conda will be installed locally in the project folder. No need for a pre-existin
 1. **Clone the repository (or use downloaded ZIP file)**:
    ```bash
    git clone https://github.com/strnad/CrewAI-Studio.git
-   cd crewai-studio
+   cd CrewAI-Studio
    ```
 
 2. **Run the Conda installation script**:
@@ -87,7 +87,7 @@ Conda will be installed locally in the project folder. No need for a pre-existin
 1. **Clone the repository (or use downloaded ZIP file)**:
    ```powershell
    git clone https://github.com/strnad/CrewAI-Studio.git
-   cd crewai-studio
+   cd CrewAI-Studio
    ```
 
 2. **Run the Conda installation script**:
