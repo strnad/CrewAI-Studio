@@ -7,7 +7,7 @@ from llms import llm_providers_and_models, create_llm
 from datetime import datetime
 
 class MyAgent:
-    def __init__(self, id=None, role='Agent role', backstory='Backstory of agent', goal='Goal of agent', temperature=0.5, allow_delegation=False, verbose=False, llm_provider_model=None, created_at=None):
+    def __init__(self, id=None, role='Agent role', backstory='Backstory of agent', goal='Goal of agent', temperature=0.5, allow_delegation=False, verbose=False, llm_provider_model=None, max_iter=25, created_at=None):
         self.id = id or rnd_id()
         self.role = role
         self.backstory = backstory
@@ -18,6 +18,7 @@ class MyAgent:
         self.llm_provider_model = llm_provider_model or llm_providers_and_models()[0]
         self.created_at = created_at or datetime.now().isoformat()
         self.tools = []
+        self.max_iter = max_iter
         self.edit_key = f'edit_{self.id}'
         if self.edit_key not in ss:
             ss[self.edit_key] = False
@@ -38,6 +39,7 @@ class MyAgent:
                 goal=self.goal,
                 allow_delegation=self.allow_delegation,
                 verbose=self.verbose,
+                max_iter=self.max_iter,
                 tools=[tool.create_tool() for tool in self.tools],
                 llm=create_llm(self.llm_provider_model, temperature=self.temperature)
             )
@@ -74,6 +76,7 @@ class MyAgent:
                     self.verbose = st.checkbox("Verbose", value=self.verbose)
                     self.llm_provider_model = st.selectbox("LLM Provider and Model", options=llm_providers_and_models(), index=llm_providers_and_models().index(self.llm_provider_model))
                     self.temperature = st.slider("Temperature", value=self.temperature, min_value=0.0, max_value=1.0)
+                    self.max_iter = st.number_input("Max Iterations", value=self.max_iter, min_value=1, max_value=50)
                     enabled_tools = [tool for tool in ss.tools]
                     selected_tools = st.multiselect(
                         "Select Tools",
@@ -94,6 +97,7 @@ class MyAgent:
                 st.markdown(f"**Verbose:** {self.verbose}")
                 st.markdown(f"**LLM Provider and Model:** {self.llm_provider_model}")
                 st.markdown(f"**Temperature:** {self.temperature}")
+                st.markdown(f"**Max Iterations:** {self.max_iter}")
                 st.markdown(f"**Tools:** {[self.get_tool_display_name(tool) for tool in self.tools]}")
 
                 self.is_valid(show_warning=True)

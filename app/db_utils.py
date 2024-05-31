@@ -86,6 +86,7 @@ def save_agent(agent):
         'verbose': agent.verbose,
         'llm_provider_model': agent.llm_provider_model,
         'temperature': agent.temperature,
+        'max_iter': agent.max_iter,
         'tool_ids': [tool.tool_id for tool in agent.tools]  # Save tool IDs
     }
     save_entity('agent', agent.id, data)
