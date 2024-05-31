@@ -7,7 +7,7 @@ from llms import llm_providers_and_models, create_llm
 import db_utils
 
 class MyCrew:
-    def __init__(self, id=None, name="Crew name", agents=None, tasks=None, process=Process.sequential, max_rpm=4999, verbose=2, manager_llm=None, manager_agent=None, created_at=None, memory=False):
+    def __init__(self, id=None, name="Crew name", agents=None, tasks=None, process=Process.sequential, cache=False, max_rpm=4999, verbose=2, manager_llm=None, manager_agent=None, created_at=None, memory=False):
         self.id = id or rnd_id()
         self.name = name
         self.agents = agents if agents is not None else []
@@ -17,6 +17,7 @@ class MyCrew:
         self.manager_llm = manager_llm
         self.manager_agent = manager_agent
         self.memory = memory
+        self.cache = cache
         self.max_rpm = max_rpm
         self.created_at = created_at or datetime.now().isoformat()
         self.edit_key = f'edit_{self.id}'
@@ -94,6 +95,10 @@ class MyCrew:
         self.max_rpm = ss[f'max_rpm_{self.id}']
         db_utils.save_crew(self)
 
+    def update_cache(self):
+        self.cache = ss[f'cache_{self.id}']
+        db_utils.save_crew(self)
+
     def is_valid(self, show_warning=False):
         if len(self.agents) == 0:
             if show_warning:
@@ -122,6 +127,7 @@ class MyCrew:
         manager_llm_key = f"manager_llm_{self.id}"
         manager_agent_key = f"manager_agent_{self.id}"
         memory_key = f"memory_{self.id}"
+        cache_key = f"cache_{self.id}"
         max_rpm_key = f"max_rpm_{self.id}"
 
         expander_title = f"Crew: {self.name}" if self.is_valid() else f"❗ Crew: {self.name}"
@@ -136,6 +142,7 @@ class MyCrew:
                 st.selectbox("Manager LLM", options=["None"] + llm_providers_and_models(), index=0 if self.manager_llm is None else llm_providers_and_models().index(self.manager_llm) + 1, key=manager_llm_key, on_change=self.update_manager_llm, disabled=(self.process != Process.hierarchical))
                 st.selectbox("Manager Agent", options=["None"] + [agent.role for agent in ss.agents], index=0 if self.manager_agent is None else [agent.role for agent in ss.agents].index(self.manager_agent.role) + 1, key=manager_agent_key, on_change=self.update_manager_agent, disabled=(self.process != Process.hierarchical))
                 st.checkbox("Memory", value=self.memory, key=memory_key, on_change=self.update_memory)
+                st.checkbox("Cache", value=self.cache, key=cache_key, on_change=self.update_cache)
                 st.number_input("Max req/min", value=self.max_rpm, key=max_rpm_key, on_change=self.update_max_rpm)    
                 st.button("Save", on_click=self.set_editable, args=(False,), key=rnd_id())
 
@@ -150,6 +157,7 @@ class MyCrew:
                 st.markdown(f"**Manager LLM:** {self.manager_llm}")
                 st.markdown(f"**Manager Agent:** {self.manager_agent.role if self.manager_agent else 'None'}")
                 st.markdown(f"**Memory:** {self.memory}")
+                st.markdown(f"**Cache:** {self.cache}")
                 st.markdown(f"**Max req/min:** {self.max_rpm}")                
                 col1, col2 = st.columns(2)
                 with col1:

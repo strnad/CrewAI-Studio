@@ -138,6 +138,7 @@ def save_crew(crew):
         'agent_ids': [agent.id for agent in crew.agents],
         'task_ids': [task.id for task in crew.tasks],
         'memory': crew.memory,
+        'cache': crew.cache,
         'max_rpm' : crew.max_rpm,
         'manager_llm': crew.manager_llm,
         'manager_agent_id': crew.manager_agent.id if crew.manager_agent else None,
@@ -160,6 +161,7 @@ def load_crews():
             verbose=data['verbose'], 
             created_at=data['created_at'], 
             memory=data.get('memory'),
+            cache=data.get('cache'),
             max_rpm=data.get('max_rpm'), 
             manager_llm=data.get('manager_llm'),
             manager_agent=agents_dict.get(data.get('manager_agent_id'))
