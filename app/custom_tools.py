@@ -5,18 +5,36 @@ from crewai_tools import BaseTool
 
 class CustomFileWriteTool(BaseTool, BaseModel):
     name: str = "CustomFileWriteTool"
-    description: str = "Writes the provided text content to a specified file within the allowed directory."
-    
-    allowed_directory: str
+    description: str = """
+        This tool writes or appends the provided text content to a specified file.
 
-    def _run(self, filename: str, content: str) -> str:
-        # Ensure the file path is within the allowed directory
-        file_path = os.path.join(self.allowed_directory, filename)
-        if not os.path.commonpath([self.allowed_directory, file_path]).startswith(self.allowed_directory):
-            raise ValueError("The specified file path is not within the allowed directory.")
-        
-        # Write the content to the file
-        with open(file_path, 'w') as file:
-            file.write(content)
-        
-        return f"Content successfully written to {file_path}"
+        Parameters:
+        - filename (str): The name of the file to write or append to. Can be an absolute or relative path.
+        - append (bool): If True, appends the content to the file. If False, overwrites the file.
+        - content (str): The text content to write or append to the file.
+
+        Example usage:
+        tool._run("example.txt", append=False, content="This is a test.")
+    """
+
+    allowed_directory: str = os.getcwd()  # Defaults to the current working directory
+
+    def _run(self, filename: str, append: bool, content: str) -> str:
+        # Translate relative path to absolute path within the allowed directory
+        if not os.path.isabs(filename):
+            file_path = os.path.join(self.allowed_directory, filename)
+        else:
+            file_path = filename
+
+        try:
+            # Ensure the file_path is within the allowed_directory
+            if not os.path.abspath(file_path).startswith(os.path.abspath(self.allowed_directory)):
+                raise ValueError("The specified file path is not within the allowed directory.")
+            
+            # Write the content to the file
+            mode = 'a' if append else 'w'
+            with open(file_path, mode) as file:
+                file.write(content)
+            return f"Content successfully written to {file_path}"
+        except Exception as e:
+            return f"Failed to write content to {file_path}: {str(e)}"
