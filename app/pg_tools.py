@@ -35,30 +35,32 @@ class PageTools:
         return f"{tool.name} ({first_param_value if first_param_value else tool.tool_id})"
 
     def draw_tools(self):
+        c1,c2 = st.columns([1, 3])
         #st.write("Available Tools:")
-        for tool_name in self.available_tools.keys():
-            tool_class = self.available_tools[tool_name]
-            tool_instance = tool_class()
-            tool_description = tool_instance.description
-            if st.button(f"Add {tool_name}", key=f"enable_{tool_name}", help=tool_description):
-                self.create_tool(tool_name)
-        
-        if 'tools' in ss:
-            st.write("##### Enabled Tools")
-            for tool in ss.tools:
-                display_name = self.get_tool_display_name(tool)
-                is_complete = tool.is_valid()
-                expander_title = display_name if is_complete else f"❗ {display_name}"
-                with st.expander(expander_title):
-                    st.write(tool.description)
-                    for param_name in tool.get_parameter_names():
-                        param_value = tool.parameters.get(param_name, "")
-                        placeholder = "Required" if tool.is_parameter_mandatory(param_name) else "Optional"
-                        new_value = st.text_input(f"{param_name}", value=param_value, key=f"{tool.tool_id}_{param_name}", placeholder=placeholder)
-                        if new_value != param_value:
-                            self.set_tool_parameter(tool.tool_id, param_name, new_value)
-                    if st.button(f"Remove", key=f"remove_{tool.tool_id}"):
-                        self.remove_tool(tool.tool_id)
+        with c1:
+            for tool_name in self.available_tools.keys():
+                tool_class = self.available_tools[tool_name]
+                tool_instance = tool_class()
+                tool_description = tool_instance.description
+                if st.button(f"Add {tool_name}", key=f"enable_{tool_name}", help=tool_description):
+                    self.create_tool(tool_name)
+        with c2:
+            if 'tools' in ss:
+                st.write("##### Enabled Tools")
+                for tool in ss.tools:
+                    display_name = self.get_tool_display_name(tool)
+                    is_complete = tool.is_valid()
+                    expander_title = display_name if is_complete else f"❗ {display_name}"
+                    with st.expander(expander_title):
+                        st.write(tool.description)
+                        for param_name in tool.get_parameter_names():
+                            param_value = tool.parameters.get(param_name, "")
+                            placeholder = "Required" if tool.is_parameter_mandatory(param_name) else "Optional"
+                            new_value = st.text_input(f"{param_name}", value=param_value, key=f"{tool.tool_id}_{param_name}", placeholder=placeholder)
+                            if new_value != param_value:
+                                self.set_tool_parameter(tool.tool_id, param_name, new_value)
+                        if st.button(f"Remove", key=f"remove_{tool.tool_id}"):
+                            self.remove_tool(tool.tool_id)
 
     def draw(self):
         st.subheader(self.name)
