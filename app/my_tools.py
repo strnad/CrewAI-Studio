@@ -99,11 +99,11 @@ class MySerperDevTool(MyTool):
         parameters = {
             'SERPER_API_KEY': {'mandatory': True}
         }
-        
+
         super().__init__(tool_id, 'SerperDevTool', "A tool that can be used to search the internet with a search_query", parameters)
 
     def create_tool(self):
-        os.environ['SERPER_API_KEY'] = self.SERPER_API_KEY
+        os.environ['SERPER_API_KEY'] = self.parameters.get('SERPER_API_KEY')
         return SerperDevTool()
     
 class MyYoutubeChannelSearchTool(MyTool):
