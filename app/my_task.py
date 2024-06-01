@@ -6,11 +6,11 @@ from db_utils import save_task, delete_task
 from datetime import datetime
 
 class MyTask:
-    def __init__(self, id=None, description="Task Description", expected_output="Expected output", agent=None, created_at=None):
-        self.id = id or rnd_id()
-        self.description = description
-        self.expected_output = expected_output
-        self.agent = agent
+    def __init__(self, id=None, description=None, expected_output=None, agent=None, created_at=None):
+        self.id = id or "T_" + rnd_id()
+        self.description = description or "Identify the next big trend in AI. Focus on identifying pros and cons and the overall narrative."
+        self.expected_output = expected_output or "A comprehensive 3 paragraphs long report on the latest AI trends."
+        self.agent = agent or ss.agents[0] if ss.agents else None
         self.created_at = created_at or datetime.now().isoformat()
         self.edit_key = f'edit_{self.id}'
         if self.edit_key not in ss:

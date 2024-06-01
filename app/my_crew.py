@@ -7,18 +7,18 @@ from llms import llm_providers_and_models, create_llm
 import db_utils
 
 class MyCrew:
-    def __init__(self, id=None, name="Crew name", agents=None, tasks=None, process=Process.sequential, cache=False, max_rpm=4999, verbose=2, manager_llm=None, manager_agent=None, created_at=None, memory=False):
-        self.id = id or rnd_id()
-        self.name = name
-        self.agents = agents if agents is not None else []
-        self.tasks = tasks if tasks is not None else []
-        self.process = process
-        self.verbose = verbose
+    def __init__(self, id=None, name=None, agents=None, tasks=None, process=None, cache=None, max_rpm=None, verbose=None, manager_llm=None, manager_agent=None, created_at=None, memory=False):
+        self.id = id or "C_" + rnd_id()
+        self.name = name or "Crew 1"
+        self.agents = agents or []
+        self.tasks = tasks or []
+        self.process = process or Process.sequential
+        self.verbose = verbose or 2
         self.manager_llm = manager_llm
         self.manager_agent = manager_agent
         self.memory = memory
-        self.cache = cache
-        self.max_rpm = max_rpm
+        self.cache = cache or False
+        self.max_rpm = max_rpm or 1000
         self.created_at = created_at or datetime.now().isoformat()
         self.edit_key = f'edit_{self.id}'
         if self.edit_key not in ss:

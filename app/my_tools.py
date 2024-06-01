@@ -5,7 +5,7 @@ from crewai_tools import ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, D
 from custom_tools import CustomFileWriteTool
 class MyTool:
     def __init__(self, tool_id, name, description, parameters, **kwargs):
-        self.tool_id = tool_id or rnd_id()
+        self.tool_id = tool_id or "T_" +rnd_id()
         self.name = name
         self.description = description
         self.parameters = kwargs
