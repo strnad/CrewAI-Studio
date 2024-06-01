@@ -67,7 +67,8 @@ class MyAgent:
         return True
 
     def draw(self):
-        expander_title = f"{self.role}" if self.is_valid() else f"❗ {self.role}"
+        expander_title = f"{self.role[:20]} -{self.llm_provider_model.split(':')[1]}" if self.is_valid() else f"❗ {self.role[:20]} -{self.llm_provider_model.split(':')[1]}"
+        #expander_title = f"{self.role}" if self.is_valid() else f"❗ {self.role}"
         if self.edit:
             with st.expander(f"Agent: {self.role}", expanded=True):
                 with st.form(key=f'form_{self.id}'):
