@@ -40,7 +40,7 @@ def draw_sidebar():
             st.rerun()
 
 def main():
-    st.set_page_config(page_title="CrewAI Studio", page_icon=":robot:", layout="wide")
+    st.set_page_config(page_title="CrewAI Studio", page_icon="img/favicon.ico", layout="wide")
     load_dotenv()
     db_utils.initialize_db()
     load_data()
