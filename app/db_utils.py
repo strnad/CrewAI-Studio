@@ -84,6 +84,7 @@ def save_agent(agent):
         'goal': agent.goal,
         'allow_delegation': agent.allow_delegation,
         'verbose': agent.verbose,
+        'cache': agent.cache,
         'llm_provider_model': agent.llm_provider_model,
         'temperature': agent.temperature,
         'max_iter': agent.max_iter,

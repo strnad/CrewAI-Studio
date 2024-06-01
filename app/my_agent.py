@@ -7,7 +7,7 @@ from llms import llm_providers_and_models, create_llm
 from datetime import datetime
 
 class MyAgent:
-    def __init__(self, id=None, role=None, backstory=None, goal=None, temperature=None, allow_delegation=False, verbose=False, llm_provider_model=None, max_iter=None, created_at=None, tools=None):
+    def __init__(self, id=None, role=None, backstory=None, goal=None, temperature=None, allow_delegation=False, verbose=False, cache= None, llm_provider_model=None, max_iter=None, created_at=None, tools=None):
         self.id = id or "A_" + rnd_id()
         self.role = role or "Senior Researcher"
         self.backstory = backstory or "Driven by curiosity, you're at the forefront of innovation, eager to explore and share knowledge that could change the world."
@@ -19,6 +19,7 @@ class MyAgent:
         self.created_at = created_at or datetime.now().isoformat()
         self.tools = tools or []
         self.max_iter = max_iter or 25
+        self.cache = cache or True
         self.edit_key = f'edit_{self.id}'
         if self.edit_key not in ss:
             ss[self.edit_key] = False
@@ -40,6 +41,7 @@ class MyAgent:
                 allow_delegation=self.allow_delegation,
                 verbose=self.verbose,
                 max_iter=self.max_iter,
+                cache=self.cache,
                 tools=[tool.create_tool() for tool in self.tools],
                 llm=create_llm(self.llm_provider_model, temperature=self.temperature)
             )
@@ -74,6 +76,7 @@ class MyAgent:
                     self.goal = st.text_area("Goal", value=self.goal)
                     self.allow_delegation = st.checkbox("Allow delegation", value=self.allow_delegation)
                     self.verbose = st.checkbox("Verbose", value=self.verbose)
+                    self.cache = st.checkbox("Cache", value=self.cache)
                     self.llm_provider_model = st.selectbox("LLM Provider and Model", options=llm_providers_and_models(), index=llm_providers_and_models().index(self.llm_provider_model))
                     self.temperature = st.slider("Temperature", value=self.temperature, min_value=0.0, max_value=1.0)
                     self.max_iter = st.number_input("Max Iterations", value=self.max_iter, min_value=1, max_value=50)
@@ -95,6 +98,7 @@ class MyAgent:
                 st.markdown(f"**Goal:** {self.goal}")
                 st.markdown(f"**Allow delegation:** {self.allow_delegation}")
                 st.markdown(f"**Verbose:** {self.verbose}")
+                st.markdown(f"**Cache:** {self.cache}")
                 st.markdown(f"**LLM Provider and Model:** {self.llm_provider_model}")
                 st.markdown(f"**Temperature:** {self.temperature}")
                 st.markdown(f"**Max Iterations:** {self.max_iter}")
