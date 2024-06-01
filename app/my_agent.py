@@ -13,13 +13,13 @@ class MyAgent:
         self.backstory = backstory or "Driven by curiosity, you're at the forefront of innovation, eager to explore and share knowledge that could change the world."
         self.goal = goal or "Uncover groundbreaking technologies in AI"
         self.temperature = temperature or 0.1
-        self.allow_delegation = allow_delegation
-        self.verbose = verbose
+        self.allow_delegation = allow_delegation if allow_delegation is not None else False
+        self.verbose = verbose if verbose is not None else True
         self.llm_provider_model = llm_provider_model or llm_providers_and_models()[0]
         self.created_at = created_at or datetime.now().isoformat()
         self.tools = tools or []
         self.max_iter = max_iter or 25
-        self.cache = cache or True
+        self.cache = cache if cache is not None else True
         self.edit_key = f'edit_{self.id}'
         if self.edit_key not in ss:
             ss[self.edit_key] = False

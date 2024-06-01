@@ -13,11 +13,11 @@ class MyCrew:
         self.agents = agents or []
         self.tasks = tasks or []
         self.process = process or Process.sequential
-        self.verbose = verbose or 2
+        self.verbose = verbose if verbose is not None else 2
         self.manager_llm = manager_llm
         self.manager_agent = manager_agent
-        self.memory = memory
-        self.cache = cache or False
+        self.memory = memory if memory is not None else False
+        self.cache = cache if cache is not None else True
         self.max_rpm = max_rpm or 1000
         self.created_at = created_at or datetime.now().isoformat()
         self.edit_key = f'edit_{self.id}'
