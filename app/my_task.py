@@ -52,7 +52,7 @@ class MyTask:
         if self.edit:
             with st.expander(expander_title, expanded=True):
                 with st.form(key=f'form_{self.id}'):
-                    self.description = st.text_input("Description", value=self.description)
+                    self.description = st.text_area("Description", value=self.description)
                     self.expected_output = st.text_area("Expected output", value=self.expected_output)
                     self.agent = st.selectbox("Agent", options=ss.agents, format_func=lambda x: x.role, index=0 if self.agent is None else agent_options.index(self.agent.role))
                     submitted = st.form_submit_button("Save")
