@@ -23,6 +23,8 @@ class PageTools:
         st.rerun()
 
     def set_tool_parameter(self, tool_id, param_name, value):
+        if value == "":
+            value = None
         for tool in ss.tools:
             if tool.tool_id == tool_id:
                 tool.set_parameters(**{param_name: value})
