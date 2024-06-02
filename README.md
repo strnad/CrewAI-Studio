@@ -8,8 +8,8 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 - **Multi-platform support**: Works on Windows and Linux.
 - **No coding required**: User-friendly interface for interacting with CrewAI.
 - **Conda and virtual environment support**: Choose between Conda and a Python virtual environment for installation.
-- **CrewAI tools** You can use crewai tools to interact with real world.
-- **Exporting single page apps**: You can export defined crew as a single page app.
+- **CrewAI tools** You can use crewai tools to interact with real world. (not all of them were tested so if you find a bug, let me know please)
+- **Exporting single page apps**: You can export defined crew as a single page app. (still experimental and doesn't support tools yet)
 - **API support**: Currently OpenAI, Groq and LM Studio backends are supported
 
 ## Screenshots
