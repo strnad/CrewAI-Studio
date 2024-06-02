@@ -3,9 +3,11 @@ import os
 from utils import rnd_id
 from crewai_tools import ScrapeElementFromWebsiteTool,TXTSearchTool,SeleniumScrapingTool,PGSearchTool,PDFSearchTool,MDXSearchTool,JSONSearchTool,GithubSearchTool,EXASearchTool,DOCXSearchTool,CSVSearchTool,ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, DirectoryReadTool, CodeDocsSearchTool, YoutubeVideoSearchTool,SerperDevTool,YoutubeChannelSearchTool,WebsiteSearchTool
 from custom_tools import CustomFileWriteTool
+from langchain_community.tools import YahooFinanceNewsTool
+
 class MyTool:
     def __init__(self, tool_id, name, description, parameters, **kwargs):
-        self.tool_id = tool_id or "T_" +rnd_id()
+        self.tool_id = tool_id or rnd_id()
         self.name = name
         self.description = description
         self.parameters = kwargs
@@ -269,6 +271,15 @@ class MyScrapeElementFromWebsiteTool(MyTool):
             css_element=self.parameters.get('css_element').split(","),
             cookie=cookie_arrayofdicts
         )
+    
+class MyYahooFinanceNewsTool(MyTool):
+    def __init__(self, tool_id=None):
+        parameters = {}
+        super().__init__(tool_id, 'YahooFinanceNewsTool', "A tool that can be used to search Yahoo Finance News.", parameters)
+
+    def create_tool(self):
+        return YahooFinanceNewsTool()
+    
 # Register all tools here
 TOOL_CLASSES = {
     'SerperDevTool': MySerperDevTool,
@@ -286,6 +297,7 @@ TOOL_CLASSES = {
     'YoutubeChannelSearchTool' :MyYoutubeChannelSearchTool,
     'GithubSearchTool': MyGithubSearchTool,
     'CodeDocsSearchTool': MyCodeDocsSearchTool,
+    'YahooFinanceNewsTool': MyYahooFinanceNewsTool,
 
     'TXTSearchTool': MyTXTSearchTool,
     'CSVSearchTool': MyCSVSearchTool,
