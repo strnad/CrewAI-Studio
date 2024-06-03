@@ -1,6 +1,7 @@
 import os
 from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 def create_openai_llm(model, temperature):
     api_key = os.getenv('OPENAI_API_KEY')
@@ -16,6 +17,13 @@ def create_groq_llm(model, temperature):
         return ChatGroq(groq_api_key=api_key, model_name=model, temperature=temperature)
     else:
         raise ValueError("Groq API key not set in .env file")
+    
+def create_googleai_llm(model, temperature):
+    api_key = os.getenv('GOOGLE_API_KEY')
+    if api_key:
+        return ChatGoogleGenerativeAI(googleai_api_key=api_key, model=model, temperature=temperature)
+    else:
+        raise ValueError("Google AI API key not set in .env file")
 
 def create_lmstudio_llm(model, temperature):
     api_base = os.getenv('LMSTUDIO_API_BASE')
@@ -33,10 +41,15 @@ LLM_CONFIG = {
         "models": ["llama3-8b-8192","llama3-70b-8192", "mixtral-8x7b-32768"],
         "create_llm": create_groq_llm
     },
+    "GoogleAI": {
+        "models": ["gemini-1.5-pro","gemini-1.5-flash", "gemini-1.0-pro"],
+        "create_llm": create_googleai_llm
+    },
     "LM Studio": {
         "models": ["default"],
         "create_llm": create_lmstudio_llm
     }
+
 }
 
 def llm_providers_and_models():
