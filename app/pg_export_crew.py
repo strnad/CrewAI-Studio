@@ -265,7 +265,7 @@ python-dotenv
         else:
             crew_names = [crew.name for crew in ss.crews]
             selected_crew_name = st.selectbox("Select crew to export as singlepage app (doesn't support tools yet)", crew_names)
-            if st.button("Export singlepage app"):
+            if st.button("Export singlepage app", disabled=True, help="This feature is now broken and will be fixed soon."):
                 zip_path = self.create_export(selected_crew_name)
                 with open(zip_path, "rb") as fp:
                     st.download_button(
