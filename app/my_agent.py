@@ -15,7 +15,7 @@ class MyAgent:
         self.temperature = temperature or 0.1
         self.allow_delegation = allow_delegation if allow_delegation is not None else False
         self.verbose = verbose if verbose is not None else True
-        self.llm_provider_model = llm_provider_model or llm_providers_and_models()[0]
+        self.llm_provider_model = llm_providers_and_models()[0] if llm_provider_model is None else llm_provider_model
         self.created_at = created_at or datetime.now().isoformat()
         self.tools = tools or []
         self.max_iter = max_iter or 25
@@ -66,8 +66,14 @@ class MyAgent:
                 return False
         return True
 
+    def validate_llm_provider_model(self):
+        available_models = llm_providers_and_models()
+        if self.llm_provider_model not in available_models:
+            self.llm_provider_model = available_models[0]
+
     def draw(self):
-        expander_title = f"{self.role[:20]} -{self.llm_provider_model.split(':')[1]}" if self.is_valid() else f"❗ {self.role[:20]} -{self.llm_provider_model.split(':')[1]}"
+        self.validate_llm_provider_model()
+        expander_title = f"{self.role[:60]} -{self.llm_provider_model.split(':')[1]}" if self.is_valid() else f"❗ {self.role[:20]} -{self.llm_provider_model.split(':')[1]}"
         #expander_title = f"{self.role}" if self.is_valid() else f"❗ {self.role}"
         if self.edit:
             with st.expander(f"Agent: {self.role}", expanded=True):
