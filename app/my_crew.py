@@ -106,7 +106,7 @@ class MyCrew:
             return False
         if len(self.tasks) == 0:
             if show_warning:
-                st.warning(f"Crew {self.name} has no agents")
+                st.warning(f"Crew {self.name} has no tasks")
             return False
         if any([not agent.is_valid(show_warning=show_warning) for agent in self.agents]):
             return False
@@ -118,7 +118,13 @@ class MyCrew:
             return False
         return True
 
+    def validate_manager_llm(self):
+        available_models = llm_providers_and_models()
+        if self.manager_llm and self.manager_llm not in available_models:
+            self.manager_llm = None
+
     def draw(self):
+        self.validate_manager_llm()
         name_key = f"name_{self.id}"
         process_key = f"process_{self.id}"
         verbose_key = f"verbose_{self.id}"
