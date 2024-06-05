@@ -69,12 +69,17 @@ class PageCrewRun:
     def draw_crews(self):
         if 'crews' not in ss or not ss.crews:
             st.write("No crews defined yet.")
+            ss.selected_crew_name = None  # Reset selected crew name if there are no crews
             return
+
+        # Check if the selected crew name still exists
+        if ss.selected_crew_name not in [crew.name for crew in ss.crews]:
+            ss.selected_crew_name = None
 
         selected_crew_name = st.selectbox(
             label="Select crew to run",
             options=[crew.name for crew in ss.crews],
-            index=0 if ss.selected_crew_name is None else [crew.name for crew in ss.crews].index(ss.selected_crew_name),
+            index=0 if ss.selected_crew_name is None else [crew.name for crew in ss.crews].index(ss.selected_crew_name) if ss.selected_crew_name in [crew.name for crew in ss.crews] else 0,
             disabled=ss.running
         )
 
