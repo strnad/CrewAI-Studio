@@ -2,6 +2,7 @@ import os
 from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain.llms import HuggingFaceHub
 
 def create_openai_llm(model, temperature):
     api_key = os.getenv('OPENAI_API_KEY')
@@ -25,6 +26,13 @@ def create_googleai_llm(model, temperature):
     else:
         raise ValueError("Google AI API key not set in .env file")
 
+def create_huggingfacehub_llm(model, temperature):
+    api_key = os.getenv('HUGGINGFACE_API_KEY')
+    if api_key:
+        return HuggingFaceHub(repo_id=model, model_kwargs={"temperature":temperature, "max_tokens": 4096})
+    else:
+        raise ValueError("HuggingFace API key not set in .env file")
+
 def create_lmstudio_llm(model, temperature):
     api_base = os.getenv('LMSTUDIO_API_BASE')
     if api_base:
@@ -44,6 +52,10 @@ LLM_CONFIG = {
     "GoogleAI": {
         "models": ["gemini-1.5-pro","gemini-1.5-flash", "gemini-1.0-pro"],
         "create_llm": create_googleai_llm
+    },
+    "HuggingFaceHub": {
+        "models": ["mistralai/Mistral-7B-Instruct-v0.2", "mistralai/Codestral-22B-v0.1", "EleutherAI/gpt-neo-2.7B"],
+        "create_llm": create_huggingfacehub_llm
     },
     "LM Studio": {
         "models": ["default"],
