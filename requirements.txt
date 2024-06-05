@@ -1,5 +1,5 @@
 crewai
-crewai[tools]
+git+https://github.com/strnad/crewAI-tools.git
 langchain_openai
 langchain_groq
 langchain-google-genai

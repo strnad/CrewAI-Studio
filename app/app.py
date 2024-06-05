@@ -45,7 +45,8 @@ def main():
     db_utils.initialize_db()
     load_data()
     draw_sidebar()
+    PageCrewRun.maintain_session_state() #this will persist the session state for the crew run page so crew run can be run in a separate thread
     pages()[ss.page].draw()
-
+    
 if __name__ == '__main__':
     main()

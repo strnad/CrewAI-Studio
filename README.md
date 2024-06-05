@@ -7,8 +7,9 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 - **Multi-platform support**: Works on Windows and Linux.
 - **No coding required**: User-friendly interface for interacting with CrewAI.
 - **Conda and virtual environment support**: Choose between Conda and a Python virtual environment for installation.
-- **CrewAI tools** You can use crewai tools to interact with real world. (not all of them were tested so if you find a bug, let me know please)
+- **CrewAI tools** You can use crewai tools to interact with real world. (with crewAI-tools bugfix: RagTool based tools now handle post-creation passed parameters correctly [ #<49>](https://github.com/joaomdmoura/crewAI-tools/pull/49))
 - **API support**: Currently OpenAI, Groq, Google AI and LM Studio backends are supported. OpenAI is probably still needed for embeddings in many tools.
+- **Threaded crew run**: Crews can run in background and can be stopped.
 
 ## Screenshots
 
