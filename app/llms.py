@@ -25,13 +25,13 @@ def create_groq_llm(model, temperature):
     
 def create_googleai_llm(model, temperature):
     api_key = os.getenv('GOOGLE_API_KEY')
-    if api_key:
-        return ChatGoogleGenerativeAI(googleai_api_key=api_key, model=model, temperature=temperature)
+    if api_key:        
+         return ChatGoogleGenerativeAI(model=model, temperature=temperature)
     else:
         raise ValueError("Google AI API key not set in .env file")
 
 def create_huggingfacehub_llm(model, temperature):
-    api_key = os.getenv('HUGGINGFACE_API_KEY')
+    api_key = os.getenv('HUGGINGFACEHUB_API_KEY')
     if api_key:
         return ChatHuggingFace(repo_id=model, huggingfacehub_api_token=api_key,  model_kwargs={"temperature":temperature, "max_tokens": 4096})
     else:
@@ -55,14 +55,14 @@ LLM_CONFIG = {
         "models": ["llama3-8b-8192","llama3-70b-8192", "mixtral-8x7b-32768"],
         "create_llm": create_groq_llm
     },
-    "GoogleAI": {
-        "models": ["gemini-1.5-pro","gemini-1.5-flash", "gemini-1.0-pro"],
-        "create_llm": create_googleai_llm
-    },
-    "HuggingFaceHub": {
-        "models": ["mistralai/Mistral-7B-Instruct-v0.2", "mistralai/Codestral-22B-v0.1", "EleutherAI/gpt-neo-2.7B"],
-        "create_llm": create_huggingfacehub_llm
-    },
+    # "GoogleAI": {
+    #     "models": ["gemini-1.5-pro","gemini-1.5-flash", "gemini-1.0-pro"],
+    #     "create_llm": create_googleai_llm
+    # },
+    # "HuggingFaceHub": {
+    #     "models": ["mistralai/Mistral-7B-Instruct-v0.2", "mistralai/Codestral-22B-v0.1", "EleutherAI/gpt-neo-2.7B"],
+    #     "create_llm": create_huggingfacehub_llm
+    # },
     "LM Studio": {
         "models": ["lms-default"],
         "create_llm": create_lmstudio_llm
