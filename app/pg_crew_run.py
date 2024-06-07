@@ -5,6 +5,8 @@ import threading
 import ctypes
 import queue
 import time
+import os
+from dotenv import load_dotenv
 
 class PageCrewRun:
     def __init__(self):
@@ -125,7 +127,8 @@ class PageCrewRun:
     def display_result(self):
         if ss.result is not None:
             if isinstance(ss.result, dict):
-                st.expander("Final output", expanded=True).write(ss.result["result"]['final_output'])
+                if 'final_output' in ss.result["result"]:
+                    st.expander("Final output", expanded=True).write(ss.result["result"]['final_output'])
                 st.expander("Full output", expanded=False).write(ss.result)
             else:
                 st.error(ss.result)
