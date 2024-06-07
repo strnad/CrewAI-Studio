@@ -6,8 +6,8 @@ from langchain_huggingface import ChatHuggingFace
 from dotenv import load_dotenv
 
 def create_openai_llm(model, temperature):
-    os.environ.pop('OPENAI_API_KEY')
-    os.environ.pop('OPENAI_API_BASE')
+    safe_pop_env_var('OPENAI_API_KEY')
+    safe_pop_env_var('OPENAI_API_BASE')
     load_dotenv(override=True)
     api_key = os.getenv('OPENAI_API_KEY')
     api_base = os.getenv('OPENAI_API_BASE', 'https://api.openai.com/v1/')
@@ -80,3 +80,9 @@ def create_llm(provider_and_model, temperature=0.1):
         return create_llm_func(model, temperature)
     else:
         raise ValueError(f"LLM provider {provider} is not recognized or not supported")
+      
+def safe_pop_env_var(key):
+    try:
+        os.environ.pop(key)
+    except KeyError:
+        pass
