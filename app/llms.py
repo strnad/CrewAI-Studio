@@ -2,9 +2,13 @@ import os
 from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.llms import HuggingFaceHub
+from langchain_huggingface import ChatHuggingFace
+from dotenv import load_dotenv
 
 def create_openai_llm(model, temperature):
+    os.environ.pop('OPENAI_API_KEY')
+    os.environ.pop('OPENAI_API_BASE')
+    load_dotenv(override=True)
     api_key = os.getenv('OPENAI_API_KEY')
     api_base = os.getenv('OPENAI_API_BASE', 'https://api.openai.com/v1/')
     if api_key:
@@ -29,12 +33,14 @@ def create_googleai_llm(model, temperature):
 def create_huggingfacehub_llm(model, temperature):
     api_key = os.getenv('HUGGINGFACE_API_KEY')
     if api_key:
-        return HuggingFaceHub(repo_id=model, model_kwargs={"temperature":temperature, "max_tokens": 4096})
+        return ChatHuggingFace(repo_id=model, huggingfacehub_api_token=api_key,  model_kwargs={"temperature":temperature, "max_tokens": 4096})
     else:
         raise ValueError("HuggingFace API key not set in .env file")
 
 def create_lmstudio_llm(model, temperature):
     api_base = os.getenv('LMSTUDIO_API_BASE')
+    os.environ["OPENAI_API_KEY"] = "lm-studio"
+    os.environ["OPENAI_API_BASE"] = api_base
     if api_base:
         return ChatOpenAI(openai_api_key='lm-studio', openai_api_base=api_base, temperature=temperature)
     else:
@@ -58,7 +64,7 @@ LLM_CONFIG = {
         "create_llm": create_huggingfacehub_llm
     },
     "LM Studio": {
-        "models": ["default"],
+        "models": ["lms-default"],
         "create_llm": create_lmstudio_llm
     }
 
