@@ -29,7 +29,7 @@ def create_googleai_llm(model, temperature):
 def create_huggingfacehub_llm(model, temperature):
     api_key = os.getenv('HUGGINGFACE_API_KEY')
     if api_key:
-        return HuggingFaceHub(repo_id=model, model_kwargs={"temperature":temperature, "max_tokens": 4096})
+        return HuggingFaceHub(repo_id=model, model_kwargs={"temperature":temperature, "max_tokens": 4096}, huggingfacehub_api_token=api_key)
     else:
         raise ValueError("HuggingFace API key not set in .env file")
 
