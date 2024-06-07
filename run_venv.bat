@@ -11,4 +11,5 @@ if %errorlevel% neq 0 (
 
 echo Running Streamlit app...
 cd %SCRIPT_DIR%
+IF EXIST "db" (rmdir /s /q "db")
 streamlit run app/app.py --server.headless True
