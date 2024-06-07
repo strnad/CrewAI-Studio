@@ -1,8 +1,9 @@
 crewai
 git+https://github.com/strnad/crewAI-tools.git
-langchain_openai
-langchain_groq
+langchain-openai
+langchain-groq
 langchain-google-genai
+langchain-huggingface
 langchain_community
 streamlit
 python-dotenv
