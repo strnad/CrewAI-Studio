@@ -5,8 +5,6 @@ import threading
 import ctypes
 import queue
 import time
-import os
-from dotenv import load_dotenv
 
 class PageCrewRun:
     def __init__(self):
