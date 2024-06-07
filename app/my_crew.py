@@ -38,7 +38,6 @@ class MyCrew:
     def get_crewai_crew(self, *args, **kwargs):
         crewai_agents = [agent.get_crewai_agent() for agent in self.agents]
         crewai_tasks = [task.get_crewai_task() for task in self.tasks]
-
         if self.manager_llm:
             return Crew(agents=crewai_agents, tasks=crewai_tasks, process=self.process, max_rpm=self.max_rpm, verbose=self.verbose, manager_llm=create_llm(self.manager_llm), memory=self.memory, *args, **kwargs)
         elif self.manager_agent:

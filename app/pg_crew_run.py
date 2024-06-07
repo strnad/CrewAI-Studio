@@ -98,12 +98,18 @@ class PageCrewRun:
     def control_buttons(self, selected_crew):
         if st.button('Run crew!', disabled=not selected_crew.is_valid() or ss.running):
             inputs = {key.split('_')[1]: value for key, value in ss.placeholders.items()}
-            ss.result = None
+            ss.result = None            
+            try:
+                crew = selected_crew.get_crewai_crew(full_output=True)
+            except Exception as e:
+                st.error(f"Error creating crew: {str(e)}")
+                return
+
             ss.running = True
             ss.crew_thread = threading.Thread(
                 target=self.run_crew,
                 kwargs={
-                    "crewai_crew": selected_crew.get_crewai_crew(full_output=True),
+                    "crewai_crew": crew,
                     "inputs": inputs,
                     "message_queue": ss.message_queue
                 }

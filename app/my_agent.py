@@ -34,6 +34,16 @@ class MyAgent:
 
     def get_crewai_agent(self):
         try:
+            llm = create_llm(self.llm_provider_model, temperature=self.temperature)
+        except Exception as e:
+            st.error(f"Error: agent llm could not be created. {str(e)}")
+            return None
+        try:
+            tools = [tool.create_tool() for tool in self.tools]
+        except Exception as e:
+            st.error(f"Error: agent tools could not be created. {str(e)}")
+            return None
+        try:
             return Agent(
                 role=self.role,
                 backstory=self.backstory,
@@ -42,8 +52,8 @@ class MyAgent:
                 verbose=self.verbose,
                 max_iter=self.max_iter,
                 cache=self.cache,
-                tools=[tool.create_tool() for tool in self.tools],
-                llm=create_llm(self.llm_provider_model, temperature=self.temperature)
+                tools=tools,
+                llm=llm
             )
         except Exception as e:
             st.error(f"Error: agent {self.role} could not be created. {str(e)}")
@@ -74,7 +84,6 @@ class MyAgent:
     def draw(self):
         self.validate_llm_provider_model()
         expander_title = f"{self.role[:60]} -{self.llm_provider_model.split(':')[1]}" if self.is_valid() else f"❗ {self.role[:20]} -{self.llm_provider_model.split(':')[1]}"
-        #expander_title = f"{self.role}" if self.is_valid() else f"❗ {self.role}"
         if self.edit:
             with st.expander(f"Agent: {self.role}", expanded=True):
                 with st.form(key=f'form_{self.id}'):
