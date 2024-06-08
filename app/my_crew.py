@@ -39,10 +39,10 @@ class MyCrew:
         crewai_agents = [agent.get_crewai_agent() for agent in self.agents]
         crewai_tasks = [task.get_crewai_task() for task in self.tasks]
         if self.manager_llm:
-            return Crew(agents=crewai_agents, tasks=crewai_tasks, process=self.process, max_rpm=self.max_rpm, verbose=self.verbose, manager_llm=create_llm(self.manager_llm), memory=self.memory, *args, **kwargs)
+            return Crew(agents=crewai_agents, tasks=crewai_tasks, cache=self.cache, process=self.process, max_rpm=self.max_rpm, verbose=self.verbose, manager_llm=create_llm(self.manager_llm), memory=self.memory, *args, **kwargs)
         elif self.manager_agent:
-            return Crew(agents=crewai_agents, tasks=crewai_tasks, process=self.process, max_rpm=self.max_rpm, verbose=self.verbose, manager_agent=self.manager_agent.get_crewai_agent(), memory=self.memory, *args, **kwargs)
-        return Crew(agents=crewai_agents, tasks=crewai_tasks, process=self.process, max_rpm=self.max_rpm, verbose=self.verbose, memory=self.memory, *args, **kwargs)
+            return Crew(agents=crewai_agents, tasks=crewai_tasks, cache=self.cache, process=self.process, max_rpm=self.max_rpm, verbose=self.verbose, manager_agent=self.manager_agent.get_crewai_agent(), memory=self.memory, *args, **kwargs)
+        return Crew(agents=crewai_agents, tasks=crewai_tasks, cache=self.cache, process=self.process, max_rpm=self.max_rpm, verbose=self.verbose, memory=self.memory, *args, **kwargs)
 
     def delete(self):
         ss.crews = [crew for crew in ss.crews if crew.id != self.id]
