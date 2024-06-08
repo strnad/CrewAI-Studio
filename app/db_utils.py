@@ -112,6 +112,7 @@ def save_task(task):
     data = {
         'description': task.description,
         'expected_output': task.expected_output,
+        'async_execution': task.async_execution,
         'agent_id': task.agent.id if task.agent else None,
         'created_at': task.created_at
     }
