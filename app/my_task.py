@@ -27,7 +27,7 @@ class MyTask:
 
     def get_crewai_task(self):
         try:
-            return Task(description=self.description, expected_output=self.expected_output, agent=self.agent.get_crewai_agent())
+            return Task(description=self.description, expected_output=self.expected_output, async_execution = self.async_execution, agent=self.agent.get_crewai_agent())
         except Exception as e:
             st.error(f"Error: task {self.description} could not be created. {str(e)}")
             return None
