@@ -4,6 +4,7 @@ import zipfile
 import os
 import re
 import db_utils
+from utils import escape_quotes
 from crewai_tools import (
     ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, DirectoryReadTool,
     CodeDocsSearchTool, YoutubeVideoSearchTool, SerperDevTool, YoutubeChannelSearchTool, WebsiteSearchTool
@@ -28,33 +29,22 @@ class PageExportCrew:
         tasks = crew.tasks
 
         def format_tool_instance(tool):
-            tool_map = {
-                'ScrapeWebsiteTool': ScrapeWebsiteTool,
-                'FileReadTool': FileReadTool,
-                'DirectorySearchTool': DirectorySearchTool,
-                'DirectoryReadTool': DirectoryReadTool,
-                'CodeDocsSearchTool': CodeDocsSearchTool,
-                'YoutubeVideoSearchTool': YoutubeVideoSearchTool,
-                'SerperDevTool': SerperDevTool,
-                'YoutubeChannelSearchTool': YoutubeChannelSearchTool,
-                'WebsiteSearchTool': WebsiteSearchTool
-            }
-            ToolClass = tool_map.get(tool.name)
+            ToolClass = tool.name
             if ToolClass:
                 params = ', '.join([f'{key}="{value}"' for key, value in tool.parameters.items() if value])
-                return f'{ToolClass.__name__}({params})' if params else f'{ToolClass.__name__}()'
+                return f'{ToolClass}({params})' if params else f'{ToolClass}()'
             return None
 
         agent_definitions = ",\n        ".join([
             f"""
 Agent(
-    role="{agent.role}",
-    backstory="{agent.backstory}",
-    goal="{agent.goal}",
+    role="{escape_quotes(agent.role)}",
+    backstory="{escape_quotes(agent.backstory)}",
+    goal="{escape_quotes(agent.goal)}",
     allow_delegation={str(agent.allow_delegation)},
     verbose={str(agent.verbose)},
     tools=[{', '.join([format_tool_instance(tool) for tool in agent.tools])}],
-    llm=create_llm("{agent.llm_provider_model.split(': ')[0]}", "{agent.llm_provider_model.split(': ')[1]}", {agent.temperature})
+    llm=create_llm("{agent.llm_provider_model}", {agent.temperature})
 )
             """
             for agent in agents
@@ -63,9 +53,10 @@ Agent(
         task_definitions = ",\n        ".join([
             f"""
 Task(
-    description="{task.description}",
-    expected_output="{task.expected_output}",
-    agent=next(agent for agent in agents if agent.role == "{task.agent.role}")
+    description="{escape_quotes(task.description)}",
+    expected_output="{escape_quotes(task.expected_output)}",
+    agent=next(agent for agent in agents if agent.role == "{task.agent.role}"),
+    async_execution={str(task.async_execution)}
 )
             """
             for task in tasks
@@ -89,33 +80,61 @@ from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
-from crewai_tools import (
-    ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, DirectoryReadTool,
-    CodeDocsSearchTool, YoutubeVideoSearchTool, SerperDevTool, YoutubeChannelSearchTool, WebsiteSearchTool
-)
+from crewai_tools import ScrapeElementFromWebsiteTool,TXTSearchTool,SeleniumScrapingTool,PGSearchTool,PDFSearchTool,MDXSearchTool,JSONSearchTool,GithubSearchTool,EXASearchTool,DOCXSearchTool,CSVSearchTool,ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, DirectoryReadTool, CodeDocsSearchTool, YoutubeVideoSearchTool,SerperDevTool,YoutubeChannelSearchTool,WebsiteSearchTool
 
 load_dotenv()
 
+def create_lmstudio_llm(model, temperature):
+    api_base = os.getenv('LMSTUDIO_API_BASE')
+    os.environ["OPENAI_API_KEY"] = "lm-studio"
+    os.environ["OPENAI_API_BASE"] = api_base
+    if api_base:
+        return ChatOpenAI(openai_api_key='lm-studio', openai_api_base=api_base, temperature=temperature)
+    else:
+        raise ValueError("LM Studio API base not set in .env file")
+
 def create_openai_llm(model, temperature):
+    safe_pop_env_var('OPENAI_API_KEY')
+    safe_pop_env_var('OPENAI_API_BASE')
+    load_dotenv(override=True)
     api_key = os.getenv('OPENAI_API_KEY')
     api_base = os.getenv('OPENAI_API_BASE', 'https://api.openai.com/v1/')
-    return ChatOpenAI(openai_api_key=api_key, openai_api_base=api_base, model_name=model, temperature=temperature)
+    if api_key:
+        return ChatOpenAI(openai_api_key=api_key, openai_api_base=api_base, model_name=model, temperature=temperature)
+    else:
+        raise ValueError("OpenAI API key not set in .env file")
 
 def create_groq_llm(model, temperature):
     api_key = os.getenv('GROQ_API_KEY')
-    return ChatGroq(groq_api_key=api_key, model_name=model, temperature=temperature)
-
+    if api_key:
+        return ChatGroq(groq_api_key=api_key, model_name=model, temperature=temperature)
+    else:
+        raise ValueError("Groq API key not set in .env file")
+        
+def safe_pop_env_var(key):
+    try:
+        os.environ.pop(key)
+    except KeyError:
+        pass
+        
 LLM_CONFIG = {{
     "OpenAI": {{
         "create_llm": create_openai_llm
     }},
     "Groq": {{
         "create_llm": create_groq_llm
+    }},
+    "LM Studio": {{
+        "create_llm": create_lmstudio_llm
     }}
 }}
 
-def create_llm(provider, model, temperature=0.1):
-    return LLM_CONFIG[provider]["create_llm"](model, temperature)
+def create_llm(provider_and_model, temperature=0.1):
+    provider, model = provider_and_model.split(": ")
+    create_llm_func = LLM_CONFIG.get(provider, {{}}).get("create_llm")
+    if create_llm_func:
+        return create_llm_func(model, temperature)
+
 
 def load_agents():
     agents = [
@@ -134,7 +153,17 @@ def main():
 
     agents = load_agents()
     tasks = load_tasks(agents)
-    crew = Crew(agents=agents, tasks=tasks, full_output=True, process="{crew.process}", verbose={crew.verbose}, {manager_llm_definition})
+    crew = Crew(
+        agents=agents, 
+        tasks=tasks, 
+        full_output=True, 
+        process="{crew.process}", 
+        verbose={crew.verbose}, 
+        memory={str(crew.memory)}, 
+        cache={str(crew.cache)}, 
+        max_rpm={crew.max_rpm},
+        {manager_llm_definition}
+    )
 
     {placeholder_inputs}
 
@@ -158,10 +187,11 @@ if __name__ == '__main__':
 
     def create_env_file(self, output_dir):
         env_content = """
-OPENAI_API_KEY=your_openai_api_key
-OPENAI_API_BASE=https://api.openai.com/v1/
-GROQ_API_KEY=your_groq_api_key
-LMSTUDIO_API_BASE=your_lmstudio_api_base
+# OPENAI_API_KEY="FILL-IN-YOUR-OPENAI-API-KEY"
+# OPENAI_API_BASE="OPTIONAL-FILL-IN-YOUR-OPENAI-API-KEY"
+# GROQ_API_KEY="FILL-IN-YOUR-GROQ_API_KEY"
+# LMSTUDIO_API_BASE="http://localhost:1234/v1"
+
 """
         with open(os.path.join(output_dir, '.env'), 'w') as f:
             f.write(env_content)
@@ -202,13 +232,54 @@ streamlit run app.py --server.headless True
             f.write(run_sh_content)
             os.chmod(os.path.join(output_dir, 'run.sh'), 0o755)
 
+        install_bat_content = """
+@echo off
+
+:: Create a virtual environment
+python -m venv venv || (
+    echo Failed to create venv
+    exit /b 1
+)
+
+:: Activate the virtual environment
+call venv\\Scripts\\activate || (
+    echo Failed to activate venv
+    exit /b 1
+)
+
+:: Install requirements
+pip install -r requirements.txt || (
+    echo Failed to install requirements
+    exit /b 1
+)
+
+echo Installation completed successfully.
+"""
+        with open(os.path.join(output_dir, 'install.bat'), 'w') as f:
+            f.write(install_bat_content)
+
+        run_bat_content = """
+@echo off
+
+:: Activate the virtual environment
+call venv\\Scripts\\activate || (
+    echo Failed to activate venv
+    exit /b 1
+)
+
+:: Run the Streamlit app
+streamlit run app.py --server.headless true
+"""
+        with open(os.path.join(output_dir, 'run.bat'), 'w') as f:
+            f.write(run_bat_content)
+
         requirements_txt_content = """
-streamlit
-crewai
-crewai[tools]
-langchain_openai
-langchain_groq
+git+https://github.com/strnad/crewAI.git
+git+https://github.com/strnad/crewAI-tools.git
+langchain-openai
+langchain-groq
 langchain_community
+streamlit
 python-dotenv
 """
         with open(os.path.join(output_dir, 'requirements.txt'), 'w') as f:
@@ -264,8 +335,8 @@ python-dotenv
             st.write("No crews defined yet.")
         else:
             crew_names = [crew.name for crew in ss.crews]
-            selected_crew_name = st.selectbox("Select crew to export as singlepage app (doesn't support tools yet)", crew_names)
-            if st.button("Export singlepage app", disabled=True, help="This feature is now broken and will be fixed soon."):
+            selected_crew_name = st.selectbox("Select crew to export as singlepage app", crew_names)
+            if st.button("Export singlepage app"):
                 zip_path = self.create_export(selected_crew_name)
                 with open(zip_path, "rb") as fp:
                     st.download_button(
@@ -274,16 +345,4 @@ python-dotenv
                         file_name=f"{selected_crew_name}_app.zip",
                         mime="application/zip"
                     )
-
-            # JSON Export Button
-            # if st.button("Export crew to json"):
-            #     file_path = f"{selected_crew_name}_crew.json"
-            #     db_utils.export_crew_to_json(selected_crew_name,file_path)
-            #     with open(file_path, "rb") as fp:
-            #         st.download_button(
-            #             label="Download Crew JSON",
-            #             data=fp,
-            #             file_name=file_path,
-            #             mime="application/json"
-            #         )
 
