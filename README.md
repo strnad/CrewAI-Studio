@@ -4,11 +4,12 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 
 ## Features
 
-- **Multi-platform support**: Works on Windows and Linux.
+- **Multi-platform support**: Works on Windows, Linux and MacOS.
 - **No coding required**: User-friendly interface for interacting with CrewAI.
 - **Conda and virtual environment support**: Choose between Conda and a Python virtual environment for installation.
 - **CrewAI tools** You can use crewai tools to interact with real world. (with crewAI-tools bugfix: RagTool based tools now handle post-creation passed parameters correctly [ #<49>](https://github.com/joaomdmoura/crewAI-tools/pull/49))
-- **API support**: Currently OpenAI, Groq, Google AI and LM Studio backends are supported. OpenAI is probably still needed for embeddings in many tools.
+- **API support**: Currently OpenAI, Groq, and LM Studio backends are supported. OpenAI key is probably still needed for embeddings in many tools.
+- **Single Page app export**: Feature to export crew as simple single page streamlit app.
 - **Threaded crew run**: Crews can run in background and can be stopped.
 
 ## Screenshots
@@ -22,7 +23,7 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 
 **For Virtual Environment**: Ensure you have Python installed. If you dont have python instaled, you can simply use the conda installer.
 
-#### On Linux
+#### On Linux or MacOS
 
 1. **Clone the repository (or use downloaded ZIP file)**:
 
@@ -105,19 +106,6 @@ Conda will be installed locally in the project folder. No need for a pre-existin
    ```powershell
    ./run_conda.bat
    ```
-
-If you do not have Git installed, you can download the repository as a ZIP file from the GitHub page and extract it.
-
-## About CrewAI
-
-CrewAI is a robust and flexible framework designed to facilitate the orchestration of autonomous AI agents. These agents can work together seamlessly, sharing goals and collaborating on tasks to achieve impressive results. Here are some key features of CrewAI:
-
-- **Collaborative Intelligence**: CrewAI excels in scenarios where multiple agents come together to form a "crew." This collaboration allows for the delegation of tasks and spontaneous assistance, mirroring real-world teamwork.
-- **Dynamic and Adaptable Processes**: The framework supports dynamic processes that can adapt to both development and production environments, making it versatile for various use cases.
-
-- **Open Source and Extensible**: CrewAI is open-source and encourages contributions from the community. It integrates well with various AI models and tools, offering extensive customization options for specific needs.
-
-- **Integration with LangChain**: Built on top of LangChain, CrewAI agents benefit from the extensive toolkits and tools provided by LangChain, enabling a wide range of functionalities out of the box.
 
 ## Configuration
 
