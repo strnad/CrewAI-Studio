@@ -48,7 +48,7 @@ class MyTask:
 
     def draw(self):
         agent_options = [agent.role for agent in ss.agents]
-        expander_title = f"Task: {self.description}" if self.is_valid() else f"❗ Task: {self.description}"
+        expander_title = f"{self.description}" if self.is_valid() else f"❗ {self.description}"
 
         if self.edit:
             with st.expander(expander_title, expanded=True):
