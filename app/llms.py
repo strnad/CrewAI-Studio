@@ -23,19 +23,19 @@ def create_groq_llm(model, temperature):
     else:
         raise ValueError("Groq API key not set in .env file")
     
-def create_googleai_llm(model, temperature):
-    api_key = os.getenv('GOOGLE_API_KEY')
-    if api_key:        
-         return ChatGoogleGenerativeAI(model=model, temperature=temperature)
-    else:
-        raise ValueError("Google AI API key not set in .env file")
+# def create_googleai_llm(model, temperature):
+#     api_key = os.getenv('GOOGLE_API_KEY')
+#     if api_key:        
+#          return ChatGoogleGenerativeAI(model=model, temperature=temperature)
+#     else:
+#         raise ValueError("Google AI API key not set in .env file")
 
-def create_huggingfacehub_llm(model, temperature):
-    api_key = os.getenv('HUGGINGFACEHUB_API_KEY')
-    if api_key:
-        return ChatHuggingFace(repo_id=model, huggingfacehub_api_token=api_key,  model_kwargs={"temperature":temperature, "max_tokens": 4096})
-    else:
-        raise ValueError("HuggingFace API key not set in .env file")
+# def create_huggingfacehub_llm(model, temperature):
+#     api_key = os.getenv('HUGGINGFACEHUB_API_KEY')
+#     if api_key:
+#         return ChatHuggingFace(repo_id=model, huggingfacehub_api_token=api_key,  model_kwargs={"temperature":temperature, "max_tokens": 4096})
+#     else:
+#         raise ValueError("HuggingFace API key not set in .env file")
 
 def create_lmstudio_llm(model, temperature):
     api_base = os.getenv('LMSTUDIO_API_BASE')
