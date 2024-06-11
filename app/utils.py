@@ -7,6 +7,9 @@ def rnd_id(length=8):
     random_text = ''.join(random.choice(characters) for _ in range(length))
     return random_text
 
+def escape_quotes(s):
+    return s.replace('"', '\\"').replace("'", "\\'")
+
 def fix_columns_width():
     markdown("""
             <style>
