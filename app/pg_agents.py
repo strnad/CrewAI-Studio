@@ -44,7 +44,7 @@ class PageAgents:
 
             # Display all agents
             with tab_objects[0]:
-                st.markdown("### All Agents")
+                st.markdown("#### All Agents")
                 for agent in ss.agents:
                     agent.draw()
                     if agent.edit:
@@ -53,7 +53,7 @@ class PageAgents:
 
             # Display unassigned agents
             with tab_objects[1]:
-                st.markdown("### Unassigned Agents")
+                st.markdown("#### Unassigned Agents")
                 unassigned_agents = [agent for agent in ss.agents if not agent_assignment[agent.id]]
                 for agent in unassigned_agents:
                     unique_key = f"{agent.id}_unassigned"
@@ -65,7 +65,7 @@ class PageAgents:
             # Display agents grouped by crew
             for i, crew in enumerate(ss.crews, 2):
                 with tab_objects[i]:
-                    st.markdown(f"### Crew: {crew.name}")
+                    st.markdown(f"#### {crew.name}")
                     assigned_agents = [agent for agent in crew.agents]
                     for agent in assigned_agents:
                         unique_key = f"{agent.id}_{crew.name}"

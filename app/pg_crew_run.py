@@ -90,7 +90,9 @@ class PageCrewRun:
         selected_crew = self.get_mycrew_by_name(ss.selected_crew_name)
 
         if selected_crew:
+            selected_crew.draw(expanded=True)
             self.draw_placeholders(selected_crew)
+            
             if not selected_crew.is_valid(show_warning=True):
                 st.error("Selected crew is not valid. Please fix the issues.")
             self.control_buttons(selected_crew)

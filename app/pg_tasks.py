@@ -44,7 +44,7 @@ class PageTasks:
 
             # Display all tasks
             with tab_objects[0]:
-                st.markdown("### All Tasks")
+                st.markdown("#### All Tasks")
                 for task in ss.tasks:
                     task.draw()
                     if task.edit:
@@ -53,7 +53,7 @@ class PageTasks:
 
             # Display unassigned tasks
             with tab_objects[1]:
-                st.markdown("### Unassigned Tasks")
+                st.markdown("#### Unassigned Tasks")
                 unassigned_tasks = [task for task in ss.tasks if not task_assignment[task.id]]
                 for task in unassigned_tasks:
                     unique_key = f"{task.id}_unasigned"
@@ -65,7 +65,7 @@ class PageTasks:
             # Display tasks grouped by crew
             for i, crew in enumerate(ss.crews, 2):
                 with tab_objects[i]:
-                    st.markdown(f"### Crew: {crew.name}")
+                    st.markdown(f"#### {crew.name}")
                     assigned_tasks = [task for task in crew.tasks]
                     for task in assigned_tasks:
                         unique_key = f"{task.id}_{crew.name}"

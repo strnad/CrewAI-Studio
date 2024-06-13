@@ -11,10 +11,10 @@ from dotenv import load_dotenv
 
 def pages():
     return {
-        'Agents': PageAgents(),
-        'Tasks': PageTasks(),
         'Crews': PageCrews(),
         'Tools': PageTools(),
+        'Agents': PageAgents(),
+        'Tasks': PageTasks(),
         'Kickoff!': PageCrewRun(),
         'Import/export': PageExportCrew()
     }
