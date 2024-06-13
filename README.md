@@ -10,8 +10,32 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 - **CrewAI tools** You can use crewai tools to interact with real world. (with crewAI-tools bugfix: RagTool based tools now handle post-creation passed parameters correctly [ #<49>](https://github.com/joaomdmoura/crewAI-tools/pull/49))
 - **\*NEW\* Custom Tools** Custom tools for calling APIs and for writing files. More will be added soon
 - **API support**: Currently OpenAI, Groq, and LM Studio backends are supported. OpenAI key is probably still needed for embeddings in many tools.
-- **Single Page app export**: Feature to export crew as simple single page streamlit app.
+- **Single Page app export**: Feature to export crew as simple single page streamlit app (doesn't support custom tools yet).
 - **Threaded crew run**: Crews can run in background and can be stopped.
+
+## Changelog (only important changes)
+
+**June 13, 2024**
+- **Redesigned Agents and Tasks Pages:** Introduced crew tabs for better organization.
+- **Task Overview Update:** Added assigned agent prefixes to tasks.
+
+**June 11, 2024**
+- **New Custom Tools:** Added `ApiTool` and rewrote `FileWriterTool`.
+
+**June 9, 2024**
+- **Async Tasks Support:** Enabled asynchronous task execution.
+
+**June 7, 2024**
+- **LLM Providers Update:** Disabled Google and HuggingFace due to threading issues.
+
+**June 6, 2024**
+- **Background Crew Execution:** Fixed bug in crewai-tools that prevented RagTool tools from using post-creation parameters.
+
+**June 5, 2024**
+- **Background Crew Execution:** Enabled crews to run in the background (separate thread).
+
+**May 30, 2024**
+- **Crew Export:** Initial commit
 
 ## Screenshots
 
