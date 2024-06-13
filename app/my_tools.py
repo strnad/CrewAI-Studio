@@ -2,8 +2,9 @@ import streamlit as st
 import os
 from utils import rnd_id
 from crewai_tools import ScrapeElementFromWebsiteTool,TXTSearchTool,SeleniumScrapingTool,PGSearchTool,PDFSearchTool,MDXSearchTool,JSONSearchTool,GithubSearchTool,EXASearchTool,DOCXSearchTool,CSVSearchTool,ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, DirectoryReadTool, CodeDocsSearchTool, YoutubeVideoSearchTool,SerperDevTool,YoutubeChannelSearchTool,WebsiteSearchTool
-from custom_tools import CustomFileWriteTool
+from custom_tools import CustomApiTool,CustomFileWriteTool
 from langchain_community.tools import YahooFinanceNewsTool
+import traceback
 
 class MyTool:
     def __init__(self, tool_id, name, description, parameters, **kwargs):
@@ -128,16 +129,6 @@ class MyWebsiteSearchTool(MyTool):
     def create_tool(self):
         return WebsiteSearchTool(self.parameters.get('website'))
    
-class MyCustomFileWriteTool(MyTool):
-    def __init__(self, tool_id=None, allowed_directory=None):
-        parameters = {'allowed_directory': {'mandatory': True}}
-        super().__init__(tool_id, 'CustomFileWriteTool', "Writes the provided text content to a specified file within the allowed directory.", parameters, allowed_directory=allowed_directory)
-
-    def create_tool(self):
-        allowed_directory = self.parameters.get('allowed_directory')
-        tool = CustomFileWriteTool(allowed_directory=allowed_directory)
-        return tool
-
 class MyCSVSearchTool(MyTool):
     def __init__(self, tool_id=None, csv=None):
         parameters = {
@@ -280,6 +271,42 @@ class MyYahooFinanceNewsTool(MyTool):
     def create_tool(self):
         return YahooFinanceNewsTool()
     
+class MyCustomApiTool(MyTool):
+    def __init__(self, tool_id=None, base_url=None, headers=None, query_params=None):
+        parameters = {
+            'base_url': {'mandatory': False},
+            'headers': {'mandatory': False},
+            'query_params': {'mandatory': False}
+        }
+        super().__init__(tool_id, 'CustomApiTool', "A tool that can be used to make API calls with customizable parameters.", parameters, base_url=base_url, headers=headers, query_params=query_params)
+
+    def create_tool(self):
+        try:
+            return CustomApiTool(
+                base_url=self.parameters.get('base_url'),
+                headers=eval(self.parameters.get('headers')),
+                query_params=self.parameters.get('query_params')
+            )
+        except Exception as e:
+            print(traceback.format_exc())
+
+class MyCustomFileWriteTool(MyTool):
+    def __init__(self, tool_id=None, base_folder=None, filename=None):
+        parameters = {
+            'base_folder': {'mandatory': True},
+            'filename': {'mandatory': False}
+        }
+        super().__init__(tool_id, 'CustomFileWriteTool', "A tool that can be used to write a file to a specific folder.", parameters,base_folder=base_folder, filename=filename)
+
+    def create_tool(self):
+        try:
+            return CustomFileWriteTool(
+                base_folder=self.parameters.get('base_folder'),
+                filename=self.parameters.get('filename')
+            )
+        except Exception as e:
+            print(traceback.format_exc())
+
 # Register all tools here
 TOOL_CLASSES = {
     'SerperDevTool': MySerperDevTool,
@@ -287,6 +314,7 @@ TOOL_CLASSES = {
     'ScrapeWebsiteTool': MyScrapeWebsiteTool,
     'SeleniumScrapingTool': MySeleniumScrapingTool,
     'ScrapeElementFromWebsiteTool': MyScrapeElementFromWebsiteTool,
+    'CustomApiTool': MyCustomApiTool,
 
     'FileReadTool': MyFileReadTool,
     'CustomFileWriteTool': MyCustomFileWriteTool,
