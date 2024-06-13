@@ -48,8 +48,8 @@ class MyTask:
 
     def draw(self):
         agent_options = [agent.role for agent in ss.agents]
-        expander_title = f"{self.description}" if self.is_valid() else f"❗ {self.description}"
-
+        #expander_title = f"{self.description}" if self.is_valid() else f"❗ {self.description}" #add agent role as prefix
+        expander_title = f"({self.agent.role if self.agent else 'unassigned'}) - {self.description}" if self.is_valid() else f"❗ ({self.agent.role if self.agent else 'unassigned'}) - {self.description}" #add agent role as prefix
         if self.edit:
             with st.expander(expander_title, expanded=True):
                 with st.form(key=f'form_{self.id}'):
