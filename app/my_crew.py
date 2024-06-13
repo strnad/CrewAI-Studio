@@ -122,7 +122,7 @@ class MyCrew:
         if self.manager_llm and self.manager_llm not in available_models:
             self.manager_llm = None
 
-    def draw(self,expanded=False):
+    def draw(self,expanded=False, buttons=True):
         self.validate_manager_llm()
         name_key = f"name_{self.id}"
         process_key = f"process_{self.id}"
@@ -135,8 +135,7 @@ class MyCrew:
         cache_key = f"cache_{self.id}"
         max_rpm_key = f"max_rpm_{self.id}"
 
-        expander_title = f"Crew: {self.name}" if self.is_valid() else f"❗ Crew: {self.name}"
-
+        
         if self.edit:
             with st.container(border=True):
                 st.text_input("Name (just id, it doesn't affect anything)", value=self.name, key=name_key, on_change=self.update_name)
@@ -150,11 +149,10 @@ class MyCrew:
                 st.checkbox("Cache", value=self.cache, key=cache_key, on_change=self.update_cache)
                 st.number_input("Max req/min", value=self.max_rpm, key=max_rpm_key, on_change=self.update_max_rpm)    
                 st.button("Save", on_click=self.set_editable, args=(False,), key=rnd_id())
-
         else:
             fix_columns_width()
+            expander_title = f"Crew: {self.name}" if self.is_valid() else f"❗ Crew: {self.name}"
             with st.expander(expander_title, expanded=expanded):
-                #st.markdown(f"**Name:** {self.name}")
                 st.markdown(f"**Process:** {self.process}")
                 st.markdown(f"**Verbosity:** {self.verbose}")
                 if self.process == Process.hierarchical:
@@ -172,18 +170,13 @@ class MyCrew:
                         tools_list = ", ".join([tool.name for tool in task.agent.tools]) if task.agent else "None"
                         st.markdown(f" **Tools:** {tools_list}")
                         st.markdown(f" **LLM:** {task.agent.llm_provider_model}")
-
-
-
-
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.button("Edit", on_click=self.set_editable, key=rnd_id(), args=(True,))
-                with col2:
-                    st.button("Delete", on_click=self.delete, key=rnd_id())
-
+                if buttons:
+                    col1, col2 = st.columns(2)
+                    with col1:                    
+                        st.button("Edit", on_click=self.set_editable, key=rnd_id(), args=(True,))
+                    with col2:                   
+                        st.button("Delete", on_click=self.delete, key=rnd_id())
                 self.is_valid(show_warning=True)
-
 
     def set_editable(self, edit):
         self.edit = edit
