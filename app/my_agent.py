@@ -68,7 +68,7 @@ class MyAgent:
         first_param_value = tool.parameters.get(first_param_name, '') if first_param_name else ''
         return f"{tool.name} ({first_param_value if first_param_value else tool.tool_id})"
 
-    def is_valid(self,show_warning=False):
+    def is_valid(self, show_warning=False):
         for tool in self.tools:
             if not tool.is_valid(show_warning=show_warning):
                 if show_warning:
@@ -81,12 +81,12 @@ class MyAgent:
         if self.llm_provider_model not in available_models:
             self.llm_provider_model = available_models[0]
 
-    def draw(self):
+    def draw(self, key=None):
         self.validate_llm_provider_model()
         expander_title = f"{self.role[:60]} -{self.llm_provider_model.split(':')[1]}" if self.is_valid() else f"❗ {self.role[:20]} -{self.llm_provider_model.split(':')[1]}"
         if self.edit:
             with st.expander(f"Agent: {self.role}", expanded=True):
-                with st.form(key=f'form_{self.id}'):
+                with st.form(key=f'form_{self.id}' if key is None else key):
                     self.role = st.text_input("Role", value=self.role)
                     self.backstory = st.text_area("Backstory", value=self.backstory)
                     self.goal = st.text_area("Goal", value=self.goal)
@@ -100,7 +100,8 @@ class MyAgent:
                     selected_tools = st.multiselect(
                         "Select Tools",
                         [self.get_tool_display_name(tool) for tool in enabled_tools],
-                        default=[self.get_tool_display_name(tool) for tool in self.tools]
+                        default=[self.get_tool_display_name(tool) for tool in self.tools],
+                        key=f"{self.id}_tools{key}"
                     )
                     submitted = st.form_submit_button("Save")
                     if submitted:
