@@ -114,6 +114,7 @@ def save_task(task):
         'expected_output': task.expected_output,
         'async_execution': task.async_execution,
         'agent_id': task.agent.id if task.agent else None,
+        'context_from_async_tasks_ids': task.context_from_async_tasks_ids,
         'created_at': task.created_at
     }
     save_entity('task', task.id, data)

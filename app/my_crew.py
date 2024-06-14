@@ -37,13 +37,64 @@ class MyCrew:
 
     def get_crewai_crew(self, *args, **kwargs):
         crewai_agents = [agent.get_crewai_agent() for agent in self.agents]
-        crewai_tasks = [task.get_crewai_task() for task in self.tasks if task.agent.id in [agent.id for agent in self.agents]]
-        if self.manager_llm:
-            return Crew(agents=crewai_agents, tasks=crewai_tasks, cache=self.cache, process=self.process, max_rpm=self.max_rpm, verbose=self.verbose, manager_llm=create_llm(self.manager_llm), memory=self.memory, *args, **kwargs)
-        elif self.manager_agent:
-            return Crew(agents=crewai_agents, tasks=crewai_tasks, cache=self.cache, process=self.process, max_rpm=self.max_rpm, verbose=self.verbose, manager_agent=self.manager_agent.get_crewai_agent(), memory=self.memory, *args, **kwargs)
-        return Crew(agents=crewai_agents, tasks=crewai_tasks, cache=self.cache, process=self.process, max_rpm=self.max_rpm, verbose=self.verbose, memory=self.memory, *args, **kwargs)
 
+        # Create a dictionary to hold the Task objects
+        task_objects = {}
+
+        # First pass: Create Task objects for async tasks without context
+        for task in self.tasks:
+            if task.async_execution:
+                crewai_task = task.get_crewai_task()
+                task_objects[task.id] = crewai_task
+
+        # Second pass: Create Task objects for non-async tasks and async tasks with context
+        for task in self.tasks:
+            if not task.async_execution or task.context_from_async_tasks_ids:
+                if task.context_from_async_tasks_ids:
+                    context_tasks = [task_objects[async_task_id] for async_task_id in task.context_from_async_tasks_ids]
+                    crewai_task_with_context = task.get_crewai_task(context_from_async_tasks=context_tasks)
+                    task_objects[task.id] = crewai_task_with_context
+                else:
+                    crewai_task = task.get_crewai_task()
+                    task_objects[task.id] = crewai_task
+
+        # Collect the final list of tasks
+        crewai_tasks = [task_objects[task.id] for task in self.tasks]
+
+        if self.manager_llm:
+            return Crew(
+                agents=crewai_agents,
+                tasks=crewai_tasks,
+                cache=self.cache,
+                process=self.process,
+                max_rpm=self.max_rpm,
+                verbose=self.verbose,
+                manager_llm=create_llm(self.manager_llm),
+                memory=self.memory,
+                *args, **kwargs
+            )
+        elif self.manager_agent:
+            return Crew(
+                agents=crewai_agents,
+                tasks=crewai_tasks,
+                cache=self.cache,
+                process=self.process,
+                max_rpm=self.max_rpm,
+                verbose=self.verbose,
+                manager_agent=self.manager_agent.get_crewai_agent(),
+                memory=self.memory,
+                *args, **kwargs
+            )
+        return Crew(
+            agents=crewai_agents,
+            tasks=crewai_tasks,
+            cache=self.cache,
+            process=self.process,
+            max_rpm=self.max_rpm,
+            verbose=self.verbose,
+            memory=self.memory,
+            *args, **kwargs
+        )
     def delete(self):
         ss.crews = [crew for crew in ss.crews if crew.id != self.id]
         db_utils.delete_crew(self.id)
