@@ -37,7 +37,7 @@ class MyCrew:
 
     def get_crewai_crew(self, *args, **kwargs):
         crewai_agents = [agent.get_crewai_agent() for agent in self.agents]
-        crewai_tasks = [task.get_crewai_task() for task in self.tasks]
+        crewai_tasks = [task.get_crewai_task() for task in self.tasks if task.agent.id in [agent.id for agent in self.agents]]
         if self.manager_llm:
             return Crew(agents=crewai_agents, tasks=crewai_tasks, cache=self.cache, process=self.process, max_rpm=self.max_rpm, verbose=self.verbose, manager_llm=create_llm(self.manager_llm), memory=self.memory, *args, **kwargs)
         elif self.manager_agent:
@@ -58,7 +58,7 @@ class MyCrew:
 
     def update_tasks(self):
         selected_tasks_ids = ss[f'tasks_{self.id}']
-        self.tasks = [task for task in ss.tasks if task.id in selected_tasks_ids]
+        self.tasks = [task for task in ss.tasks if task.id in selected_tasks_ids and task.agent.id in [agent.id for agent in self.agents]]
         self.tasks = sorted(self.tasks, key=lambda task: selected_tasks_ids.index(task.id))
         ss[self.tasks_order_key] = selected_tasks_ids
         db_utils.save_crew(self)
@@ -69,7 +69,7 @@ class MyCrew:
 
     def update_agents(self):
         selected_agents = ss[f'agents_{self.id}']
-        self.agents = [agent for agent in ss.agents if agent.role in selected_agents]
+        self.agents = [agent for agent in ss.agents if agent.role in selected_agents]        
         db_utils.save_crew(self)
 
     def update_manager_llm(self):
@@ -134,15 +134,18 @@ class MyCrew:
         memory_key = f"memory_{self.id}"
         cache_key = f"cache_{self.id}"
         max_rpm_key = f"max_rpm_{self.id}"
-
         
         if self.edit:
             with st.container(border=True):
                 st.text_input("Name (just id, it doesn't affect anything)", value=self.name, key=name_key, on_change=self.update_name)
                 st.selectbox("Process", options=[Process.sequential, Process.hierarchical], index=[Process.sequential, Process.hierarchical].index(self.process), key=process_key, on_change=self.update_process)
                 st.slider("Verbosity", min_value=0, max_value=2, value=self.verbose, key=verbose_key, on_change=self.update_verbose)
-                st.multiselect("Agents", options=[agent.role for agent in ss.agents], default=[agent.role for agent in self.agents], key=agents_key, on_change=self.update_agents)
-                st.multiselect("Tasks", options=[task.id for task in ss.tasks], default=[task.id for task in self.tasks], format_func=lambda x: next(task.description for task in ss.tasks if task.id == x), key=tasks_key, on_change=self.update_tasks)
+                st.multiselect("Agents", options=[agent.role for agent in ss.agents], default=[agent.role for agent in self.agents], key=agents_key, on_change=self.update_agents)                
+                # Filter tasks by selected agents
+                available_tasks = [task for task in ss.tasks if task.agent and task.agent.id in [agent.id for agent in self.agents]]
+                available_task_ids = [task.id for task in available_tasks]
+                default_task_ids = [task.id for task in self.tasks if task.id in available_task_ids]             
+                st.multiselect("Tasks", options=available_task_ids, default=default_task_ids, format_func=lambda x: next(task.description for task in ss.tasks if task.id == x), key=tasks_key, on_change=self.update_tasks)                
                 st.selectbox("Manager LLM", options=["None"] + llm_providers_and_models(), index=0 if self.manager_llm is None else llm_providers_and_models().index(self.manager_llm) + 1, key=manager_llm_key, on_change=self.update_manager_llm, disabled=(self.process != Process.hierarchical))
                 st.selectbox("Manager Agent", options=["None"] + [agent.role for agent in ss.agents], index=0 if self.manager_agent is None else [agent.role for agent in ss.agents].index(self.manager_agent.role) + 1, key=manager_agent_key, on_change=self.update_manager_agent, disabled=(self.process != Process.hierarchical))
                 st.checkbox("Memory", value=self.memory, key=memory_key, on_change=self.update_memory)
@@ -162,7 +165,7 @@ class MyCrew:
                 st.markdown(f"**Cache:** {self.cache}")
                 st.markdown(f"**Max req/min:** {self.max_rpm}")
                 st.markdown("**Tasks:**")
-                for i, task in enumerate(self.tasks, 1):
+                for i, task in enumerate([task for task in self.tasks if task.agent and task.agent.id in [agent.id for agent in self.agents]], 1):
                     with st.container(border=True):
                         async_tag = "(async)" if task.async_execution else ""
                         st.markdown(f"**{i}.{async_tag}  {task.description}**")
