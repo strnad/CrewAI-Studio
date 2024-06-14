@@ -32,7 +32,7 @@ def draw_sidebar():
         st.image("img/crewai_logo.png")
 
         if 'page' not in ss:
-            ss.page = 'Agents'
+            ss.page = 'Crews'
         
         selected_page = st.radio('Page', list(pages().keys()), index=list(pages().keys()).index(ss.page),label_visibility="collapsed")
         if selected_page != ss.page:
