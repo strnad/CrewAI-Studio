@@ -45,7 +45,7 @@ class MyScrapeWebsiteTool(MyTool):
         super().__init__(tool_id, 'ScrapeWebsiteTool', "A tool that can be used to read website content.", parameters, website_url=website_url)
 
     def create_tool(self):
-        return ScrapeWebsiteTool(self.parameters.get('website_url'))
+        return ScrapeWebsiteTool(self.parameters.get('website_url') if self.parameters.get('website_url') else None)
 
 class MyFileReadTool(MyTool):
     def __init__(self, tool_id=None, file_path=None):
@@ -55,7 +55,7 @@ class MyFileReadTool(MyTool):
         super().__init__(tool_id, 'FileReadTool', "A tool that can be used to read a file's content.", parameters, file_path=file_path)
 
     def create_tool(self):
-        return FileReadTool(self.parameters.get('file_path'))
+        return FileReadTool(self.parameters.get('file_path') if self.parameters.get('file_path') else None)
 
 class MyDirectorySearchTool(MyTool):
     def __init__(self, tool_id=None, directory=None):
@@ -65,7 +65,7 @@ class MyDirectorySearchTool(MyTool):
         super().__init__(tool_id, 'DirectorySearchTool', "A tool that can be used to semantic search a query from a directory's content.", parameters, directory_path=directory)
 
     def create_tool(self):
-        return DirectorySearchTool(self.parameters.get('directory'))
+        return DirectorySearchTool(self.parameters.get('directory') if self.parameters.get('directory') else None)
 
 class MyDirectoryReadTool(MyTool):
     def __init__(self, tool_id=None, directory_contents=None):
@@ -85,7 +85,7 @@ class MyCodeDocsSearchTool(MyTool):
         super().__init__(tool_id, 'CodeDocsSearchTool', "A tool that can be used to search through code documentation.", parameters, code_docs=code_docs)
 
     def create_tool(self):
-        return CodeDocsSearchTool(self.parameters.get('code_docs'))
+        return CodeDocsSearchTool(self.parameters.get('code_docs') if self.parameters.get('code_docs') else None)
 
 class MyYoutubeVideoSearchTool(MyTool):
     def __init__(self, tool_id=None, youtube_video_url=None):
@@ -95,7 +95,7 @@ class MyYoutubeVideoSearchTool(MyTool):
         super().__init__(tool_id, 'YoutubeVideoSearchTool', "A tool that can be used to semantic search a query from a Youtube Video content.", parameters, youtube_video_url=youtube_video_url)
 
     def create_tool(self):
-        return YoutubeVideoSearchTool(self.parameters.get('youtube_video_url'))
+        return YoutubeVideoSearchTool(self.parameters.get('youtube_video_url') if self.parameters.get('youtube_video_url') else None)
 
 class MySerperDevTool(MyTool):
     def __init__(self, tool_id=None, SERPER_API_KEY=None):
@@ -117,7 +117,7 @@ class MyYoutubeChannelSearchTool(MyTool):
         super().__init__(tool_id, 'YoutubeChannelSearchTool', "A tool that can be used to semantic search a query from a Youtube Channels content. Channel can be added as @channel", parameters, youtube_channel_handle=youtube_channel_handle)
 
     def create_tool(self):
-        return YoutubeChannelSearchTool(self.parameters.get('youtube_channel_handle'))
+        return YoutubeChannelSearchTool(self.parameters.get('youtube_channel_handle') if self.parameters.get('youtube_channel_handle') else None)
 
 class MyWebsiteSearchTool(MyTool):
     def __init__(self, tool_id=None, website=None):
@@ -127,7 +127,7 @@ class MyWebsiteSearchTool(MyTool):
         super().__init__(tool_id, 'WebsiteSearchTool', "A tool that can be used to semantic search a query from a specific URL content.", parameters, website=website)
 
     def create_tool(self):
-        return WebsiteSearchTool(self.parameters.get('website'))
+        return WebsiteSearchTool(self.parameters.get('website') if self.parameters.get('website') else None)
    
 class MyCSVSearchTool(MyTool):
     def __init__(self, tool_id=None, csv=None):
@@ -137,7 +137,7 @@ class MyCSVSearchTool(MyTool):
         super().__init__(tool_id, 'CSVSearchTool', "A tool that can be used to semantic search a query from a CSV's content.", parameters, csv=csv)
 
     def create_tool(self):
-        return CSVSearchTool(csv=self.parameters.get('csv'))
+        return CSVSearchTool(csv=self.parameters.get('csv') if self.parameters.get('csv') else None)
 
 class MyDocxSearchTool(MyTool):
     def __init__(self, tool_id=None, docx=None):
@@ -147,7 +147,7 @@ class MyDocxSearchTool(MyTool):
         super().__init__(tool_id, 'DOCXSearchTool', "A tool that can be used to semantic search a query from a DOCX's content.", parameters, docx=docx)
 
     def create_tool(self):
-        return DOCXSearchTool(docx=self.parameters.get('docx'))
+        return DOCXSearchTool(docx=self.parameters.get('docx') if self.parameters.get('docx') else None)
 
 class MyEXASearchTool(MyTool):
     def __init__(self, tool_id=None, EXA_API_KEY=None):
@@ -165,15 +165,15 @@ class MyGithubSearchTool(MyTool):
         parameters = {
             'github_repo': {'mandatory': False},
             'gh_token': {'mandatory': True},
-            'content_types': {'mandatory': True}
+            'content_types': {'mandatory': False}
         }
         super().__init__(tool_id, 'GithubSearchTool', "A tool that can be used to semantic search a query from a Github repository's content. Valid content_types: code,repo,pr,issue (comma sepparated)", parameters, github_repo=github_repo, gh_token=gh_token, content_types=content_types)
 
     def create_tool(self):
         return GithubSearchTool(
-            github_repo=self.parameters.get('github_repo'),
+            github_repo=self.parameters.get('github_repo') if self.parameters.get('github_repo') else None,
             gh_token=self.parameters.get('gh_token'),
-            content_types=self.parameters.get('search_query').split(","),
+            content_types=self.parameters.get('search_query').split(",") if self.parameters.get('search_query') else ["code", "repo", "pr", "issue"]
         )
 
 class MyJSONSearchTool(MyTool):
@@ -184,7 +184,7 @@ class MyJSONSearchTool(MyTool):
         super().__init__(tool_id, 'JSONSearchTool', "A tool that can be used to semantic search a query from a JSON's content.", parameters, json_path=json_path)
 
     def create_tool(self):
-        return JSONSearchTool(json_path=self.parameters.get('json_path'))
+        return JSONSearchTool(json_path=self.parameters.get('json_path') if self.parameters.get('json_path') else None)
 
 class MyMDXSearchTool(MyTool):
     def __init__(self, tool_id=None, mdx=None):
@@ -194,7 +194,7 @@ class MyMDXSearchTool(MyTool):
         super().__init__(tool_id, 'MDXSearchTool', "A tool that can be used to semantic search a query from a MDX's content.", parameters, mdx=mdx)
 
     def create_tool(self):
-        return MDXSearchTool(mdx=self.parameters.get('mdx'))
+        return MDXSearchTool(mdx=self.parameters.get('mdx') if self.parameters.get('mdx') else None)
     
 class MyPDFSearchTool(MyTool):
     def __init__(self, tool_id=None, pdf=None):
@@ -204,7 +204,7 @@ class MyPDFSearchTool(MyTool):
         super().__init__(tool_id, 'PDFSearchTool', "A tool that can be used to semantic search a query from a PDF's content.", parameters, pdf=pdf)
 
     def create_tool(self):
-        return PDFSearchTool(self.parameters.get('pdf'))
+        return PDFSearchTool(self.parameters.get('pdf') if self.parameters.get('pdf') else None)
 
 class MyPGSearchTool(MyTool):
     def __init__(self, tool_id=None, db_uri=None):
@@ -224,16 +224,24 @@ class MySeleniumScrapingTool(MyTool):
             'cookie': {'mandatory': False},
             'wait_time': {'mandatory': False}
         }
-        super().__init__(tool_id, 'SeleniumScrapingTool', "A tool that can be used to read a specific part of website content.", parameters, website_url=website_url, css_element=css_element, cookie=cookie, wait_time=wait_time)
-
+        super().__init__(
+            tool_id, 
+            'SeleniumScrapingTool', 
+            "A tool that can be used to read a specific part of website content. CSS elements are separated by comma, cookies are in format {key1\:value1},{key2\:value2}", 
+            parameters, 
+            website_url=website_url, 
+            css_element=css_element, 
+            cookie=cookie, 
+            wait_time=wait_time
+)
     def create_tool(self):
-        cookie_arrayofdicts = [{k: v} for k, v in (item.strip('{}').split(':') for item in self.parameters.get('cookie').split(','))],
+        cookie_arrayofdicts = [{k: v} for k, v in (item.strip('{}').split(':') for item in self.parameters.get('cookie', '').split(','))] if self.parameters.get('cookie') else None
 
         return SeleniumScrapingTool(
-            website_url=self.parameters.get('website_url'),
-            css_element=self.parameters.get('css_element').split(","),
+            website_url=self.parameters.get('website_url') if self.parameters.get('website_url') else None,
+            css_element=self.parameters.get('css_element').split(',') if self.parameters.get('css_element') else None,
             cookie=cookie_arrayofdicts,
-            wait_time=self.parameters.get('wait_time')
+            wait_time=self.parameters.get('wait_time') if self.parameters.get('wait_time') else 10
         )
 
 class MyTXTSearchTool(MyTool):
@@ -253,13 +261,21 @@ class MyScrapeElementFromWebsiteTool(MyTool):
             'css_element': {'mandatory': False},
             'cookie': {'mandatory': False}
         }
-        super().__init__(tool_id, 'ScrapeElementFromWebsiteTool', "A tool that can be used to read a specific part of website content.", parameters, website_url=website_url, css_element=css_element, cookie=cookie)
+        super().__init__(
+            tool_id, 
+            'ScrapeElementFromWebsiteTool', 
+            "A tool that can be used to read a specific part of website content. CSS elements are separated by comma, cookies are in format {key1\:value1},{key2\:value2}", 
+            parameters, 
+            website_url=website_url, 
+            css_element=css_element, 
+            cookie=cookie
+        )
 
     def create_tool(self):
-        cookie_arrayofdicts = [{k: v} for k, v in (item.strip('{}').split(':') for item in self.parameters.get('cookie').split(','))],
+        cookie_arrayofdicts = [{k: v} for k, v in (item.strip('{}').split(':') for item in self.parameters.get('cookie', '').split(','))] if self.parameters.get('cookie') else None
         return ScrapeElementFromWebsiteTool(
-            website_url=self.parameters.get('website_url'),
-            css_element=self.parameters.get('css_element').split(","),
+            website_url=self.parameters.get('website_url') if self.parameters.get('website_url') else None,
+            css_element=self.parameters.get('css_element').split(",") if self.parameters.get('css_element') else None,
             cookie=cookie_arrayofdicts
         )
     
@@ -283,9 +299,9 @@ class MyCustomApiTool(MyTool):
     def create_tool(self):
         try:
             return CustomApiTool(
-                base_url=self.parameters.get('base_url'),
-                headers=eval(self.parameters.get('headers')),
-                query_params=self.parameters.get('query_params')
+                base_url=self.parameters.get('base_url') if self.parameters.get('base_url') else None,
+                headers=eval(self.parameters.get('headers')) if self.parameters.get('headers') else None,
+                query_params=self.parameters.get('query_params') if self.parameters.get('query_params') else None
             )
         except Exception as e:
             print(traceback.format_exc())
@@ -302,7 +318,7 @@ class MyCustomFileWriteTool(MyTool):
         try:
             return CustomFileWriteTool(
                 base_folder=self.parameters.get('base_folder'),
-                filename=self.parameters.get('filename')
+                filename=self.parameters.get('filename') if self.parameters.get('filename') else None
             )
         except Exception as e:
             print(traceback.format_exc())
