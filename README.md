@@ -145,3 +145,7 @@ Conda will be installed locally in the project folder. No need for a pre-existin
 ## Configuration
 
 Before running the application, ensure you update the `.env` file with your API keys and other necessary configurations. An example `.env` file is provided for reference.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=strnad/CrewAI-Studio&type=Date)](https://star-history.com/#strnad/CrewAI-Studio&Date)
