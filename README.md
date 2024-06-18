@@ -13,6 +13,16 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 - **Single Page app export**: Feature to export crew as simple single page streamlit app (doesn't support custom tools yet).
 - **Threaded crew run**: Crews can run in background and can be stopped.
 
+## Roadmap
+
+- **Better import/export**
+- **Human input**
+- **Chat**
+- **Automatic creation of crews**
+- **Add more LLM backends**
+- **Add more custom tools**
+- **Multiuser environment**
+
 ## Changelog (only important changes)
 
 **June 13, 2024**
