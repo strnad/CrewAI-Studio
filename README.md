@@ -148,4 +148,10 @@ Before running the application, ensure you update the `.env` file with your API 
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=strnad/CrewAI-Studio&type=Date)](https://star-history.com/#strnad/CrewAI-Studio&Date)
+<a href="https://star-history.com/#strnad/CrewAI-Studio&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=strnad/CrewAI-Studio&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=strnad/CrewAI-Studio&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=strnad/CrewAI-Studio&type=Date" />
+ </picture>
+</a>
