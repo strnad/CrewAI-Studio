@@ -1,4 +1,4 @@
-git+https://github.com/strnad/crewAI.git
+git+github.com/joaomdmoura/crewAI
 git+https://github.com/strnad/crewAI-tools.git
 langchain-openai
 langchain-groq
