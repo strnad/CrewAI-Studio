@@ -95,7 +95,7 @@ class MyAgent:
                     self.cache = st.checkbox("Cache", value=self.cache)
                     self.llm_provider_model = st.selectbox("LLM Provider and Model", options=llm_providers_and_models(), index=llm_providers_and_models().index(self.llm_provider_model))
                     self.temperature = st.slider("Temperature", value=self.temperature, min_value=0.0, max_value=1.0)
-                    self.max_iter = st.number_input("Max Iterations", value=self.max_iter, min_value=1, max_value=50)
+                    self.max_iter = st.number_input("Max Iterations", value=self.max_iter, min_value=1, max_value=100)
                     enabled_tools = [tool for tool in ss.tools]
                     selected_tools = st.multiselect(
                         "Select Tools",
