@@ -25,6 +25,10 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 
 ## Changelog (only important changes)
 
+**June 27, 2024**
+- **New models:** Anthropic Claude 3.5 Sonnet support .
+- **New tasks:** Code interpreter tool.
+
 **June 13, 2024**
 - **Redesigned Agents and Tasks Pages:** Introduced crew tabs for better organization.
 - **Task Overview Update:** Added assigned agent prefixes to tasks.
