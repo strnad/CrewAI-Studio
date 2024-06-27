@@ -6,6 +6,18 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 # Path to your Miniconda installation
 CONDA_PATH="$SCRIPT_DIR/miniconda"
 
+# Function to prompt the user for yes/no response
+prompt_yes_no() {
+    while true; do
+        read -p "$1 (y/n): " yn
+        case $yn in
+            [Yy]* ) return 0;;
+            [Nn]* ) return 1;;
+            * ) echo "Please answer yes (y) or no (n).";;
+        esac
+    done
+}
+
 # Check if Miniconda is already installed
 if [ ! -d "$CONDA_PATH" ]; then
     # Download Miniconda installer
@@ -28,15 +40,29 @@ else
     exit 1
 fi
 
-# Remove the existing environment if it exists
-conda remove --name crewai --all -y
+# Prompt to remove the existing environment if it exists
+if conda info --envs | grep -q 'crewai'; then
+    if prompt_yes_no "The Conda environment 'crewai' already exists. Do you want to reinstall it?"; then
+        echo "Removing existing Conda environment..."
+        conda remove --name crewai --all -y || { echo "Failed to remove existing Conda environment"; exit 1; }
+    else
+        echo "Installation canceled."
+        exit 0
+    fi
+fi
 
 # Create a new environment
-conda create -n crewai python=3.11 -y
+conda create -n crewai python=3.11 -y || { echo "Failed to create Conda environment"; exit 1; }
+
+# Prompt for cache usage
+USE_CACHE="--no-cache"
+if prompt_yes_no "Do you want to use the cache for pip installation?"; then
+    USE_CACHE=""
+fi
 
 # Ensure the environment is activated and install the necessary packages
-conda run -n crewai conda install -y packaging
-conda run -n crewai pip install -r requirements.txt
+conda run -n crewai conda install -y packaging || { echo "Failed to install Conda packages"; exit 1; }
+conda run -n crewai pip install -r requirements.txt $USE_CACHE || { echo "Failed to install requirements"; exit 1; }
 
 # Create the data folder if it doesn't exist
 DATA_DIR="$SCRIPT_DIR/data"
@@ -48,5 +74,4 @@ if [ ! -f "$SCRIPT_DIR/.env" ]; then
     cp "$SCRIPT_DIR/.env_example" "$SCRIPT_DIR/.env"
 fi
 
-# There is no datamodel.py file to patch in this project
-echo "Installation completed successfully. Do not forget to update the .env file with your credentials. Then run run_conda.sh to start the app"
+echo "Installation completed successfully. Do not forget to update the .env file with your credentials. Then run run_conda.sh to start the app."
