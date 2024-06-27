@@ -3,5 +3,6 @@ git+https://github.com/strnad/crewAI-tools.git
 langchain-openai
 langchain-groq
 langchain_community
+langchain-anthropic
 streamlit
 python-dotenv

@@ -1,7 +1,9 @@
 import os
 from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
-# from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_anthropic import ChatAnthropic
+
+#from langchain_google_genai import ChatGoogleGenerativeAI
 # from langchain_huggingface import ChatHuggingFace
 from dotenv import load_dotenv
 
@@ -12,14 +14,21 @@ def create_openai_llm(model, temperature):
     api_key = os.getenv('OPENAI_API_KEY')
     api_base = os.getenv('OPENAI_API_BASE', 'https://api.openai.com/v1/')
     if api_key:
-        return ChatOpenAI(openai_api_key=api_key, openai_api_base=api_base, model_name=model, temperature=temperature)
+        return ChatOpenAI(openai_api_key=api_key, openai_api_base=api_base, model_name=model, temperature=temperature, max_tokens=4096)
     else:
         raise ValueError("OpenAI API key not set in .env file")
+
+def create_anthropic_llm(model, temperature):
+    api_key = os.getenv('ANTHROPIC_API_KEY')
+    if api_key:
+        return ChatAnthropic(anthropic_api_key=api_key, model_name=model, temperature=temperature,max_tokens=4096)
+    else:
+        raise ValueError("Anthropic API key not set in .env file")
 
 def create_groq_llm(model, temperature):
     api_key = os.getenv('GROQ_API_KEY')
     if api_key:
-        return ChatGroq(groq_api_key=api_key, model_name=model, temperature=temperature)
+        return ChatGroq(groq_api_key=api_key, model_name=model, temperature=temperature, max_tokens=4096)
     else:
         raise ValueError("Groq API key not set in .env file")
     
@@ -42,7 +51,7 @@ def create_lmstudio_llm(model, temperature):
     os.environ["OPENAI_API_KEY"] = "lm-studio"
     os.environ["OPENAI_API_BASE"] = api_base
     if api_base:
-        return ChatOpenAI(openai_api_key='lm-studio', openai_api_base=api_base, temperature=temperature)
+        return ChatOpenAI(openai_api_key='lm-studio', openai_api_base=api_base, temperature=temperature, max_tokens=4096)
     else:
         raise ValueError("LM Studio API base not set in .env file")
 
@@ -63,6 +72,10 @@ LLM_CONFIG = {
     #     "models": ["mistralai/Mistral-7B-Instruct-v0.2", "mistralai/Codestral-22B-v0.1", "EleutherAI/gpt-neo-2.7B"],
     #     "create_llm": create_huggingfacehub_llm
     # },
+    "Anthropic": {
+        "models": ["claude-3-5-sonnet-20240620"],
+        "create_llm": create_anthropic_llm
+    },
     "LM Studio": {
         "models": ["lms-default"],
         "create_llm": create_lmstudio_llm
