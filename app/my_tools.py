@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 from utils import rnd_id
-from crewai_tools import ScrapeElementFromWebsiteTool,TXTSearchTool,SeleniumScrapingTool,PGSearchTool,PDFSearchTool,MDXSearchTool,JSONSearchTool,GithubSearchTool,EXASearchTool,DOCXSearchTool,CSVSearchTool,ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, DirectoryReadTool, CodeDocsSearchTool, YoutubeVideoSearchTool,SerperDevTool,YoutubeChannelSearchTool,WebsiteSearchTool
+from crewai_tools import CodeInterpreterTool,ScrapeElementFromWebsiteTool,TXTSearchTool,SeleniumScrapingTool,PGSearchTool,PDFSearchTool,MDXSearchTool,JSONSearchTool,GithubSearchTool,EXASearchTool,DOCXSearchTool,CSVSearchTool,ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, DirectoryReadTool, CodeDocsSearchTool, YoutubeVideoSearchTool,SerperDevTool,YoutubeChannelSearchTool,WebsiteSearchTool
 from custom_tools import CustomApiTool,CustomFileWriteTool
 from langchain_community.tools import YahooFinanceNewsTool
 import traceback
@@ -44,7 +44,7 @@ class MyScrapeWebsiteTool(MyTool):
         }
         super().__init__(tool_id, 'ScrapeWebsiteTool', "A tool that can be used to read website content.", parameters, website_url=website_url)
 
-    def create_tool(self):
+    def create_tool(self) -> ScrapeWebsiteTool:
         return ScrapeWebsiteTool(self.parameters.get('website_url') if self.parameters.get('website_url') else None)
 
 class MyFileReadTool(MyTool):
@@ -54,7 +54,7 @@ class MyFileReadTool(MyTool):
         }
         super().__init__(tool_id, 'FileReadTool', "A tool that can be used to read a file's content.", parameters, file_path=file_path)
 
-    def create_tool(self):
+    def create_tool(self) -> FileReadTool:
         return FileReadTool(self.parameters.get('file_path') if self.parameters.get('file_path') else None)
 
 class MyDirectorySearchTool(MyTool):
@@ -64,7 +64,7 @@ class MyDirectorySearchTool(MyTool):
         }
         super().__init__(tool_id, 'DirectorySearchTool', "A tool that can be used to semantic search a query from a directory's content.", parameters, directory_path=directory)
 
-    def create_tool(self):
+    def create_tool(self) -> DirectorySearchTool:
         return DirectorySearchTool(self.parameters.get('directory') if self.parameters.get('directory') else None)
 
 class MyDirectoryReadTool(MyTool):
@@ -74,7 +74,7 @@ class MyDirectoryReadTool(MyTool):
         }
         super().__init__(tool_id, 'DirectoryReadTool', "Use the tool to list the contents of the specified directory", parameters, directory_contents=directory_contents)
 
-    def create_tool(self):
+    def create_tool(self) -> DirectoryReadTool:
         return DirectoryReadTool(self.parameters.get('directory_contents'))
 
 class MyCodeDocsSearchTool(MyTool):
@@ -84,7 +84,7 @@ class MyCodeDocsSearchTool(MyTool):
         }
         super().__init__(tool_id, 'CodeDocsSearchTool', "A tool that can be used to search through code documentation.", parameters, code_docs=code_docs)
 
-    def create_tool(self):
+    def create_tool(self) -> CodeDocsSearchTool:
         return CodeDocsSearchTool(self.parameters.get('code_docs') if self.parameters.get('code_docs') else None)
 
 class MyYoutubeVideoSearchTool(MyTool):
@@ -94,7 +94,7 @@ class MyYoutubeVideoSearchTool(MyTool):
         }
         super().__init__(tool_id, 'YoutubeVideoSearchTool', "A tool that can be used to semantic search a query from a Youtube Video content.", parameters, youtube_video_url=youtube_video_url)
 
-    def create_tool(self):
+    def create_tool(self) -> YoutubeVideoSearchTool:
         return YoutubeVideoSearchTool(self.parameters.get('youtube_video_url') if self.parameters.get('youtube_video_url') else None)
 
 class MySerperDevTool(MyTool):
@@ -105,7 +105,7 @@ class MySerperDevTool(MyTool):
 
         super().__init__(tool_id, 'SerperDevTool', "A tool that can be used to search the internet with a search_query", parameters)
 
-    def create_tool(self):
+    def create_tool(self) -> SerperDevTool:
         os.environ['SERPER_API_KEY'] = self.parameters.get('SERPER_API_KEY')
         return SerperDevTool()
     
@@ -116,7 +116,7 @@ class MyYoutubeChannelSearchTool(MyTool):
         }
         super().__init__(tool_id, 'YoutubeChannelSearchTool', "A tool that can be used to semantic search a query from a Youtube Channels content. Channel can be added as @channel", parameters, youtube_channel_handle=youtube_channel_handle)
 
-    def create_tool(self):
+    def create_tool(self) -> YoutubeChannelSearchTool:
         return YoutubeChannelSearchTool(self.parameters.get('youtube_channel_handle') if self.parameters.get('youtube_channel_handle') else None)
 
 class MyWebsiteSearchTool(MyTool):
@@ -126,7 +126,7 @@ class MyWebsiteSearchTool(MyTool):
         }
         super().__init__(tool_id, 'WebsiteSearchTool', "A tool that can be used to semantic search a query from a specific URL content.", parameters, website=website)
 
-    def create_tool(self):
+    def create_tool(self) -> WebsiteSearchTool:
         return WebsiteSearchTool(self.parameters.get('website') if self.parameters.get('website') else None)
    
 class MyCSVSearchTool(MyTool):
@@ -136,7 +136,7 @@ class MyCSVSearchTool(MyTool):
         }
         super().__init__(tool_id, 'CSVSearchTool', "A tool that can be used to semantic search a query from a CSV's content.", parameters, csv=csv)
 
-    def create_tool(self):
+    def create_tool(self) -> CSVSearchTool:
         return CSVSearchTool(csv=self.parameters.get('csv') if self.parameters.get('csv') else None)
 
 class MyDocxSearchTool(MyTool):
@@ -146,7 +146,7 @@ class MyDocxSearchTool(MyTool):
         }
         super().__init__(tool_id, 'DOCXSearchTool', "A tool that can be used to semantic search a query from a DOCX's content.", parameters, docx=docx)
 
-    def create_tool(self):
+    def create_tool(self) -> DOCXSearchTool:
         return DOCXSearchTool(docx=self.parameters.get('docx') if self.parameters.get('docx') else None)
 
 class MyEXASearchTool(MyTool):
@@ -156,7 +156,7 @@ class MyEXASearchTool(MyTool):
         }
         super().__init__(tool_id, 'EXASearchTool', "A tool that can be used to search the internet from a search_query", parameters, EXA_API_KEY=EXA_API_KEY)
 
-    def create_tool(self):
+    def create_tool(self) -> EXASearchTool:
         os.environ['EXA_API_KEY'] = self.parameters.get('EXA_API_KEY')
         return EXASearchTool()
 
@@ -169,7 +169,7 @@ class MyGithubSearchTool(MyTool):
         }
         super().__init__(tool_id, 'GithubSearchTool', "A tool that can be used to semantic search a query from a Github repository's content. Valid content_types: code,repo,pr,issue (comma sepparated)", parameters, github_repo=github_repo, gh_token=gh_token, content_types=content_types)
 
-    def create_tool(self):
+    def create_tool(self) -> GithubSearchTool:
         return GithubSearchTool(
             github_repo=self.parameters.get('github_repo') if self.parameters.get('github_repo') else None,
             gh_token=self.parameters.get('gh_token'),
@@ -183,7 +183,7 @@ class MyJSONSearchTool(MyTool):
         }
         super().__init__(tool_id, 'JSONSearchTool', "A tool that can be used to semantic search a query from a JSON's content.", parameters, json_path=json_path)
 
-    def create_tool(self):
+    def create_tool(self) -> JSONSearchTool:
         return JSONSearchTool(json_path=self.parameters.get('json_path') if self.parameters.get('json_path') else None)
 
 class MyMDXSearchTool(MyTool):
@@ -193,7 +193,7 @@ class MyMDXSearchTool(MyTool):
         }
         super().__init__(tool_id, 'MDXSearchTool', "A tool that can be used to semantic search a query from a MDX's content.", parameters, mdx=mdx)
 
-    def create_tool(self):
+    def create_tool(self) -> MDXSearchTool:
         return MDXSearchTool(mdx=self.parameters.get('mdx') if self.parameters.get('mdx') else None)
     
 class MyPDFSearchTool(MyTool):
@@ -203,7 +203,7 @@ class MyPDFSearchTool(MyTool):
         }
         super().__init__(tool_id, 'PDFSearchTool', "A tool that can be used to semantic search a query from a PDF's content.", parameters, pdf=pdf)
 
-    def create_tool(self):
+    def create_tool(self) -> PDFSearchTool:
         return PDFSearchTool(self.parameters.get('pdf') if self.parameters.get('pdf') else None)
 
 class MyPGSearchTool(MyTool):
@@ -213,7 +213,7 @@ class MyPGSearchTool(MyTool):
         }
         super().__init__(tool_id, 'PGSearchTool', "A tool that can be used to semantic search a query from a database table's content.", parameters, db_uri=db_uri)
 
-    def create_tool(self):
+    def create_tool(self) -> PGSearchTool:
         return PGSearchTool(self.parameters.get('db_uri'))
 
 class MySeleniumScrapingTool(MyTool):
@@ -234,7 +234,7 @@ class MySeleniumScrapingTool(MyTool):
             cookie=cookie, 
             wait_time=wait_time
 )
-    def create_tool(self):
+    def create_tool(self) -> SeleniumScrapingTool:
         cookie_arrayofdicts = [{k: v} for k, v in (item.strip('{}').split(':') for item in self.parameters.get('cookie', '').split(','))] if self.parameters.get('cookie') else None
 
         return SeleniumScrapingTool(
@@ -251,7 +251,7 @@ class MyTXTSearchTool(MyTool):
         }
         super().__init__(tool_id, 'TXTSearchTool', "A tool that can be used to semantic search a query from a TXT's content.", parameters, txt=txt)
 
-    def create_tool(self):
+    def create_tool(self) -> TXTSearchTool:
         return TXTSearchTool(self.parameters.get('txt'))
 
 class MyScrapeElementFromWebsiteTool(MyTool):
@@ -271,7 +271,7 @@ class MyScrapeElementFromWebsiteTool(MyTool):
             cookie=cookie
         )
 
-    def create_tool(self):
+    def create_tool(self) -> ScrapeElementFromWebsiteTool:
         cookie_arrayofdicts = [{k: v} for k, v in (item.strip('{}').split(':') for item in self.parameters.get('cookie', '').split(','))] if self.parameters.get('cookie') else None
         return ScrapeElementFromWebsiteTool(
             website_url=self.parameters.get('website_url') if self.parameters.get('website_url') else None,
@@ -284,7 +284,7 @@ class MyYahooFinanceNewsTool(MyTool):
         parameters = {}
         super().__init__(tool_id, 'YahooFinanceNewsTool', "A tool that can be used to search Yahoo Finance News.", parameters)
 
-    def create_tool(self):
+    def create_tool(self) -> YahooFinanceNewsTool:
         return YahooFinanceNewsTool()
     
 class MyCustomApiTool(MyTool):
@@ -296,7 +296,7 @@ class MyCustomApiTool(MyTool):
         }
         super().__init__(tool_id, 'CustomApiTool', "A tool that can be used to make API calls with customizable parameters.", parameters, base_url=base_url, headers=headers, query_params=query_params)
 
-    def create_tool(self):
+    def create_tool(self) -> CustomApiTool:
         try:
             return CustomApiTool(
                 base_url=self.parameters.get('base_url') if self.parameters.get('base_url') else None,
@@ -314,7 +314,7 @@ class MyCustomFileWriteTool(MyTool):
         }
         super().__init__(tool_id, 'CustomFileWriteTool', "A tool that can be used to write a file to a specific folder.", parameters,base_folder=base_folder, filename=filename)
 
-    def create_tool(self):
+    def create_tool(self) -> CustomFileWriteTool:
         try:
             return CustomFileWriteTool(
                 base_folder=self.parameters.get('base_folder'),
@@ -322,6 +322,14 @@ class MyCustomFileWriteTool(MyTool):
             )
         except Exception as e:
             print(traceback.format_exc())
+
+class MyCodeInterpreterTool(MyTool):
+    def __init__(self, tool_id=None):
+        parameters = {}
+        super().__init__(tool_id, 'CodeInterpreterTool', "A tool that can be used to interpret code.", parameters)
+
+    def create_tool(self) -> CodeInterpreterTool:
+        return CodeInterpreterTool()
 
 # Register all tools here
 TOOL_CLASSES = {
@@ -331,7 +339,7 @@ TOOL_CLASSES = {
     'SeleniumScrapingTool': MySeleniumScrapingTool,
     'ScrapeElementFromWebsiteTool': MyScrapeElementFromWebsiteTool,
     'CustomApiTool': MyCustomApiTool,
-
+    'CodeInterpreterTool': MyCodeInterpreterTool,
     'FileReadTool': MyFileReadTool,
     'CustomFileWriteTool': MyCustomFileWriteTool,
     'DirectorySearchTool': MyDirectorySearchTool,

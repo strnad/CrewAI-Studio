@@ -32,7 +32,7 @@ class MyAgent:
     def edit(self, value):
         ss[self.edit_key] = value
 
-    def get_crewai_agent(self):
+    def get_crewai_agent(self) -> Agent:
         try:
             llm = create_llm(self.llm_provider_model, temperature=self.temperature)
         except Exception as e:

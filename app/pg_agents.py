@@ -10,7 +10,7 @@ class PageAgents:
     def create_agent(self, crew=None):
         agent = MyAgent()
         if 'agents' not in ss:
-            ss.agents = []
+            ss.agents = [MyAgent]
         ss.agents.append(agent)
         agent.edit = True
         db_utils.save_agent(agent)  # Save agent to database

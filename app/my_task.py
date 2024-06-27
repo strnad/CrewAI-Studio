@@ -26,7 +26,7 @@ class MyTask:
     def edit(self, value):
         ss[self.edit_key] = value
 
-    def get_crewai_task(self, context_from_async_tasks=None):
+    def get_crewai_task(self, context_from_async_tasks=None) -> Task:
         try:
             if context_from_async_tasks:
                 return Task(description=self.description, expected_output=self.expected_output, async_execution = self.async_execution, agent=self.agent.get_crewai_agent(), context=context_from_async_tasks)

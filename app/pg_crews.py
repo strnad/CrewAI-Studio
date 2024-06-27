@@ -10,7 +10,7 @@ class PageCrews:
     def create_crew(self):
         crew = MyCrew()
         if 'crews' not in ss:
-            ss.crews = []
+            ss.crews = [MyCrew]
         ss.crews.append(crew)
         crew.edit = True
         db_utils.save_crew(crew)  # Save crew to database

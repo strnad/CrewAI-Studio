@@ -35,7 +35,7 @@ class MyCrew:
     def edit(self, value):
         ss[self.edit_key] = value
 
-    def get_crewai_crew(self, *args, **kwargs):
+    def get_crewai_crew(self, *args, **kwargs) -> Crew:
         crewai_agents = [agent.get_crewai_agent() for agent in self.agents]
 
         # Create a dictionary to hold the Task objects

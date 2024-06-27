@@ -10,7 +10,7 @@ class PageTasks:
     def create_task(self, crew=None):
         task = MyTask()   
         if 'tasks' not in ss:
-            ss.tasks = []
+            ss.tasks = [MyTask]
         ss.tasks.append(task)
         task.edit = True                
         db_utils.save_task(task)  # Save task to database
