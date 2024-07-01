@@ -1,8 +1,10 @@
-crewai
-crewai-tools
+langchain==0.2.6
 langchain-openai
 langchain-groq
-langchain_community
+langchain-community
 langchain-anthropic
 streamlit
 python-dotenv
+git+https://github.com/joaomdmoura/embedchain.git@83782e57a8c54ff03c3ef33a2cf0deb5c8cf8fcf
+git+https://github.com/strnad/crewAI.git
+git+https://github.com/strnad/crewAI-tools.git
