@@ -5,6 +5,7 @@ import threading
 import ctypes
 import queue
 import time
+import traceback
 
 class PageCrewRun:
     def __init__(self):
@@ -48,7 +49,8 @@ class PageCrewRun:
             result = crewai_crew.kickoff(inputs=inputs)
             message_queue.put({"result": result})
         except Exception as e:
-            message_queue.put({"result": f"Error running crew: {str(e)}"})
+            stack_trace = traceback.format_exc()
+            message_queue.put({"result": f"Error running crew: {str(e)}", "stack_trace": stack_trace})
 
     def get_mycrew_by_name(self, crewname):
         return next((crew for crew in ss.crews if crew.name == crewname), None)
