@@ -13,7 +13,7 @@ class MyCrew:
         self.agents = agents or []
         self.tasks = tasks or []
         self.process = process or Process.sequential
-        self.verbose = verbose if verbose is not None else 2
+        self.verbose = bool(verbose) if verbose is not None else True
         self.manager_llm = manager_llm
         self.manager_agent = manager_agent
         self.memory = memory if memory is not None else False
@@ -190,7 +190,6 @@ class MyCrew:
             with st.container(border=True):
                 st.text_input("Name (just id, it doesn't affect anything)", value=self.name, key=name_key, on_change=self.update_name)
                 st.selectbox("Process", options=[Process.sequential, Process.hierarchical], index=[Process.sequential, Process.hierarchical].index(self.process), key=process_key, on_change=self.update_process)
-                st.slider("Verbosity", min_value=0, max_value=2, value=self.verbose, key=verbose_key, on_change=self.update_verbose)
                 st.multiselect("Agents", options=[agent.role for agent in ss.agents], default=[agent.role for agent in self.agents], key=agents_key, on_change=self.update_agents)                
                 # Filter tasks by selected agents
                 available_tasks = [task for task in ss.tasks if task.agent and task.agent.id in [agent.id for agent in self.agents]]
@@ -199,6 +198,7 @@ class MyCrew:
                 st.multiselect("Tasks", options=available_task_ids, default=default_task_ids, format_func=lambda x: next(task.description for task in ss.tasks if task.id == x), key=tasks_key, on_change=self.update_tasks)                
                 st.selectbox("Manager LLM", options=["None"] + llm_providers_and_models(), index=0 if self.manager_llm is None else llm_providers_and_models().index(self.manager_llm) + 1, key=manager_llm_key, on_change=self.update_manager_llm, disabled=(self.process != Process.hierarchical))
                 st.selectbox("Manager Agent", options=["None"] + [agent.role for agent in ss.agents], index=0 if self.manager_agent is None else [agent.role for agent in ss.agents].index(self.manager_agent.role) + 1, key=manager_agent_key, on_change=self.update_manager_agent, disabled=(self.process != Process.hierarchical))
+                st.checkbox("Verbose", value=self.verbose, key=verbose_key, on_change=self.update_verbose)
                 st.checkbox("Memory", value=self.memory, key=memory_key, on_change=self.update_memory)
                 st.checkbox("Cache", value=self.cache, key=cache_key, on_change=self.update_cache)
                 st.number_input("Max req/min", value=self.max_rpm, key=max_rpm_key, on_change=self.update_max_rpm)    
@@ -208,10 +208,10 @@ class MyCrew:
             expander_title = f"Crew: {self.name}" if self.is_valid() else f"❗ Crew: {self.name}"
             with st.expander(expander_title, expanded=expanded):
                 st.markdown(f"**Process:** {self.process}")
-                st.markdown(f"**Verbosity:** {self.verbose}")
                 if self.process == Process.hierarchical:
                     st.markdown(f"**Manager LLM:** {self.manager_llm}")
                     st.markdown(f"**Manager Agent:** {self.manager_agent.role if self.manager_agent else 'None'}")
+                st.markdown(f"**Verbose:** {self.verbose}")
                 st.markdown(f"**Memory:** {self.memory}")
                 st.markdown(f"**Cache:** {self.cache}")
                 st.markdown(f"**Max req/min:** {self.max_rpm}")
