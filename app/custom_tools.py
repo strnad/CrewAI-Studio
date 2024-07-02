@@ -5,6 +5,7 @@ import requests
 import importlib.util
 from pydantic.v1 import BaseModel, Field
 import docker
+import base64
 
 class FixedCustomFileWriteToolInputSchema(BaseModel):
     content: str = Field(..., description="The content to write or append to the file")
@@ -131,11 +132,11 @@ class CustomCodeInterpreterSchema(BaseModel):
     """Input for CustomCodeInterpreterTool."""
     code: str = Field(
         ...,
-        description="Mandatory string of python3 code used to be interpreted with a final print statement.",
+        description="Mandatory string of python3 code used to be interpreted. Use final print statement to read the output.",
     )
     dependencies_used_in_code: List[str] = Field(
         ...,
-        description="Mandatory list of libraries used in the code with proper installing names.",
+        description="Mandatory list of libraries used in the code with proper installing names. (will be installed using pip)",
     )
 
 class CustomCodeInterpreterTool(BaseTool):
@@ -150,7 +151,7 @@ class CustomCodeInterpreterTool(BaseTool):
         if workspace_dir is not None and len(workspace_dir) > 0:
             self.workspace_dir = os.path.abspath(workspace_dir)
             os.makedirs(self.workspace_dir, exist_ok=True)
-        self._generate_description()
+        #self._generate_description()
 
     @staticmethod
     def _get_installed_package_path():
@@ -194,12 +195,36 @@ class CustomCodeInterpreterTool(BaseTool):
             "code-interpreter", detach=True, tty=True, working_dir="/workspace", volumes=volumes
         )
 
+    def run_code_in_docker_(self, code: str, libraries_used: List[str]) -> str:
+        self._verify_docker_image()
+        container = self._init_docker_container()
+        self._install_libraries(container, libraries_used)
+        print(f"Running code in container: \n{code}")
+        
+        cmd_to_run = f'python3 -c "{code}"'
+        exec_result = container.exec_run(cmd_to_run)
+
+        container.stop()
+        container.remove()
+
+        if exec_result.exit_code != 0:
+            print(f"Something went wrong while running the code: \n{exec_result.output.decode('utf-8')}")
+            return f"Something went wrong while running the code: \n{exec_result.output.decode('utf-8')}"
+        return exec_result.output.decode("utf-8")
+    
     def run_code_in_docker(self, code: str, libraries_used: List[str]) -> str:
         self._verify_docker_image()
         container = self._init_docker_container()
         self._install_libraries(container, libraries_used)
-
-        cmd_to_run = f'python3 -c "{code}"'
+        
+        # Encode the code to base64
+        encoded_code = base64.b64encode(code.encode('utf-8')).decode('utf-8')
+        
+        # Create a command to decode the base64 string and run the Python code
+        cmd_to_run = f'python3 -c "import base64; exec(base64.b64decode(\'{encoded_code}\').decode(\'utf-8\'))"'
+        
+        print(f"Running code in container: \n{code}")
+        
         exec_result = container.exec_run(cmd_to_run)
 
         container.stop()
