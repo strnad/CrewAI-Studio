@@ -5,6 +5,7 @@ from streamlit import session_state as ss
 from db_utils import save_agent, delete_agent
 from llms import llm_providers_and_models, create_llm
 from datetime import datetime
+import traceback
 
 class MyAgent:
     def __init__(self, id=None, role=None, backstory=None, goal=None, temperature=None, allow_delegation=False, verbose=False, cache= None, llm_provider_model=None, max_iter=None, created_at=None, tools=None):
@@ -41,7 +42,8 @@ class MyAgent:
         try:
             tools = [tool.create_tool() for tool in self.tools]
         except Exception as e:
-            st.error(f"Error: agent tools could not be created. {str(e)}")
+            stack_trace = traceback.format_exc()
+            st.error(f"Error: agent tools could not be created. {str(e)} \n {stack_trace}")
             return None
         try:
             return Agent(
