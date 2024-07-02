@@ -25,6 +25,10 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 
 ## Changelog (only important changes)
 
+**July 3, 2024**
+- **Code interpreter:** Added tool for executing python scripts inside docker.
+- **Custom Code interpreter:** Custom Code interpreter tool which allows to use shared folder.
+
 **June 27, 2024**
 - **New models:** Anthropic Claude 3.5 Sonnet support .
 - **New tasks:** Code interpreter tool.
@@ -149,6 +153,12 @@ Conda will be installed locally in the project folder. No need for a pre-existin
 ## Configuration
 
 Before running the application, ensure you update the `.env` file with your API keys and other necessary configurations. An example `.env` file is provided for reference.
+
+## Troubleshooting
+In case of problems:
+- Delete the `venv/miniconda` folder and reinstall `crewai-studio`.
+- Rename `crewai.db` (it contains your crews but sometimes new versions can break compatibility).
+- Raise an issue and I will help you.
 
 ## Star History
 
