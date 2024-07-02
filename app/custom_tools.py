@@ -1,10 +1,10 @@
-# app/custom_tools.py
 import os
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Type
 from crewai_tools import BaseTool
 import requests
-import json
+import importlib.util
 from pydantic.v1 import BaseModel, Field
+import docker
 
 class FixedCustomFileWriteToolInputSchema(BaseModel):
     content: str = Field(..., description="The content to write or append to the file")
@@ -76,7 +76,6 @@ class CustomApiToolInputSchema(BaseModel):
     query_params: Optional[Dict[str, Any]] = Field(None, description="Query parameters for the request")
     body: Optional[Dict[str, Any]] = Field(None, description="Body of the request for POST/PUT methods")
 
-
 class CustomApiTool(BaseTool):
     name: str = "CustomApiTool"
     description: str = "Tool to make API calls with customizable parameters"
@@ -127,3 +126,85 @@ class CustomApiTool(BaseTool):
             
         )
         return response_data
+
+class CustomCodeInterpreterSchema(BaseModel):
+    """Input for CustomCodeInterpreterTool."""
+    code: str = Field(
+        ...,
+        description="Mandatory string of python3 code used to be interpreted with a final print statement.",
+    )
+    dependencies_used_in_code: List[str] = Field(
+        ...,
+        description="Mandatory list of libraries used in the code with proper installing names.",
+    )
+
+class CustomCodeInterpreterTool(BaseTool):
+    name: str = "Code Interpreter"
+    description: str = "Interprets Python3 code strings with a final print statement."
+    args_schema: Type[BaseModel] = CustomCodeInterpreterSchema
+    code: Optional[str] = None
+    workspace_dir: Optional[str] = None
+
+    def __init__(self, workspace_dir: Optional[str] = None, **kwargs):
+        super().__init__(**kwargs)
+        if workspace_dir is not None and len(workspace_dir) > 0:
+            self.workspace_dir = os.path.abspath(workspace_dir)
+            os.makedirs(self.workspace_dir, exist_ok=True)
+        self._generate_description()
+
+    @staticmethod
+    def _get_installed_package_path():
+        spec = importlib.util.find_spec('crewai_tools')
+        return os.path.dirname(spec.origin)
+
+    def _verify_docker_image(self) -> None:
+        image_tag = "code-interpreter:latest"
+        client = docker.from_env()
+        try:
+            client.images.get(image_tag)
+        except:
+            package_path = self._get_installed_package_path()
+            dockerfile_path = os.path.join(package_path, 'tools/code_interpreter_tool')
+            if not os.path.exists(dockerfile_path):
+                raise FileNotFoundError(f"Dockerfile not found in {dockerfile_path}")
+
+            client.images.build(
+                path=dockerfile_path,
+                tag=image_tag,
+                rm=True,
+            )
+
+    def _run(self, **kwargs) -> str:
+        code = kwargs.get("code", self.code)
+        libraries_used = kwargs.get("dependencies_used_in_code", [])
+        return self.run_code_in_docker(code, libraries_used)
+
+    def _install_libraries(
+        self, container: docker.models.containers.Container, libraries: List[str]
+    ) -> None:
+        for library in libraries:
+            container.exec_run(f"pip install {library}")
+
+    def _init_docker_container(self) -> docker.models.containers.Container:
+        client = docker.from_env()
+        volumes = {}
+        if self.workspace_dir:
+            volumes[self.workspace_dir] = {"bind": "/workspace", "mode": "rw"}
+        return client.containers.run(
+            "code-interpreter", detach=True, tty=True, working_dir="/workspace", volumes=volumes
+        )
+
+    def run_code_in_docker(self, code: str, libraries_used: List[str]) -> str:
+        self._verify_docker_image()
+        container = self._init_docker_container()
+        self._install_libraries(container, libraries_used)
+
+        cmd_to_run = f'python3 -c "{code}"'
+        exec_result = container.exec_run(cmd_to_run)
+
+        container.stop()
+        container.remove()
+
+        if exec_result.exit_code != 0:
+            return f"Something went wrong while running the code: \n{exec_result.output.decode('utf-8')}"
+        return exec_result.output.decode("utf-8")
