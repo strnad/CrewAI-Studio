@@ -151,7 +151,7 @@ class CustomCodeInterpreterTool(BaseTool):
         if workspace_dir is not None and len(workspace_dir) > 0:
             self.workspace_dir = os.path.abspath(workspace_dir)
             os.makedirs(self.workspace_dir, exist_ok=True)
-        #self._generate_description()
+        self._generate_description()
 
     @staticmethod
     def _get_installed_package_path():
