@@ -9,7 +9,7 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 - **Conda and virtual environment support**: Choose between Conda and a Python virtual environment for installation.
 - **CrewAI tools** You can use crewai tools to interact with real world. (with crewAI-tools bugfix: RagTool based tools now handle post-creation passed parameters correctly [ #<49>](https://github.com/joaomdmoura/crewAI-tools/pull/49))
 - **\*NEW\* Custom Tools** Custom tools for calling APIs and for writing files. More will be added soon
-- **API support**: Currently OpenAI, Groq, Anthropic and LM Studio backends are supported. OpenAI key is probably still needed for embeddings in many tools.
+- **API support**: Currently OpenAI, Groq, Anthropic and LM Studio backends are supported. OpenAI key is probably still needed for embeddings in many tools. Don't forget to load an embedding model when using LM Studio.
 - **Single Page app export**: Feature to export crew as simple single page streamlit app (doesn't support custom tools yet).
 - **Threaded crew run**: Crews can run in background and can be stopped.
 
