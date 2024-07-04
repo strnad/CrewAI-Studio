@@ -6,7 +6,7 @@ from db_utils import save_task, delete_task
 from datetime import datetime
 
 class MyTask:
-    def __init__(self, id=None, description=None, expected_output=None, agent=None, async_execution = None, created_at=None, context_from_async_tasks_ids=None):
+    def __init__(self, id=None, description=None, expected_output=None, agent=None, async_execution = None, created_at=None, context_from_async_tasks_ids=None, **kwargs):
         self.id = id or "T_" + rnd_id()
         self.description = description or "Identify the next big trend in AI. Focus on identifying pros and cons and the overall narrative."
         self.expected_output = expected_output or "A comprehensive 3 paragraphs long report on the latest AI trends."
