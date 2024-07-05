@@ -45,8 +45,7 @@ def main():
     if (str(os.getenv('AGENTOPS_ENABLED')).lower() in ['true', '1']) and not ss.get('agentops_failed', False):
         try:
             import agentops
-            agentops.init(api_key=os.getenv('AGENTOPS_API_KEY'))
-            print("AgentOps enabled")        
+            agentops.init(api_key=os.getenv('AGENTOPS_API_KEY'))    
         except ModuleNotFoundError as e:
             ss.agentops_failed = True
             print(f"Error initializing AgentOps: {str(e)}")            
