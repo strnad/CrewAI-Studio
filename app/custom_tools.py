@@ -202,6 +202,8 @@ class CustomCodeInterpreterTool(BaseTool):
             existing_container = client.containers.get(container_name)
             if existing_container.status == 'running':
                 return existing_container
+            if existing_container.status == 'exited':
+                existing_container.remove()
         except docker.errors.NotFound:
             pass
         return None
