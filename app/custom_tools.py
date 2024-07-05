@@ -181,11 +181,6 @@ class CustomCodeInterpreterTool(BaseTool):
                 rm=True,
             )
 
-    def _run(self, **kwargs) -> str:
-        code = kwargs.get("code", self.code)
-        libraries_used = kwargs.get("libraries_used", [])
-        return self.run_code_in_docker(code, libraries_used)
-
     def _install_libraries(
         self, container: docker.models.containers.Container, libraries: List[str]
     ) -> None:
@@ -195,32 +190,29 @@ class CustomCodeInterpreterTool(BaseTool):
         for library in libraries:
             container.exec_run(f"pip install {library}")
 
+    def _get_existing_container(self, container_name: str) -> Optional[docker.models.containers.Container]:
+        client = docker.from_env()
+        try:
+            existing_container = client.containers.get(container_name)
+            if existing_container.status == 'running':
+                return existing_container
+        except docker.errors.NotFound:
+            pass
+        return None
+
     def _init_docker_container(self) -> docker.models.containers.Container:
         client = docker.from_env()
         volumes = {}
         if self.workspace_dir:
             volumes[self.workspace_dir] = {"bind": "/workspace", "mode": "rw"}
+        container_name = "custom-code-interpreter"
+        existing_container = self._get_existing_container(container_name)
+        if existing_container:
+            return existing_container
         return client.containers.run(
-            "code-interpreter", detach=True, tty=True, working_dir="/workspace", name="code-interpreter", volumes=volumes
+            "code-interpreter", detach=True, tty=True, working_dir="/workspace", name=container_name, volumes=volumes
         )
 
-    def run_code_in_docker_(self, code: str, libraries_used: List[str]) -> str:
-        self._verify_docker_image()
-        container = self._init_docker_container()
-        self._install_libraries(container, libraries_used)
-        print(f"Running code in container: \n{code}")
-        
-        cmd_to_run = f'python3 -c "{code}"'
-        exec_result = container.exec_run(cmd_to_run)
-
-        container.stop()
-        container.remove()
-
-        if exec_result.exit_code != 0:
-            print(f"Something went wrong while running the code: \n{exec_result.output.decode('utf-8')}")
-            return f"Something went wrong while running the code: \n{exec_result.output.decode('utf-8')}"
-        return exec_result.output.decode("utf-8")
-    
     def run_code_in_docker(self, code: str, libraries_used: List[str]) -> str:
         self._verify_docker_image()
         container = self._init_docker_container()
@@ -236,9 +228,11 @@ class CustomCodeInterpreterTool(BaseTool):
         
         exec_result = container.exec_run(cmd_to_run)
 
-        container.stop()
-        container.remove()
-
         if exec_result.exit_code != 0:
             return f"Something went wrong while running the code: \n{exec_result.output.decode('utf-8')}"
         return exec_result.output.decode("utf-8")
+
+    def _run(self, **kwargs) -> str:
+        code = kwargs.get("code", self.code)
+        libraries_used = kwargs.get("libraries_used", [])
+        return self.run_code_in_docker(code, libraries_used)
