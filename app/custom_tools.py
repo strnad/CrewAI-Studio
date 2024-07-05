@@ -17,7 +17,7 @@ class CustomFileWriteToolInputSchema(FixedCustomFileWriteToolInputSchema):
     filename: str = Field(..., description="The name of the file to write to or append")
 
 class CustomFileWriteTool(BaseTool):
-    name: str = "FileWriteTool"
+    name: str = "Write File"
     description: str = "Tool to write or append to files"
     args_schema = CustomFileWriteToolInputSchema
     filename: Optional[str] = None
@@ -78,7 +78,7 @@ class CustomApiToolInputSchema(BaseModel):
     body: Optional[Dict[str, Any]] = Field(None, description="Body of the request for POST/PUT methods")
 
 class CustomApiTool(BaseTool):
-    name: str = "CustomApiTool"
+    name: str = "Call Api"
     description: str = "Tool to make API calls with customizable parameters"
     args_schema = CustomApiToolInputSchema
     base_url: Optional[str] = None
