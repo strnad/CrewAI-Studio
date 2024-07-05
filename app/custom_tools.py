@@ -9,11 +9,11 @@ import base64
 
 class FixedCustomFileWriteToolInputSchema(BaseModel):
     content: str = Field(..., description="The content to write or append to the file")
-    mode: str = Field(..., description="Mode to open the file in, either 'write' or 'append'")
+    mode: str = Field(..., description="Mode to open the file in, either 'w' or 'a'")
 
 class CustomFileWriteToolInputSchema(FixedCustomFileWriteToolInputSchema):
     content: str = Field(..., description="The content to write or append to the file")
-    mode: str = Field(..., description="Mode to open the file in, either 'write' or 'append'")
+    mode: str = Field(..., description="Mode to open the file in, either 'w' or 'a'")
     filename: str = Field(..., description="The name of the file to write to or append")
 
 class CustomFileWriteTool(BaseTool):
@@ -26,11 +26,11 @@ class CustomFileWriteTool(BaseTool):
         super().__init__(**kwargs)
         if filename is not None and len(filename) > 0:
             self.args_schema = FixedCustomFileWriteToolInputSchema
-        
         self._base_folder = base_folder
         self.filename = filename or None
-
         self._ensure_base_folder_exists()
+        self._generate_description()
+
 
     def _ensure_base_folder_exists(self):
         os.makedirs(self._base_folder, exist_ok=True)
@@ -50,11 +50,11 @@ class CustomFileWriteTool(BaseTool):
     def _run(self, content: str, mode: str, filename: Optional[str] = None) -> Dict[str, Any]:
         full_path = self._get_full_path(filename)
         try:
-            with open(full_path, 'a' if mode == 'append' else 'w') as file:
+            with open(full_path, 'a' if mode == 'a' else 'w') as file:
                 file.write(content)
             return {
                 "status": "success",
-                "message": f"Content successfully {'appended to' if mode == 'append' else 'written to'} {full_path}"
+                "message": f"Content successfully {'appended to' if mode == 'a' else 'written to'} {full_path}"
             }
         except Exception as e:
             return {
