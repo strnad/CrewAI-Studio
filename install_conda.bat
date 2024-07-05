@@ -37,6 +37,15 @@ call conda create -n crewai_env python=3.11 -y
 call conda run -n crewai_env conda install -y packaging
 call conda run -n crewai_env pip install -r requirements.txt
 
+:: Install agentops if requested
+set /p install_agentops="Do you want to install agentops? (y/n): "
+if /i "%install_agentops%"=="y" (
+    echo Installing agentops...
+    call conda run -n crewai_env pip install agentops
+    echo Installing git version of crewai...
+    call conda run -n crewai_env pip install git+https://github.com/joaomdmoura/crewAI.git@bb64c8096496660f7867450f7d49fd2e72067d0e --force-reinstall
+
+)
 :: Check if .env file exists, if not copy .env_example to .env
 if not exist "%SCRIPT_DIR%.env" (
     echo .env file does not exist. Copying .env_example to .env...
