@@ -106,7 +106,8 @@ class PageCrewRun:
             try:
                 crew = selected_crew.get_crewai_crew(full_output=True)
             except Exception as e:
-                st.error(f"Error creating crew: {str(e)}")
+                st.exception(e)
+                traceback.print_exc()
                 return
 
             ss.running = True

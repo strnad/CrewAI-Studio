@@ -4,7 +4,6 @@ from utils import rnd_id
 from crewai_tools import CodeInterpreterTool,ScrapeElementFromWebsiteTool,TXTSearchTool,SeleniumScrapingTool,PGSearchTool,PDFSearchTool,MDXSearchTool,JSONSearchTool,GithubSearchTool,EXASearchTool,DOCXSearchTool,CSVSearchTool,ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, DirectoryReadTool, CodeDocsSearchTool, YoutubeVideoSearchTool,SerperDevTool,YoutubeChannelSearchTool,WebsiteSearchTool
 from custom_tools import CustomApiTool,CustomFileWriteTool,CustomCodeInterpreterTool
 from langchain_community.tools import YahooFinanceNewsTool
-import traceback
 
 class MyTool:
     def __init__(self, tool_id, name, description, parameters, **kwargs):
@@ -297,14 +296,11 @@ class MyCustomApiTool(MyTool):
         super().__init__(tool_id, 'CustomApiTool', "A tool that can be used to make API calls with customizable parameters.", parameters, base_url=base_url, headers=headers, query_params=query_params)
 
     def create_tool(self) -> CustomApiTool:
-        try:
-            return CustomApiTool(
-                base_url=self.parameters.get('base_url') if self.parameters.get('base_url') else None,
-                headers=eval(self.parameters.get('headers')) if self.parameters.get('headers') else None,
-                query_params=self.parameters.get('query_params') if self.parameters.get('query_params') else None
-            )
-        except Exception as e:
-            print(traceback.format_exc())
+        return CustomApiTool(
+            base_url=self.parameters.get('base_url') if self.parameters.get('base_url') else None,
+            headers=eval(self.parameters.get('headers')) if self.parameters.get('headers') else None,
+            query_params=self.parameters.get('query_params') if self.parameters.get('query_params') else None
+        )
 
 class MyCustomFileWriteTool(MyTool):
     def __init__(self, tool_id=None, base_folder=None, filename=None):
@@ -315,13 +311,11 @@ class MyCustomFileWriteTool(MyTool):
         super().__init__(tool_id, 'CustomFileWriteTool', "A tool that can be used to write a file to a specific folder.", parameters,base_folder=base_folder, filename=filename)
 
     def create_tool(self) -> CustomFileWriteTool:
-        try:
-            return CustomFileWriteTool(
-                base_folder=self.parameters.get('base_folder') if self.parameters.get('base_folder') else "workspace",
-                filename=self.parameters.get('filename') if self.parameters.get('filename') else None
-            )
-        except Exception as e:
-            print(traceback.format_exc())
+        return CustomFileWriteTool(
+            base_folder=self.parameters.get('base_folder') if self.parameters.get('base_folder') else "workspace",
+            filename=self.parameters.get('filename') if self.parameters.get('filename') else None
+        )
+
 
 class MyCodeInterpreterTool(MyTool):
     def __init__(self, tool_id=None):

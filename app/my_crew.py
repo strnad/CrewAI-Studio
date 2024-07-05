@@ -85,16 +85,18 @@ class MyCrew:
                 memory=self.memory,
                 *args, **kwargs
             )
-        return Crew(
-            agents=crewai_agents,
-            tasks=crewai_tasks,
-            cache=self.cache,
-            process=self.process,
-            max_rpm=self.max_rpm,
-            verbose=self.verbose,
-            memory=self.memory,
-            *args, **kwargs
+        cr = Crew(
+        agents=crewai_agents,
+        tasks=crewai_tasks,
+        cache=self.cache,
+        process=self.process,
+        max_rpm=self.max_rpm,
+        verbose=self.verbose,
+        memory=self.memory,
+        *args, **kwargs
         )
+        return cr
+    
     def delete(self):
         ss.crews = [crew for crew in ss.crews if crew.id != self.id]
         db_utils.delete_crew(self.id)

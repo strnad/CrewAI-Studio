@@ -5,7 +5,6 @@ from streamlit import session_state as ss
 from db_utils import save_agent, delete_agent
 from llms import llm_providers_and_models, create_llm
 from datetime import datetime
-import traceback
 
 class MyAgent:
     def __init__(self, id=None, role=None, backstory=None, goal=None, temperature=None, allow_delegation=False, verbose=False, cache= None, llm_provider_model=None, max_iter=None, created_at=None, tools=None):
@@ -34,18 +33,8 @@ class MyAgent:
         ss[self.edit_key] = value
 
     def get_crewai_agent(self) -> Agent:
-        try:
             llm = create_llm(self.llm_provider_model, temperature=self.temperature)
-        except Exception as e:
-            st.error(f"Error: agent llm could not be created. {str(e)}")
-            return None
-        try:
             tools = [tool.create_tool() for tool in self.tools]
-        except Exception as e:
-            stack_trace = traceback.format_exc()
-            st.error(f"Error: agent tools could not be created. {str(e)} \n {stack_trace}")
-            return None
-        try:
             return Agent(
                 role=self.role,
                 backstory=self.backstory,
@@ -57,9 +46,6 @@ class MyAgent:
                 tools=tools,
                 llm=llm
             )
-        except Exception as e:
-            st.error(f"Error: agent {self.role} could not be created. {str(e)}")
-            return None
 
     def delete(self):
         ss.agents = [agent for agent in ss.agents if agent.id != self.id]

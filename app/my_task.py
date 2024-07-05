@@ -27,16 +27,12 @@ class MyTask:
         ss[self.edit_key] = value
 
     def get_crewai_task(self, context_from_async_tasks=None) -> Task:
-        try:
-            if context_from_async_tasks:
-                return Task(description=self.description, expected_output=self.expected_output, async_execution = self.async_execution, agent=self.agent.get_crewai_agent(), context=context_from_async_tasks)
-            else:
-                if self.context_from_async_tasks_ids:
-                    Exception("Context from async tasks is not provided")
-                return Task(description=self.description, expected_output=self.expected_output, async_execution = self.async_execution, agent=self.agent.get_crewai_agent())
-        except Exception as e:
-            st.error(f"Error: task {self.description} could not be created. {str(e)}")
-            return None
+        if context_from_async_tasks:
+            return Task(description=self.description, expected_output=self.expected_output, async_execution = self.async_execution, agent=self.agent.get_crewai_agent(), context=context_from_async_tasks)
+        else:
+            if self.context_from_async_tasks_ids:
+                Exception("Context from async tasks is not provided")
+            return Task(description=self.description, expected_output=self.expected_output, async_execution = self.async_execution, agent=self.agent.get_crewai_agent())
 
     def delete(self):
         ss.tasks = [task for task in ss.tasks if task.id != self.id]
