@@ -135,7 +135,7 @@ class CustomCodeInterpreterSchema(BaseModel):
         description="Python3 code used to be interpreted in the Docker container. ALWAYS PRINT the final result and the output of the code",
     )
 
-    libraries_used: List[str] = Field(
+    libraries_used: str = Field(
         ...,
         description="List of libraries used in the code with proper installing names separated by commas. Example: numpy,pandas,beautifulsoup4",
     )
@@ -182,13 +182,18 @@ class CustomCodeInterpreterTool(BaseTool):
             )
 
     def _install_libraries(
-        self, container: docker.models.containers.Container, libraries: List[str]
+        self, container: docker.models.containers.Container, libraries: str
     ) -> None:
         """
         Install missing libraries in the Docker container
         """
-        for library in libraries:
-            container.exec_run(f"pip install {library}")
+        for library in libraries.split(","):
+            print(f"Installing library: {library}")
+            install_result = container.exec_run(f"pip install {library}")
+            if install_result.exit_code != 0:
+                print(f"Something went wrong while installing the library: {library}")
+                print(install_result.output.decode("utf-8"))
+            
 
     def _get_existing_container(self, container_name: str) -> Optional[docker.models.containers.Container]:
         client = docker.from_env()
@@ -229,7 +234,9 @@ class CustomCodeInterpreterTool(BaseTool):
         exec_result = container.exec_run(cmd_to_run)
 
         if exec_result.exit_code != 0:
+            print(f"Something went wrong while running the code: \n{exec_result.output.decode('utf-8')}")
             return f"Something went wrong while running the code: \n{exec_result.output.decode('utf-8')}"
+        print(f"Code run output: \n{exec_result.output.decode('utf-8')}")
         return exec_result.output.decode("utf-8")
 
     def _run(self, **kwargs) -> str:
