@@ -187,12 +187,13 @@ class CustomCodeInterpreterTool(BaseTool):
         """
         Install missing libraries in the Docker container
         """
-        for library in libraries.split(","):
-            print(f"Installing library: {library}")
-            install_result = container.exec_run(f"pip install {library}")
-            if install_result.exit_code != 0:
-                print(f"Something went wrong while installing the library: {library}")
-                print(install_result.output.decode("utf-8"))
+        if libraries and len(libraries) > 0:
+            for library in libraries.split(","):
+                print(f"Installing library: {library}")
+                install_result = container.exec_run(f"pip install {library}")
+                if install_result.exit_code != 0:
+                    print(f"Something went wrong while installing the library: {library}")
+                    print(install_result.output.decode("utf-8"))
             
 
     def _get_existing_container(self, container_name: str) -> Optional[docker.models.containers.Container]:
@@ -218,7 +219,7 @@ class CustomCodeInterpreterTool(BaseTool):
             "code-interpreter", detach=True, tty=True, working_dir="/workspace", name=container_name, volumes=volumes
         )
 
-    def run_code_in_docker(self, code: str, libraries_used: List[str]) -> str:
+    def run_code_in_docker(self, code: str, libraries_used: str) -> str:
         self._verify_docker_image()
         container = self._init_docker_container()
         self._install_libraries(container, libraries_used)
