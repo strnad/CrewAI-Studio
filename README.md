@@ -7,7 +7,7 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 - **Multi-platform support**: Works on Windows, Linux and MacOS.
 - **No coding required**: User-friendly interface for interacting with CrewAI.
 - **Conda and virtual environment support**: Choose between Conda and a Python virtual environment for installation.
-- **CrewAI tools** You can use crewai tools to interact with real world. (with crewAI-tools bugfix: RagTool based tools now handle post-creation passed parameters correctly [ #<49>](https://github.com/joaomdmoura/crewAI-tools/pull/49))
+- **CrewAI tools** You can use crewai tools to interact with real world. Crewai studio uses a forked version of crewai-tools with some bugfixes and enhancements (https://github.com/strnad/crewAI-tools)
 - **\*NEW\* Custom Tools** Custom tools for calling APIs and for writing files. More will be added soon
 - **API support**: Currently OpenAI, Groq, Anthropic and LM Studio backends are supported. OpenAI key is probably still needed for embeddings in many tools. Don't forget to load an embedding model when using LM Studio.
 - **Single Page app export**: Feature to export crew as simple single page streamlit app (doesn't support custom tools yet).
@@ -24,6 +24,13 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 - **Multiuser environment**
 
 ## Changelog (only important changes)
+
+**July 9, 2024**
+- **Single page export:** export works again and now even with custom tools.
+- **ScrapeWebsiteTool:** Fixed bug in crewai-tools which caused problems with scraping some websites
+
+**July 5, 2024**
+- **Custom Code interpreter:** enhanced version of Code interpreter - allows to mount the working directory to a folder on host system
 
 **July 3, 2024**
 - **Code interpreter:** Added tool for executing python scripts inside docker.
