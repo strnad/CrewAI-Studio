@@ -25,6 +25,9 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 
 ## Changelog (only important changes)
 
+**July 15, 2024**
+- **Import/export:** Add individual crew export to JSON functionality and datetime suffix to full database export filename
+
 **July 9, 2024**
 - **Single page export:** export works again and now even with custom tools.
 - **ScrapeWebsiteTool:** Fixed bug in crewai-tools which caused problems with scraping some websites
