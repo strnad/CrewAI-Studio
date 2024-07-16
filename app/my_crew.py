@@ -7,7 +7,7 @@ from llms import llm_providers_and_models, create_llm
 import db_utils
 
 class MyCrew:
-    def __init__(self, id=None, name=None, agents=None, tasks=None, process=None, cache=None, max_rpm=None, verbose=None, manager_llm=None, manager_agent=None, created_at=None, memory=False):
+    def __init__(self, id=None, name=None, agents=None, tasks=None, process=None, cache=None,max_rpm=None, verbose=None, manager_llm=None, manager_agent=None, created_at=None, memory=False):
         self.id = id or "C_" + rnd_id()
         self.name = name or "Crew 1"
         self.agents = agents or []
@@ -43,20 +43,17 @@ class MyCrew:
 
         # First pass: Create Task objects for async tasks without context
         for task in self.tasks:
-            if task.async_execution:
+            if task.async_execution and not (task.context_from_async_tasks_ids or task.context_from_sync_tasks_ids):
                 crewai_task = task.get_crewai_task()
                 task_objects[task.id] = crewai_task
 
-        # Second pass: Create Task objects for non-async tasks and async tasks with context
+        # Second pass: Create Task objects for non-async tasks and tasks with context
         for task in self.tasks:
-            if not task.async_execution or task.context_from_async_tasks_ids:
-                if task.context_from_async_tasks_ids:
-                    context_tasks = [task_objects[async_task_id] for async_task_id in task.context_from_async_tasks_ids]
-                    crewai_task_with_context = task.get_crewai_task(context_from_async_tasks=context_tasks)
-                    task_objects[task.id] = crewai_task_with_context
-                else:
-                    crewai_task = task.get_crewai_task()
-                    task_objects[task.id] = crewai_task
+            if not task.async_execution or task.context_from_async_tasks_ids or task.context_from_sync_tasks_ids:
+                context_from_async_tasks = [task_objects[async_task_id] for async_task_id in task.context_from_async_tasks_ids] if task.context_from_async_tasks_ids else None
+                context_from_sync_tasks = [task_objects[sync_task_id] for sync_task_id in task.context_from_sync_tasks_ids] if task.context_from_sync_tasks_ids else None
+                crewai_task = task.get_crewai_task(context_from_async_tasks=context_from_async_tasks, context_from_sync_tasks=context_from_sync_tasks)
+                task_objects[task.id] = crewai_task
 
         # Collect the final list of tasks
         crewai_tasks = [task_objects[task.id] for task in self.tasks]

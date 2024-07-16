@@ -115,6 +115,7 @@ def save_task(task):
         'async_execution': task.async_execution,
         'agent_id': task.agent.id if task.agent else None,
         'context_from_async_tasks_ids': task.context_from_async_tasks_ids,
+        'context_from_sync_tasks_ids': task.context_from_sync_tasks_ids,
         'created_at': task.created_at
     }
     save_entity('task', task.id, data)
@@ -186,7 +187,6 @@ def save_tool(tool):
     }
     save_entity('tool', tool.tool_id, data)
 
-
 def load_tools():
     rows = load_entities('tool')
     tools = []
@@ -200,7 +200,6 @@ def load_tools():
 
 def delete_tool(tool_id):
     delete_entity('tool', tool_id)
-
 
 def export_to_json(file_path):
     conn = get_db_connection()
