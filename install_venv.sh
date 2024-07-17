@@ -42,15 +42,6 @@ fi
 # Install requirements
 pip install -r requirements.txt $USE_CACHE || { echo "Failed to install requirements"; exit 1; }
 
-#agentops
-echo "Do you want to install agentops? (y/n)"
-read agentops
-if [ "$agentops" == "y" ]; then
-    echo "Installing agentops..."
-    pip install agentops || { echo "Failed to install agentops"; }
-    echo "installing git version of crewai"
-    pip install git+https://github.com/joaomdmoura/crewAI.git@bb64c8096496660f7867450f7d49fd2e72067d0e --force-reinstall $USE_CACHE || { echo "Failed to install crewai from git"; }
-fi
 # Check if .env file exists, if not copy .env_example to .env
 if [ ! -f "$SCRIPT_DIR/.env" ]; then
     echo ".env file does not exist. Copying .env_example to .env..."
