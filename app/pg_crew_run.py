@@ -6,6 +6,7 @@ import ctypes
 import queue
 import time
 import traceback
+import os
 
 class PageCrewRun:
     def __init__(self):
@@ -45,10 +46,14 @@ class PageCrewRun:
         return placeholders
 
     def run_crew(self, crewai_crew, inputs, message_queue):
+        if (str(os.getenv('AGENTOPS_ENABLED')).lower() in ['true', '1']) and not ss.get('agentops_failed', False):
+            import agentops
+            agentops.start_session()
         try:
             result = crewai_crew.kickoff(inputs=inputs)
             message_queue.put({"result": result})
         except Exception as e:
+            agentops.end_session()
             stack_trace = traceback.format_exc()
             message_queue.put({"result": f"Error running crew: {str(e)}", "stack_trace": stack_trace})
 

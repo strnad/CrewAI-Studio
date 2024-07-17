@@ -19,15 +19,7 @@ if %errorlevel% neq 0 (
     echo Failed to install requirements
     exit /b %errorlevel%
 )
-set /p install_agentops="Do you want to install agentops? (y/n): "
-if /i "%install_agentops%"=="y" (
-    echo Installing agentops...
-    pip install agentops
-    if %errorlevel% neq 0 (
-        echo Failed to install agentops
-        exit /b %errorlevel%
-    )
-)
+
 :: Check if .env file exists, if not copy .env_example to .env
 if not exist "%SCRIPT_DIR%.env" (
     echo .env file does not exist. Copying .env_example to .env...
