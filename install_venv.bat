@@ -27,8 +27,6 @@ if /i "%install_agentops%"=="y" (
         echo Failed to install agentops
         exit /b %errorlevel%
     )
-    echo Installing git version of crewai...
-    pip install git+https://github.com/joaomdmoura/crewAI.git@bb64c8096496660f7867450f7d49fd2e72067d0e --force-reinstall --no-cache
 )
 :: Check if .env file exists, if not copy .env_example to .env
 if not exist "%SCRIPT_DIR%.env" (

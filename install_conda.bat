@@ -42,8 +42,6 @@ set /p install_agentops="Do you want to install agentops? (y/n): "
 if /i "%install_agentops%"=="y" (
     echo Installing agentops...
     call conda run -n crewai_env pip install agentops
-    echo Installing git version of crewai...
-    call conda run -n crewai_env pip install git+https://github.com/joaomdmoura/crewAI.git@bb64c8096496660f7867450f7d49fd2e72067d0e --force-reinstall
 
 )
 :: Check if .env file exists, if not copy .env_example to .env
