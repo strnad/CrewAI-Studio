@@ -25,6 +25,9 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 
 ## Changelog (only important changes)
 
+**July 18, 2024**
+- **new model:** Added support of gpt-4o-mini model
+
 **July 15, 2024**
 - **Import/export:** Add individual crew export to JSON functionality and datetime suffix to full database export filename
 
