@@ -7,4 +7,3 @@ langchain-groq
 langchain-anthropic
 streamlit
 python-dotenv
-agentops
