@@ -53,7 +53,8 @@ class PageCrewRun:
             result = crewai_crew.kickoff(inputs=inputs)
             message_queue.put({"result": result})
         except Exception as e:
-            agentops.end_session()
+            if (str(os.getenv('AGENTOPS_ENABLED')).lower() in ['true', '1']) and not ss.get('agentops_failed', False):                       
+                agentops.end_session()
             stack_trace = traceback.format_exc()
             message_queue.put({"result": f"Error running crew: {str(e)}", "stack_trace": stack_trace})
 
