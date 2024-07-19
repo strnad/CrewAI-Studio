@@ -1,5 +1,5 @@
 crewai
-git+https://github.com/strnad/crewAI-tools.git
+crewai-tools
 langchain
 langchain-community
 langchain-openai
