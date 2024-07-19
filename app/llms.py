@@ -13,22 +13,27 @@ def create_openai_llm(model, temperature):
     load_dotenv(override=True)
     api_key = os.getenv('OPENAI_API_KEY')
     api_base = os.getenv('OPENAI_API_BASE', 'https://api.openai.com/v1/')
+  
+    if model == "gpt-4o-mini":
+        max_tokens = 16383
+    else:
+        max_tokens = 4095
     if api_key:
-        return ChatOpenAI(openai_api_key=api_key, openai_api_base=api_base, model_name=model, temperature=temperature, max_tokens=4096)
+        return ChatOpenAI(openai_api_key=api_key, openai_api_base=api_base, model_name=model, temperature=temperature, max_tokens=max_tokens)
     else:
         raise ValueError("OpenAI API key not set in .env file")
 
 def create_anthropic_llm(model, temperature):
     api_key = os.getenv('ANTHROPIC_API_KEY')
     if api_key:
-        return ChatAnthropic(anthropic_api_key=api_key, model_name=model, temperature=temperature,max_tokens=4096)
+        return ChatAnthropic(anthropic_api_key=api_key, model_name=model, temperature=temperature,max_tokens=4095)
     else:
         raise ValueError("Anthropic API key not set in .env file")
 
 def create_groq_llm(model, temperature):
     api_key = os.getenv('GROQ_API_KEY')
     if api_key:
-        return ChatGroq(groq_api_key=api_key, model_name=model, temperature=temperature, max_tokens=4096)
+        return ChatGroq(groq_api_key=api_key, model_name=model, temperature=temperature, max_tokens=4095)
     else:
         raise ValueError("Groq API key not set in .env file")
     
@@ -51,7 +56,7 @@ def create_lmstudio_llm(model, temperature):
     os.environ["OPENAI_API_KEY"] = "lm-studio"
     os.environ["OPENAI_API_BASE"] = api_base
     if api_base:
-        return ChatOpenAI(openai_api_key='lm-studio', openai_api_base=api_base, temperature=temperature, max_tokens=4096)
+        return ChatOpenAI(openai_api_key='lm-studio', openai_api_base=api_base, temperature=temperature, max_tokens=4095)
     else:
         raise ValueError("LM Studio API base not set in .env file")
 
