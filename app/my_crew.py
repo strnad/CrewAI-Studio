@@ -7,7 +7,7 @@ from llms import llm_providers_and_models, create_llm
 import db_utils
 
 class MyCrew:
-    def __init__(self, id=None, name=None, agents=None, tasks=None, process=None, cache=None,max_rpm=None, verbose=None, manager_llm=None, manager_agent=None, created_at=None, memory=False):
+    def __init__(self, id=None, name=None, agents=None, tasks=None, process=None, cache=None,max_rpm=None, verbose=None, manager_llm=None, manager_agent=None, created_at=None, memory=None, planning=None):
         self.id = id or "C_" + rnd_id()
         self.name = name or "Crew 1"
         self.agents = agents or []
@@ -19,6 +19,7 @@ class MyCrew:
         self.memory = memory if memory is not None else False
         self.cache = cache if cache is not None else True
         self.max_rpm = max_rpm or 1000
+        self.planning = planning if planning is not None else False
         self.created_at = created_at or datetime.now().isoformat()
         self.edit_key = f'edit_{self.id}'
         if self.edit_key not in ss:
@@ -83,6 +84,7 @@ class MyCrew:
                 verbose=self.verbose,
                 manager_llm=create_llm(self.manager_llm),
                 memory=self.memory,
+                planning=self.planning,
                 *args, **kwargs
             )
         elif self.manager_agent:
@@ -95,6 +97,7 @@ class MyCrew:
                 verbose=self.verbose,
                 manager_agent=self.manager_agent.get_crewai_agent(),
                 memory=self.memory,
+                planning=self.planning,
                 *args, **kwargs
             )
         cr = Crew(
@@ -105,6 +108,7 @@ class MyCrew:
         max_rpm=self.max_rpm,
         verbose=self.verbose,
         memory=self.memory,
+        planning=self.planning,
         *args, **kwargs
         )
         return cr
@@ -163,6 +167,10 @@ class MyCrew:
         self.cache = ss[f'cache_{self.id}']
         db_utils.save_crew(self)
 
+    def update_planning(self):
+        self.planning = ss[f'planning_{self.id}']
+        db_utils.save_crew(self)
+
     def is_valid(self, show_warning=False):
         if len(self.agents) == 0:
             if show_warning:
@@ -197,6 +205,7 @@ class MyCrew:
         manager_llm_key = f"manager_llm_{self.id}"
         manager_agent_key = f"manager_agent_{self.id}"
         memory_key = f"memory_{self.id}"
+        planning_key = f"planning_{self.id}"
         cache_key = f"cache_{self.id}"
         max_rpm_key = f"max_rpm_{self.id}"
         
@@ -215,6 +224,7 @@ class MyCrew:
                 st.checkbox("Verbose", value=self.verbose, key=verbose_key, on_change=self.update_verbose)
                 st.checkbox("Memory", value=self.memory, key=memory_key, on_change=self.update_memory)
                 st.checkbox("Cache", value=self.cache, key=cache_key, on_change=self.update_cache)
+                st.checkbox("Planning", value=self.planning, key=planning_key, on_change=self.update_planning)
                 st.number_input("Max req/min", value=self.max_rpm, key=max_rpm_key, on_change=self.update_max_rpm)    
                 st.button("Save", on_click=self.set_editable, args=(False,), key=rnd_id())
         else:
@@ -228,6 +238,7 @@ class MyCrew:
                 st.markdown(f"**Verbose:** {self.verbose}")
                 st.markdown(f"**Memory:** {self.memory}")
                 st.markdown(f"**Cache:** {self.cache}")
+                st.markdown(f"**Planning:** {self.planning}")
                 st.markdown(f"**Max req/min:** {self.max_rpm}")
                 st.markdown("**Tasks:**")
                 for i, task in enumerate([task for task in self.tasks if task.agent and task.agent.id in [agent.id for agent in self.agents]], 1):
