@@ -3,7 +3,7 @@ from typing import Optional, Dict, Any, List, Type
 from crewai_tools import BaseTool
 import requests
 import importlib.util
-from pydantic.v1 import BaseModel, Field
+from pydantic.v1 import BaseModel, Field,root_validator, ValidationError
 import docker
 import base64
 
@@ -130,9 +130,14 @@ class CustomApiTool(BaseTool):
 
 class CustomCodeInterpreterSchema(BaseModel):
     """Input for CustomCodeInterpreterTool."""
-    code: str = Field(
-        ...,
+    code: Optional[str] = Field(
+        None,
         description="Python3 code used to be interpreted in the Docker container. ALWAYS PRINT the final result and the output of the code",
+    )
+
+    run_script: Optional[str] = Field(
+        None,
+        description="Relative path to the script to run in the Docker container. The script should contain the code to be executed.",
     )
 
     libraries_used: str = Field(
@@ -140,11 +145,22 @@ class CustomCodeInterpreterSchema(BaseModel):
         description="List of libraries used in the code with proper installing names separated by commas. Example: numpy,pandas,beautifulsoup4",
     )
 
+    @root_validator
+    def check_code_or_run_script(cls, values):
+        code = values.get('code')
+        run_script = values.get('run_script')
+        if not code and not run_script:
+            raise ValueError('Either code or run_script must be provided')
+        if code and run_script:
+            raise ValueError('Only one of code or run_script should be provided')
+        return values
+
 class CustomCodeInterpreterTool(BaseTool):
     name: str = "Code Interpreter"
-    description: str = "Interprets Python3 code strings with a final print statement."
+    description: str = "Interprets Python3 code strings with a final print statement. Requires eighter code or run_script to be provided."
     args_schema: Type[BaseModel] = CustomCodeInterpreterSchema
     code: Optional[str] = None
+    run_script: Optional[str] = None
     workspace_dir: Optional[str] = None
 
     def __init__(self, workspace_dir: Optional[str] = None, **kwargs):
@@ -241,8 +257,16 @@ class CustomCodeInterpreterTool(BaseTool):
             return f"Something went wrong while running the code: \n{exec_result.output.decode('utf-8')}"
         print(f"Code run output: \n{exec_result.output.decode('utf-8')}")
         return exec_result.output.decode("utf-8")
+    
+    def _run_script(self, run_script: str,libraries_used: str) -> str:
+        with open(f"{self.workspace_dir}/{run_script}", "r") as file:
+            code = file.read()
+            return self.run_code_in_docker(code, libraries_used)
 
     def _run(self, **kwargs) -> str:
         code = kwargs.get("code", self.code)
+        run_script = kwargs.get("run_script", self.run_script)
         libraries_used = kwargs.get("libraries_used", [])
+        if run_script:
+            return self._run_script(run_script, libraries_used)
         return self.run_code_in_docker(code, libraries_used)
