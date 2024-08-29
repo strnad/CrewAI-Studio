@@ -36,7 +36,14 @@ def create_groq_llm(model, temperature):
         return ChatGroq(groq_api_key=api_key, model_name=model, temperature=temperature, max_tokens=4095)
     else:
         raise ValueError("Groq API key not set in .env file")
-    
+
+def create_ollama_llm(model, temperature):
+    host = os.getenv('OLLAMA_HOST')
+    if host:
+        return ChatOllama(base_url=host,model=model, temperature=temperature)
+    else:
+        raise ValueError("Ollama Host is not set in .env file")    
+
 # def create_googleai_llm(model, temperature):
 #     api_key = os.getenv('GOOGLE_API_KEY')
 #     if api_key:        
@@ -77,6 +84,10 @@ LLM_CONFIG = {
     #     "models": ["mistralai/Mistral-7B-Instruct-v0.2", "mistralai/Codestral-22B-v0.1", "EleutherAI/gpt-neo-2.7B"],
     #     "create_llm": create_huggingfacehub_llm
     # },
+    "Ollama": {
+        "models": ["codellama","llama3.1"],
+        "create_llm": create_ollama_llm
+    },
     "Anthropic": {
         "models": ["claude-3-5-sonnet-20240620"],
         "create_llm": create_anthropic_llm
