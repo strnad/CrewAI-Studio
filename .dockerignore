@@ -1,0 +1,9 @@
+*.bat
+*.sh
+*.md
+.git
+.gitignore
+.github
+.gitattributes
+.env_example
+Dockerfile
