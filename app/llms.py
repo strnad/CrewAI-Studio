@@ -73,7 +73,7 @@ LLM_CONFIG = {
         "create_llm": create_openai_llm
     },
     "Groq": {
-        "models": ["llama3-8b-8192","llama3-70b-8192", "mixtral-8x7b-32768"],
+        "models": ["groq/llama3-8b-8192","groq/llama3-70b-8192", "groq/mixtral-8x7b-32768"],
         "create_llm": create_groq_llm
     },
     # "GoogleAI": {
