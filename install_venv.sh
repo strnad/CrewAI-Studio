@@ -28,7 +28,7 @@ if [ -d "venv" ]; then
 fi
 
 # Create a virtual environment
-python -m venv venv || { echo "Failed to create venv"; exit 1; }
+python3 -m venv venv || { echo "Failed to create venv"; exit 1; }
 
 # Activate the virtual environment
 source venv/bin/activate || { echo "Failed to activate venv"; exit 1; }
