@@ -145,7 +145,7 @@ class CustomCodeInterpreterSchema(BaseModel):
         description="List of libraries used in the code with proper installing names separated by commas. Example: numpy,pandas,beautifulsoup4",
     )
 
-    @root_validator
+    @root_validator(allow_reuse=True)
     def check_code_or_run_script(cls, values):
         code = values.get('code')
         run_script = values.get('run_script')
