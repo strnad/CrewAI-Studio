@@ -1,0 +1,32 @@
+name: geauxai-studio
+version: 0.1.0
+description: "A user-friendly, multi-platform GUI for managing and running CrewAI agents and tasks. Supports Conda and virtual environments, no coding needed."
+
+invocationImage: ghcr.io/geaux-specialist-l-l-c/geauxai-studio:latest
+dockerfile: Dockerfile
+
+mixins:
+  - exec
+  - docker
+
+install:
+  - description: "Install dependencies and setup the environment."
+    exec:
+      command: |
+        apt update && apt upgrade -y
+        apt-get install build-essential -y
+        pip install --upgrade pip
+        pip install -r /CrewAI-Studio/requirements.txt
+
+uninstall:
+  - description: "Clean up installed packages."
+    exec:
+      command: |
+        apt-get remove --purge build-essential -y
+        apt-get autoremove -y
+
+invoke:
+  - description: "Run the application."
+    exec:
+      command: |
+        streamlit run /CrewAI-Studio/app/app.py --server.headless true
