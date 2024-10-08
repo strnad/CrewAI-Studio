@@ -28,5 +28,3 @@ uninstall:
 invoke:
   - description: "Run the application."
     exec:
-      command: |
-        streamlit run /CrewAI-Studio/app/app.py --server.headless true
