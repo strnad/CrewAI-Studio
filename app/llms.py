@@ -1,10 +1,9 @@
 import os
 from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
+#from langchain_ollama import ChatOllama
 from langchain_anthropic import ChatAnthropic
-
-#from langchain_google_genai import ChatGoogleGenerativeAI
-# from langchain_huggingface import ChatHuggingFace
+from crewai import LLM
 from dotenv import load_dotenv
 
 def create_openai_llm(model, temperature):
@@ -14,12 +13,13 @@ def create_openai_llm(model, temperature):
     api_key = os.getenv('OPENAI_API_KEY')
     api_base = os.getenv('OPENAI_API_BASE', 'https://api.openai.com/v1/')
   
-    if model == "gpt-4o-mini":
-        max_tokens = 16383
-    else:
-        max_tokens = 4095
+    # if model == "gpt-4o-mini":
+    #     max_tokens = 16383
+    # else:
+    #     max_tokens = 4095
     if api_key:
-        return ChatOpenAI(openai_api_key=api_key, openai_api_base=api_base, model_name=model, temperature=temperature, max_tokens=max_tokens)
+        #return ChatOpenAI(openai_api_key=api_key, openai_api_base=api_base, model_name=model, temperature=temperature, max_tokens=max_tokens)
+        return LLM(model=model, temperature=temperature, base_url=api_base)
     else:
         raise ValueError("OpenAI API key not set in .env file")
 
@@ -33,6 +33,7 @@ def create_anthropic_llm(model, temperature):
 def create_groq_llm(model, temperature):
     api_key = os.getenv('GROQ_API_KEY')
     if api_key:
+
         return ChatGroq(groq_api_key=api_key, model_name=model, temperature=temperature, max_tokens=4095)
     else:
         raise ValueError("Groq API key not set in .env file")
@@ -40,23 +41,10 @@ def create_groq_llm(model, temperature):
 def create_ollama_llm(model, temperature):
     host = os.getenv('OLLAMA_HOST')
     if host:
-        return ChatOllama(base_url=host,model=model, temperature=temperature)
+        #return ChatOllama(base_url=host,model=model, temperature=temperature)
+        return LLM(model=model, temperature=temperature, base_url=host)
     else:
         raise ValueError("Ollama Host is not set in .env file")    
-
-# def create_googleai_llm(model, temperature):
-#     api_key = os.getenv('GOOGLE_API_KEY')
-#     if api_key:        
-#          return ChatGoogleGenerativeAI(model=model, temperature=temperature)
-#     else:
-#         raise ValueError("Google AI API key not set in .env file")
-
-# def create_huggingfacehub_llm(model, temperature):
-#     api_key = os.getenv('HUGGINGFACEHUB_API_KEY')
-#     if api_key:
-#         return ChatHuggingFace(repo_id=model, huggingfacehub_api_token=api_key,  model_kwargs={"temperature":temperature, "max_tokens": 4096})
-#     else:
-#         raise ValueError("HuggingFace API key not set in .env file")
 
 def create_lmstudio_llm(model, temperature):
     api_base = os.getenv('LMSTUDIO_API_BASE')
@@ -76,16 +64,8 @@ LLM_CONFIG = {
         "models": ["groq/llama3-8b-8192","groq/llama3-70b-8192", "groq/mixtral-8x7b-32768"],
         "create_llm": create_groq_llm
     },
-    # "GoogleAI": {
-    #     "models": ["gemini-1.5-pro","gemini-1.5-flash", "gemini-1.0-pro"],
-    #     "create_llm": create_googleai_llm
-    # },
-    # "HuggingFaceHub": {
-    #     "models": ["mistralai/Mistral-7B-Instruct-v0.2", "mistralai/Codestral-22B-v0.1", "EleutherAI/gpt-neo-2.7B"],
-    #     "create_llm": create_huggingfacehub_llm
-    # },
     "Ollama": {
-        "models": ["codellama","llama3.1"],
+        "models": os.getenv("OLLAMA_MODELS").split(','),
         "create_llm": create_ollama_llm
     },
     "Anthropic": {
