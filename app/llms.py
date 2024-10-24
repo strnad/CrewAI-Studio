@@ -65,7 +65,7 @@ LLM_CONFIG = {
         "create_llm": create_groq_llm
     },
     "Ollama": {
-        "models": os.getenv("OLLAMA_MODELS").split(','),
+        "models": os.getenv("OLLAMA_MODELS", "").split(',') if os.getenv("OLLAMA_MODELS") else [],
         "create_llm": create_ollama_llm
     },
     "Anthropic": {
