@@ -1,0 +1,25 @@
+{
+    "name": "CrewAI Studio",
+    "short_name": "CrewAI",
+    "description": "A mobile-first web application for managing AI crews, tools, agents, and tasks",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f5f5f5",
+    "theme_color": "#2196F3",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/static/img/icon-192.png",
+            "type": "image/png",
+            "sizes": "192x192",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/static/img/icon-512.png",
+            "type": "image/png",
+            "sizes": "512x512",
+            "purpose": "any maskable"
+        }
+    ],
+    "prefer_related_applications": false
+}

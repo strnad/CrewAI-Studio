@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2196F3">
+    <title>CrewAI Studio</title>
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="logo-container">
+                <h1>CrewAI Studio</h1>
+            </div>
+            <ul class="nav-links" role="navigation">
+                <li data-page="crews" class="active" role="button" aria-label="Crews">
+                    <i class="material-icons" aria-hidden="true">group_work</i>
+                    <span>Crews</span>
+                </li>
+                <li data-page="tools" role="button" aria-label="Tools">
+                    <i class="material-icons" aria-hidden="true">build</i>
+                    <span>Tools</span>
+                </li>
+                <li data-page="agents" role="button" aria-label="Agents">
+                    <i class="material-icons" aria-hidden="true">person</i>
+                    <span>Agents</span>
+                </li>
+                <li data-page="tasks" role="button" aria-label="Tasks">
+                    <i class="material-icons" aria-hidden="true">assignment</i>
+                    <span>Tasks</span>
+                </li>
+                <li data-page="kickoff" role="button" aria-label="Kickoff">
+                    <i class="material-icons" aria-hidden="true">play_arrow</i>
+                    <span>Kickoff</span>
+                </li>
+                <li data-page="export" role="button" aria-label="Import/Export">
+                    <i class="material-icons" aria-hidden="true">import_export</i>
+                    <span>Import/Export</span>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <section id="crews-page" class="page active" aria-label="Crews">
+                <header>
+                    <h2>Crews</h2>
+                </header>
+                <div class="crews-container">
+                    <div class="crew-list" role="list"></div>
+                    <button class="add-btn" id="add-crew" aria-label="Add new crew">
+                        <i class="material-icons" aria-hidden="true">add</i>
+                        <span>Add Crew</span>
+                    </button>
+                </div>
+            </section>
+
+            <section id="tools-page" class="page" aria-label="Tools">
+                <header>
+                    <h2>Tools</h2>
+                </header>
+                <div class="tools-container">
+                    <div class="tool-list" role="list"></div>
+                    <button class="add-btn" id="add-tool" aria-label="Add new tool">
+                        <i class="material-icons" aria-hidden="true">add</i>
+                        <span>Add Tool</span>
+                    </button>
+                </div>
+            </section>
+
+            <section id="agents-page" class="page" aria-label="Agents">
+                <header>
+                    <h2>Agents</h2>
+                </header>
+                <div class="agents-container">
+                    <div class="agent-list" role="list"></div>
+                    <button class="add-btn" id="add-agent" aria-label="Add new agent">
+                        <i class="material-icons" aria-hidden="true">add</i>
+                        <span>Add Agent</span>
+                    </button>
+                </div>
+            </section>
+
+            <section id="tasks-page" class="page" aria-label="Tasks">
+                <header>
+                    <h2>Tasks</h2>
+                </header>
+                <div class="tasks-container">
+                    <div class="task-list" role="list"></div>
+                    <button class="add-btn" id="add-task" aria-label="Add new task">
+                        <i class="material-icons" aria-hidden="true">add</i>
+                        <span>Add Task</span>
+                    </button>
+                </div>
+            </section>
+
+            <section id="kickoff-page" class="page" aria-label="Kickoff">
+                <header>
+                    <h2>Kickoff!</h2>
+                </header>
+                <div class="kickoff-container">
+                    <div class="crew-selection">
+                        <label for="crew-select">Select Crew</label>
+                        <select id="crew-select" aria-label="Select a crew to run">
+                            <option value="">Select a crew...</option>
+                        </select>
+                    </div>
+                    <button class="kickoff-btn" id="start-crew" aria-label="Start selected crew">
+                        <i class="material-icons" aria-hidden="true">play_arrow</i>
+                        <span>Start Crew</span>
+                    </button>
+                    <div class="execution-output" role="log" aria-live="polite"></div>
+                </div>
+            </section>
+
+            <section id="export-page" class="page" aria-label="Import/Export">
+                <header>
+                    <h2>Import/Export</h2>
+                </header>
+                <div class="export-container">
+                    <div class="export-section">
+                        <h3>Export Crew</h3>
+                        <label for="export-crew-select">Select Crew to Export</label>
+                        <select id="export-crew-select" aria-label="Select a crew to export">
+                            <option value="">Select a crew...</option>
+                        </select>
+                        <button class="export-btn" id="export-crew" aria-label="Export selected crew">
+                            <i class="material-icons" aria-hidden="true">file_download</i>
+                            <span>Export</span>
+                        </button>
+                    </div>
+                    <div class="import-section">
+                        <h3>Import Crew</h3>
+                        <label for="import-file">Select File to Import</label>
+                        <input type="file" id="import-file" accept=".json" aria-label="Select a crew file to import">
+                        <button class="import-btn" id="import-crew" aria-label="Import selected crew file">
+                            <i class="material-icons" aria-hidden="true">file_upload</i>
+                            <span>Import</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
