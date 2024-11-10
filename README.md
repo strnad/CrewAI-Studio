@@ -118,6 +118,11 @@ In case of problems:
 - Rename `crewai.db` (it contains your crews but sometimes new versions can break compatibility).
 - Raise an issue and I will help you.
 
+## Video tutorial
+Video tutorial on CrewAI Studio made by Josh Poco
+
+[![FREE CrewAI Studio GUI EASY AI Agent Creation!🤖 Open Source AI Agent Orchestration Self Hosted](https://img.youtube.com/vi/3Uxdggt88pY/hqdefault.jpg)](https://www.youtube.com/watch?v=3Uxdggt88pY)
+
 ## Star History
 
 <a href="https://star-history.com/#strnad/CrewAI-Studio&Date">
@@ -125,5 +130,5 @@ In case of problems:
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=strnad/CrewAI-Studio&type=Date&theme=dark" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=strnad/CrewAI-Studio&type=Date" />
    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=strnad/CrewAI-Studio&type=Date" />
- </picture>
+ </picture>   
 </a>
