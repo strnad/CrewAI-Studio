@@ -108,6 +108,10 @@ Conda will be installed locally in the project folder. No need for a pre-existin
    ./run_conda.bat
    ```
 
+### One-Click Deployment
+
+[![Deploy to RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploylobe.svg)](https://repocloud.io/details/?app_id=318)
+
 ## Configuration
 
 Before running the application, ensure you update the `.env` file with your API keys and other necessary configurations. An example `.env` file is provided for reference.
