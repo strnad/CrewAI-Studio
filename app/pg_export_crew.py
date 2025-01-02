@@ -200,18 +200,13 @@ def main():
     placeholders = {{
         {placeholders_dict}
     }}
-
-    if st.button("Run Crew"):
         with st.spinner("Running crew..."):
             try:
                 result = crew.kickoff(inputs=placeholders)
-                if isinstance(result, dict):
-                    with st.expander("Final output", expanded=True):                
-                        st.write(result.get('final_output', 'No final output available'))
-                    with st.expander("Full output", expanded=False):
-                        st.write(result)
-                else:
-                    st.write("Result:")
+                with st.expander("Final output", expanded=True):
+                    if hasattr(result, 'raw'):
+                        st.write(result.raw)                
+                with st.expander("Full output", expanded=False):
                     st.write(result)
             except Exception as e:
                 st.error(f"An error occurred: {{str(e)}}")
