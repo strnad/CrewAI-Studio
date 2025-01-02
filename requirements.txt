@@ -8,3 +8,4 @@ langchain-anthropic
 langchain-ollama
 streamlit
 python-dotenv
+pdfminer.six

@@ -33,7 +33,7 @@ class PageExportCrew:
         tasks = crew.tasks
 
         # Check if any custom tools are used
-        custom_tools_used = any(tool.name in ["CustomApiTool", "CustomFileWriteTool", "CustomCodeInterpreterTool"] 
+        custom_tools_used = any(tool.name in ["CustomApiTool", "CustomFileWriteTool", "CustomCodeInterpreterTool", "ScrapeWebsiteToolEnhanced", "CSVSearchToolEnhanced"] 
                                 for agent in agents for tool in agent.tools)
 
         def json_dumps_python(obj):
@@ -97,8 +97,11 @@ from langchain_anthropic import ChatAnthropic
 from dotenv import load_dotenv
 import os
 from crewai_tools import *
-{'''from custom_tools import CustomApiTool, CustomFileWriteTool, CustomCodeInterpreterTool''' if custom_tools_used else ''}
-
+{'''from tools.CustomApiTool import CustomApiTool''' if custom_tools_used else ''}
+{'''from tools.CustomFileWriteTool import CustomFileWriteTool''' if custom_tools_used else ''}
+{'''from tools.CustomCodeInterpreterTool import CustomCodeInterpreterTool''' if custom_tools_used else ''}
+{'''from tools.ScrapeWebsiteToolEnhanced import ScrapeWebsiteToolEnhanced''' if custom_tools_used else ''}
+{'''from tools.CSVSearchToolEnhanced import CSVSearchToolEnhanced''' if custom_tools_used else ''}
 load_dotenv()
 
 def create_lmstudio_llm(model, temperature):
@@ -219,11 +222,10 @@ if __name__ == '__main__':
         with open(os.path.join(output_dir, 'app.py'), 'w') as f:
             f.write(app_content)
 
-        # If custom tools are used, copy the custom_tools.py file
         if custom_tools_used:
-            source_path = os.path.join(os.path.dirname(__file__), 'custom_tools.py')
-            dest_path = os.path.join(output_dir, 'custom_tools.py')
-            shutil.copy2(source_path, dest_path)
+            source_path = os.path.join(os.path.dirname(__file__), 'tools')
+            dest_path = os.path.join(output_dir, 'tools')
+            shutil.copytree(source_path, dest_path)
 
     def create_env_file(self, output_dir):
         env_content = """
