@@ -1,5 +1,5 @@
 from typing import Optional, Dict, Any
-from crewai_tools import BaseTool
+from crewai.tools import BaseTool
 import requests
 from pydantic.v1 import BaseModel, Field
 

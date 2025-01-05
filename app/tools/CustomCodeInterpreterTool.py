@@ -1,6 +1,6 @@
 import os
 from typing import Optional, Type
-from crewai_tools import BaseTool
+from crewai.tools import BaseTool
 import importlib.util
 from pydantic.v1 import BaseModel, Field,root_validator
 import docker
