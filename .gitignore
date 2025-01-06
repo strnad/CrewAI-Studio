@@ -14,8 +14,8 @@ vscode
 .env
 app/__pycache__
 app/__pycache__/*
-tools/__pycache__
-tools/__pycache__/*
+app/tools/__pycache__
+app/tools/__pycache__/*
 data
 data/*
 db/
