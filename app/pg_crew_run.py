@@ -7,12 +7,13 @@ import queue
 import time
 import traceback
 import os
+from console_capture import ConsoleCapture
 
 class PageCrewRun:
     def __init__(self):
         self.name = "Kickoff!"
         self.maintain_session_state()
-
+    
     @staticmethod
     def maintain_session_state():
         defaults = {
@@ -21,12 +22,15 @@ class PageCrewRun:
             'running': False,
             'message_queue': queue.Queue(),
             'selected_crew_name': None,
-            'placeholders': {}
+            'placeholders': {},
+            'console_output': [],
+            'last_update': time.time(),
+            'console_expanded': True,  # Přidáme nový stav
         }
         for key, value in defaults.items():
             if key not in ss:
                 ss[key] = value
-
+                
     @staticmethod
     def extract_placeholders(text):
         return re.findall(r'\{(.*?)\}', text)
@@ -56,7 +60,11 @@ class PageCrewRun:
             if (str(os.getenv('AGENTOPS_ENABLED')).lower() in ['true', '1']) and not ss.get('agentops_failed', False):                       
                 agentops.end_session()
             stack_trace = traceback.format_exc()
+            print(f"Error running crew: {str(e)}\n{stack_trace}")
             message_queue.put({"result": f"Error running crew: {str(e)}", "stack_trace": stack_trace})
+        finally:
+            if hasattr(ss, 'console_capture'):
+                ss.console_capture.stop()
 
     def get_mycrew_by_name(self, crewname):
         return next((crew for crew in ss.crews if crew.name == crewname), None)
@@ -108,13 +116,18 @@ class PageCrewRun:
     def control_buttons(self, selected_crew):
         if st.button('Run crew!', disabled=not selected_crew.is_valid() or ss.running):
             inputs = {key.split('_')[1]: value for key, value in ss.placeholders.items()}
-            ss.result = None            
+            ss.result = None
+            
             try:
                 crew = selected_crew.get_crewai_crew(full_output=True)
             except Exception as e:
                 st.exception(e)
                 traceback.print_exc()
                 return
+
+            ss.console_capture = ConsoleCapture()
+            ss.console_capture.start()
+            ss.console_output = []  # Reset výstupu
 
             ss.running = True
             ss.crew_thread = threading.Thread(
@@ -132,6 +145,8 @@ class PageCrewRun:
 
         if st.button('Stop crew!', disabled=not ss.running):
             self.force_stop_thread(ss.crew_thread)
+            if hasattr(ss, 'console_capture'):
+                ss.console_capture.stop()
             ss.message_queue.queue.clear()
             ss.running = False
             ss.crew_thread = None
@@ -140,23 +155,48 @@ class PageCrewRun:
             st.rerun()
 
     def display_result(self):
+        if ss.running and ss.page != "Kickoff!":
+            ss.page = "Kickoff!"
+            st.rerun()
+        console_container = st.empty()
+        
+        with console_container.container():
+            with st.expander("Console Output", expanded=False):
+                col1, col2 = st.columns([6,1])
+                with col2:
+                    if st.button("Clear console"):
+                        ss.console_output = []
+                        st.rerun()
+
+                console_text = "\n".join(ss.console_output)
+                st.code(console_text, language=None)
+
         if ss.result is not None:
             if isinstance(ss.result, dict):
-                if 'final_output' in ss.result["result"]: #old version of crewai
+                if 'final_output' in ss.result["result"]:
                     st.expander("Final output", expanded=True).write(ss.result["result"]['final_output'])
-                elif hasattr(ss.result["result"], 'raw'):  #new version of crewai
-                    st.expander("Final output", expanded=True).write(ss.result['result'].raw)  
+                elif hasattr(ss.result["result"], 'raw'):
+                    st.expander("Final output", expanded=True).write(ss.result['result'].raw)
                 st.expander("Full output", expanded=False).write(ss.result)
             else:
                 st.error(ss.result)
         elif ss.running and ss.crew_thread is not None:
             with st.spinner("Running crew..."):
-                while ss.running:
+                if hasattr(ss, 'console_capture'):
+                    new_output = ss.console_capture.get_output()
+                    if new_output:
+                        ss.console_output.extend(new_output)
+
+                try:
+                    message = ss.message_queue.get_nowait()
+                    ss.result = message
+                    ss.running = False
+                    if hasattr(ss, 'console_capture'):
+                        ss.console_capture.stop()
+                    st.rerun()
+                except queue.Empty:
                     time.sleep(1)
-                    if not ss.message_queue.empty():
-                        ss.result = ss.message_queue.get()
-                        ss.running = False
-                        st.rerun()
+                    st.rerun()
 
     @staticmethod
     def force_stop_thread(thread):
