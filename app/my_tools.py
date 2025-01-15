@@ -231,7 +231,7 @@ class MySeleniumScrapingTool(MyTool):
         super().__init__(
             tool_id, 
             'SeleniumScrapingTool', 
-            "A tool that can be used to read a specific part of website content. CSS elements are separated by comma, cookies are in format {key1\:value1},{key2\:value2}", 
+            r"A tool that can be used to read a specific part of website content. CSS elements are separated by comma, cookies are in format {key1\:value1},{key2\:value2}", 
             parameters, 
             website_url=website_url, 
             css_element=css_element, 
@@ -268,7 +268,7 @@ class MyScrapeElementFromWebsiteTool(MyTool):
         super().__init__(
             tool_id, 
             'ScrapeElementFromWebsiteTool', 
-            "A tool that can be used to read a specific part of website content. CSS elements are separated by comma, cookies are in format {key1\:value1},{key2\:value2}", 
+            r"A tool that can be used to read a specific part of website content. CSS elements are separated by comma, cookies are in format {key1\:value1},{key2\:value2}", 
             parameters, 
             website_url=website_url, 
             css_element=css_element, 

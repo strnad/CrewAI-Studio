@@ -9,3 +9,5 @@ langchain-ollama
 streamlit
 python-dotenv
 pdfminer.six
+sqlalchemy
+psycopg2-binary
