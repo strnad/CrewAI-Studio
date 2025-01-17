@@ -11,3 +11,4 @@ python-dotenv
 pdfminer.six
 sqlalchemy
 psycopg2-binary
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
