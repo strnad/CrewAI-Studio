@@ -1,0 +1,34 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    container_name: crewai_db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # The Streamlit app
+  web:
+    build: .
+    container_name: crewai_studio
+    depends_on:
+      - db
+    env_file:
+      - .env
+    # environment:
+      # DB_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      # - DB_URL=postgresql://crewai_user:secret@db:5432/crewai
+      # - DB_URL=${DB_URL}
+    ports:
+      - "8501:8501"
+
+volumes:
+  db-data:
