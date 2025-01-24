@@ -38,6 +38,19 @@ def draw_sidebar():
         if selected_page != ss.page:
             ss.page = selected_page
             st.rerun()
+            
+def load_secrets_from_env():
+    if "env_vars" not in st.session_state:
+        st.session_state.env_vars = {
+            "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
+            "OPENAI_API_BASE": os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1/"),
+            "GROQ_API_KEY": os.getenv("GROQ_API_KEY"),
+            "LMSTUDIO_API_BASE": os.getenv("LMSTUDIO_API_BASE"),
+            "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY"),
+            "OLLAMA_HOST": os.getenv("OLLAMA_HOST"),
+        }
+    else:
+        st.session_state.env_vars = st.session_state.env_vars
 
 def main():
     st.set_page_config(page_title="CrewAI Studio", page_icon="img/favicon.ico", layout="wide")
