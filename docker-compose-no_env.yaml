@@ -2,16 +2,12 @@ services:
   db:
     image: postgres:15
     container_name: crewai_db
-    #env_file:
-      #- .env
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-crewaiuser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret123}
       POSTGRES_DB: ${POSTGRES_DB:-crewai}
     volumes:
       - db-data:/var/lib/postgresql/data
-    #ports:
-      #- "5432:5432"
     restart: always
 
   web:
@@ -19,13 +15,19 @@ services:
     container_name: crewai_studio
     depends_on:
       - db
-    #env_file:
-      #- .env
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-crewaiuser}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret123}
-      POSTGRES_DB: ${POSTGRES_DB:-crewai}
-      DB_URL: ${DB_URL:-postgresql://${POSTGRES_USER:-crewaiuser}:${POSTGRES_PASSWORD:-secret123}@db:5432/${POSTGRES_DB:-crewai}}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_API_BASE: ${OPENAI_API_BASE:-}
+      OPENAI_PROXY_MODELS: ${OPENAI_PROXY_MODELS:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      LMSTUDIO_API_BASE: ${LMSTUDIO_API_BASE:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      AGENTOPS_API_KEY: ${AGENTOPS_API_KEY:-}
+      AGENTOPS_ENABLED: ${AGENTOPS_ENABLED:-False}
+      OLLAMA_HOST: ${OLLAMA_HOST:-}
+      OLLAMA_MODELS: ${OLLAMA_MODELS:-}
+      SERPER_API_KEY: ${SERPER_API_KEY:-}
+      DB_URL: postgresql://${POSTGRES_USER:-crewaiuser}:${POSTGRES_PASSWORD:-secret123}@db:5432/${POSTGRES_DB:-crewai}
     ports:
       - "8501:8501"
     restart: always
