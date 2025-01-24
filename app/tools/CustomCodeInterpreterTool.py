@@ -2,7 +2,8 @@ import os
 from typing import Optional, Type
 from crewai.tools import BaseTool
 import importlib.util
-from pydantic.v1 import BaseModel, Field,root_validator
+#from pydantic.v1 import BaseModel, Field,root_validator
+from pydantic import BaseModel, Field
 import docker
 import base64
 
@@ -23,7 +24,6 @@ class CustomCodeInterpreterSchema(BaseModel):
         description="List of libraries used in the code with proper installing names separated by commas. Example: numpy,pandas,beautifulsoup4",
     )
 
-    @root_validator(allow_reuse=True)
     def check_code_or_run_script(cls, values):
         code = values.get('code')
         run_script = values.get('run_script')

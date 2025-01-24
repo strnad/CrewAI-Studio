@@ -1,8 +1,7 @@
 import os
 from typing import Optional, Dict, Any
 from crewai.tools import BaseTool
-from pydantic.v1 import BaseModel, Field
-
+from pydantic import BaseModel, Field, model_validator
 
 class FixedCustomFileWriteToolInputSchema(BaseModel):
     content: str = Field(..., description="The content to write or append to the file")
