@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 from langchain_anthropic import ChatAnthropic
@@ -8,25 +9,27 @@ from crewai import LLM
 # Načtení prostředí z .env
 load_dotenv(override=True)
 
-# Globální snapshot proměnných prostředí
-ORIGINAL_ENV_VARS = {
-    "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
-    "OPENAI_API_BASE": os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1/"),
-    "GROQ_API_KEY": os.getenv("GROQ_API_KEY"),
-    "LMSTUDIO_API_BASE": os.getenv("LMSTUDIO_API_BASE"),
-    "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY"),
-    "OLLAMA_HOST": os.getenv("OLLAMA_HOST"),
-}
+# Inicializace session_state pro uložení přepnutých hodnot prostředí
+if "env_vars" not in st.session_state:
+    st.session_state.env_vars = {
+        "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
+        "OPENAI_API_BASE": os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1/"),
+        "GROQ_API_KEY": os.getenv("GROQ_API_KEY"),
+        "LMSTUDIO_API_BASE": os.getenv("LMSTUDIO_API_BASE"),
+        "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY"),
+        "OLLAMA_HOST": os.getenv("OLLAMA_HOST"),
+    }
 
 def switch_environment(new_env_vars):
-    """Přepíše proměnné prostředí dle zadaného slovníku."""
+    """Přepíše proměnné prostředí a uloží hodnoty do session_state."""
     for key, value in new_env_vars.items():
         if value is not None:
             os.environ[key] = value
+            st.session_state.env_vars[key] = value
 
 def restore_environment():
-    """Obnoví původní hodnoty prostředí."""
-    for key, value in ORIGINAL_ENV_VARS.items():
+    """Obnoví původní hodnoty prostředí ze session_state."""
+    for key, value in st.session_state.env_vars.items():
         if value is not None:
             os.environ[key] = value
         elif key in os.environ:
@@ -38,8 +41,8 @@ def safe_pop_env_var(key):
 
 def create_openai_llm(model, temperature):
     switch_environment({
-        "OPENAI_API_KEY": ORIGINAL_ENV_VARS["OPENAI_API_KEY"],
-        "OPENAI_API_BASE": ORIGINAL_ENV_VARS["OPENAI_API_BASE"],
+        "OPENAI_API_KEY": st.session_state.env_vars["OPENAI_API_KEY"],
+        "OPENAI_API_BASE": st.session_state.env_vars["OPENAI_API_BASE"],
     })
     api_key = os.getenv("OPENAI_API_KEY")
     api_base = os.getenv("OPENAI_API_BASE")
@@ -51,7 +54,7 @@ def create_openai_llm(model, temperature):
 
 def create_anthropic_llm(model, temperature):
     switch_environment({
-        "ANTHROPIC_API_KEY": ORIGINAL_ENV_VARS["ANTHROPIC_API_KEY"],
+        "ANTHROPIC_API_KEY": st.session_state.env_vars["ANTHROPIC_API_KEY"],
     })
     api_key = os.getenv("ANTHROPIC_API_KEY")
 
@@ -67,7 +70,7 @@ def create_anthropic_llm(model, temperature):
 
 def create_groq_llm(model, temperature):
     switch_environment({
-        "GROQ_API_KEY": ORIGINAL_ENV_VARS["GROQ_API_KEY"],
+        "GROQ_API_KEY": st.session_state.env_vars["GROQ_API_KEY"],
     })
     api_key = os.getenv("GROQ_API_KEY")
 
@@ -78,7 +81,7 @@ def create_groq_llm(model, temperature):
 
 def create_ollama_llm(model, temperature):
     switch_environment({
-        "OLLAMA_HOST": ORIGINAL_ENV_VARS["OLLAMA_HOST"],
+        "OLLAMA_HOST": st.session_state.env_vars["OLLAMA_HOST"],
     })
     host = os.getenv("OLLAMA_HOST")
 
@@ -90,7 +93,7 @@ def create_ollama_llm(model, temperature):
 def create_lmstudio_llm(model, temperature):
     switch_environment({
         "OPENAI_API_KEY": "lm-studio",
-        "OPENAI_API_BASE": ORIGINAL_ENV_VARS["LMSTUDIO_API_BASE"],
+        "OPENAI_API_BASE": st.session_state.env_vars["LMSTUDIO_API_BASE"],
     })
     api_base = os.getenv("OPENAI_API_BASE")
 
