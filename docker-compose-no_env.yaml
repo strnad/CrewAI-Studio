@@ -29,7 +29,7 @@ services:
       SERPER_API_KEY: ${SERPER_API_KEY:-}
       DB_URL: postgresql://${POSTGRES_USER:-crewaiuser}:${POSTGRES_PASSWORD:-secret123}@db:5432/${POSTGRES_DB:-crewai}
     ports:
-      - "8501:8501"
+      - "${WEB_PORT:-8501}:8501"
     restart: always
 
 volumes:
