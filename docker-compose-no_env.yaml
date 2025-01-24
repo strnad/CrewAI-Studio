@@ -10,8 +10,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-crewai}
     volumes:
       - db-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    #ports:
+      #- "5432:5432"
     restart: always
 
   web:
