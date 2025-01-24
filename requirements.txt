@@ -11,3 +11,4 @@ python-dotenv
 pdfminer.six
 sqlalchemy
 psycopg2-binary
+snowflake-connector-python
