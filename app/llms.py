@@ -19,16 +19,16 @@ if "env_vars" not in st.session_state:
         "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY"),
         "OLLAMA_HOST": os.getenv("OLLAMA_HOST"),
     }
+else:
+    st.session_state.env_vars = st.session_state.env_vars
 
 def switch_environment(new_env_vars):
-    """Přepíše proměnné prostředí a uloží hodnoty do session_state."""
     for key, value in new_env_vars.items():
         if value is not None:
             os.environ[key] = value
             st.session_state.env_vars[key] = value
 
 def restore_environment():
-    """Obnoví původní hodnoty prostředí ze session_state."""
     for key, value in st.session_state.env_vars.items():
         if value is not None:
             os.environ[key] = value
@@ -36,7 +36,6 @@ def restore_environment():
             del os.environ[key]
 
 def safe_pop_env_var(key):
-    """Bezpečně odstraní proměnnou prostředí."""
     os.environ.pop(key, None)
 
 def create_openai_llm(model, temperature):
@@ -80,16 +79,16 @@ def create_groq_llm(model, temperature):
         raise ValueError("Groq API key not set in .env file")
 
 def create_ollama_llm(model, temperature):
-    switch_environment({
-        "OLLAMA_HOST": st.session_state.env_vars["OLLAMA_HOST"],
-    })
-    host = os.getenv("OLLAMA_HOST")
-
+    host = st.session_state.env_vars["OLLAMA_HOST"]
     if host:
+        switch_environment({
+            "OPENAI_API_KEY": "ollama",  # Nastaví OpenAI API klíč na "ollama"
+            "OPENAI_API_BASE": host,    # Nastaví OpenAI API Base na hodnotu OLLAMA_HOST
+        })
         return LLM(model=model, temperature=temperature, base_url=host)
     else:
         raise ValueError("Ollama Host is not set in .env file")
-
+    
 def create_lmstudio_llm(model, temperature):
     switch_environment({
         "OPENAI_API_KEY": "lm-studio",
@@ -133,7 +132,7 @@ LLM_CONFIG = {
 def llm_providers_and_models():
     return [f"{provider}: {model}" for provider in LLM_CONFIG.keys() for model in LLM_CONFIG[provider]["models"]]
 
-def create_llm(provider_and_model, temperature=0.1):
+def create_llm(provider_and_model, temperature=0.15):
     provider, model = provider_and_model.split(": ")
     create_llm_func = LLM_CONFIG.get(provider, {}).get("create_llm")
 
