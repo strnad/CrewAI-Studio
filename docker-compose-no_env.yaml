@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:15
+    container_name: crewai_db
+    #env_file:
+      #- .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-crewaiuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret123}
+      POSTGRES_DB: ${POSTGRES_DB:-crewai}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+
+  web:
+    build: .
+    container_name: crewai_studio
+    depends_on:
+      - db
+    #env_file:
+      #- .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-crewaiuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret123}
+      POSTGRES_DB: ${POSTGRES_DB:-crewai}
+      DB_URL: ${DB_URL:-postgresql://${POSTGRES_USER:-crewaiuser}:${POSTGRES_PASSWORD:-secret123}@db:5432/${POSTGRES_DB:-crewai}}
+    ports:
+      - "8501:8501"
+    restart: always
+
+volumes:
+  db-data:
