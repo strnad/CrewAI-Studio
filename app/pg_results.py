@@ -60,7 +60,7 @@ class PageResults:
             with st.expander(f"{result.crew_name} - {datetime.fromisoformat(result.created_at).strftime('%Y-%m-%d %H:%M:%S')}", expanded=False):
                 st.markdown("#### Inputs")
                 for key, value in result.inputs.items():
-                    st.text_input(key, value, disabled=True)
+                    st.text_input(key, value, disabled=True,key=rnd_id())
                 
                 st.markdown("#### Result")
                 formatted_result = self.format_result(result.result)
