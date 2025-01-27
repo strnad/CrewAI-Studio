@@ -55,6 +55,13 @@ class PageResults:
             filter_date = datetime.combine(date_filter, datetime.min.time())
             filtered_results = [r for r in filtered_results if datetime.fromisoformat(r.created_at).date() == date_filter]
 
+        # Seřazení výsledků podle času vytvoření od nejnovějších
+        filtered_results = sorted(
+            filtered_results,
+            key=lambda x: datetime.fromisoformat(x.created_at),
+            reverse=True
+        )
+
         # Display results
         for result in filtered_results:
             with st.expander(f"{result.crew_name} - {datetime.fromisoformat(result.created_at).strftime('%Y-%m-%d %H:%M:%S')}", expanded=False):
