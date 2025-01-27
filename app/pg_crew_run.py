@@ -9,6 +9,7 @@ import traceback
 import os
 from console_capture import ConsoleCapture
 from db_utils import load_results, save_result
+from utils import format_result, generate_printable_view, rnd_id
 
 
 class PageCrewRun:
@@ -29,12 +30,12 @@ class PageCrewRun:
             'placeholders': {},
             'console_output': [],
             'last_update': time.time(),
-            'console_expanded': True,  # Přidáme nový stav
+            'console_expanded': True,
         }
         for key, value in defaults.items():
             if key not in ss:
                 ss[key] = value
-                
+
     @staticmethod
     def extract_placeholders(text):
         return re.findall(r'\{(.*?)\}', text)
@@ -201,7 +202,6 @@ class PageCrewRun:
             if isinstance(ss.result, dict):
                 # Save the result only if it's a new result (not already in ss.results)
                 from result import Result
-                from utils import rnd_id
                 
                 # Create a unique identifier for the current result based on its content
                 result_identifier = str(hash(str(ss.result)))
@@ -230,11 +230,28 @@ class PageCrewRun:
                     ss.saved_results.add(result_identifier)
 
                 # Display the result
-                if 'final_output' in ss.result["result"]:
-                    st.expander("Final output", expanded=True).write(ss.result["result"]['final_output'])
-                elif hasattr(ss.result["result"], 'raw'):
-                    st.expander("Final output", expanded=True).write(ss.result['result'].raw)
+                formatted_result = format_result(ss.result)
+                st.expander("Final output", expanded=True).write(formatted_result)
                 st.expander("Full output", expanded=False).write(ss.result)
+
+                # Add print button
+                inputs = {key.split('_')[1]: value for key, value in ss.placeholders.items()}
+                html_content = generate_printable_view(
+                    ss.selected_crew_name,
+                    ss.result,
+                    inputs,
+                    formatted_result
+                )
+                if st.button("Open Printable View"):
+                    js = f"""
+                    <script>
+                        var printWindow = window.open('', '_blank');
+                        printWindow.document.write({html_content!r});
+                        printWindow.document.close();
+                    </script>
+                    """
+                    st.components.v1.html(js, height=0)
+
             else:
                 st.error(ss.result)
         elif ss.running and ss.crew_thread is not None:
