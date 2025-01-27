@@ -6,21 +6,19 @@ from langchain_groq import ChatGroq
 from langchain_anthropic import ChatAnthropic
 from crewai import LLM
 
-# Načtení prostředí z .env
-load_dotenv(override=True)
-
-# Inicializace session_state pro uložení přepnutých hodnot prostředí
-if "env_vars" not in st.session_state:
-    st.session_state.env_vars = {
-        "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
-        "OPENAI_API_BASE": os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1/"),
-        "GROQ_API_KEY": os.getenv("GROQ_API_KEY"),
-        "LMSTUDIO_API_BASE": os.getenv("LMSTUDIO_API_BASE"),
-        "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY"),
-        "OLLAMA_HOST": os.getenv("OLLAMA_HOST"),
-    }
-else:
-    st.session_state.env_vars = st.session_state.env_vars
+def load_secrets_fron_env():
+    load_dotenv(override=True)
+    if "env_vars" not in st.session_state:
+        st.session_state.env_vars = {
+            "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
+            "OPENAI_API_BASE": os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1/"),
+            "GROQ_API_KEY": os.getenv("GROQ_API_KEY"),
+            "LMSTUDIO_API_BASE": os.getenv("LMSTUDIO_API_BASE"),
+            "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY"),
+            "OLLAMA_HOST": os.getenv("OLLAMA_HOST"),
+        }
+    else:
+        st.session_state.env_vars = st.session_state.env_vars
 
 def switch_environment(new_env_vars):
     for key, value in new_env_vars.items():

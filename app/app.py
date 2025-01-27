@@ -9,6 +9,7 @@ from pg_crew_run import PageCrewRun
 from pg_export_crew import PageExportCrew
 from pg_results import PageResults
 from dotenv import load_dotenv
+from llms import load_secrets_fron_env
 import os
 def pages():
     return {
@@ -41,23 +42,10 @@ def draw_sidebar():
             ss.page = selected_page
             st.rerun()
             
-def load_secrets_from_env():
-    if "env_vars" not in st.session_state:
-        st.session_state.env_vars = {
-            "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
-            "OPENAI_API_BASE": os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1/"),
-            "GROQ_API_KEY": os.getenv("GROQ_API_KEY"),
-            "LMSTUDIO_API_BASE": os.getenv("LMSTUDIO_API_BASE"),
-            "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY"),
-            "OLLAMA_HOST": os.getenv("OLLAMA_HOST"),
-        }
-    else:
-        st.session_state.env_vars = st.session_state.env_vars
-
 def main():
     st.set_page_config(page_title="CrewAI Studio", page_icon="img/favicon.ico", layout="wide")
     load_dotenv()
-    load_secrets_from_env()
+    load_secrets_fron_env()
     if (str(os.getenv('AGENTOPS_ENABLED')).lower() in ['true', '1']) and not ss.get('agentops_failed', False):
         try:
             import agentops
