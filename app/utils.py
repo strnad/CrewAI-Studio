@@ -27,28 +27,26 @@ def fix_columns_width():
 
 def generate_printable_view(crew_name, result, inputs, formatted_result, created_at=None):
     """
-    Generates HTML for a printable view. 
-    Converts the main output (formatted_result) from Markdown to HTML, 
-    adds a print button (hidden in print view), and adds a page break before the result.
+    Generates a simple HTML view for printing.
     """
     if created_at is None:
         created_at = datetime.now().isoformat()
     created_at_str = datetime.fromisoformat(created_at).strftime('%Y-%m-%d %H:%M:%S')
-    markdown_html = md.markdown(formatted_result)  # Converts Markdown to HTML
+    markdown_html = md.markdown(formatted_result)
 
     html_content = f"""
     <html>
         <head>
-            <title>CrewAI Result - {crew_name}</title>
+            <title>CrewAI-Studio result - {crew_name}</title>
             <style>
                 body {{
-                    font-family: Arial, sans-serif;
+                    font-family: 'Arial', sans-serif;
                     padding: 20px;
                     max-width: 800px;
                     margin: auto;
                 }}
                 h1 {{
-                    color: #1f77b4;
+                    color: #f05252;
                 }}
                 .section {{
                     margin: 20px 0;
@@ -64,15 +62,15 @@ def generate_printable_view(crew_name, result, inputs, formatted_result, created
                     background-color: #f5f5f5;
                     padding: 2px 4px;
                     border-radius: 3px;
+                    font-family: 'Consolas', 'Courier New', monospace;
                 }}
                 pre code {{
                     background-color: #f5f5f5;
                     display: block;
                     padding: 10px;
                     white-space: pre-wrap;
+                    font-family: 'Consolas', 'Courier New', monospace;
                 }}
-
-                /* Hide the print button when printing */
                 @media print {{
                     #printButton {{
                         display: none;
@@ -80,16 +78,19 @@ def generate_printable_view(crew_name, result, inputs, formatted_result, created
                     .page-break {{
                         page-break-before: always;
                     }}
+                    body {{
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }}
                 }}
             </style>
         </head>
         <body>
-            <!-- Print button (will be hidden during printing) -->
             <button id="printButton" onclick="window.print();" style="margin-bottom: 20px;">
                 Print
             </button>
 
-            <h1>CrewAI Result</h1>
+            <h1>CrewAI-Studio result</h1>
             <div class="section">
                 <h2>Crew Information</h2>
                 <p><strong>Crew Name:</strong> {crew_name}</p>
@@ -99,11 +100,8 @@ def generate_printable_view(crew_name, result, inputs, formatted_result, created
                 <h2>Inputs</h2>
                 {''.join(f'<div class="input-item"><strong>{k}:</strong> {v}</div>' for k, v in inputs.items())}
             </div>
-
-            <!-- Page break to separate metadata from the main result -->
             <div class="page-break"></div>
-
-            <div class="section">                    
+            <div class="section">
                 {markdown_html}
             </div>
         </body>
