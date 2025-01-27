@@ -8,11 +8,15 @@ import time
 import traceback
 import os
 from console_capture import ConsoleCapture
+from db_utils import load_results, save_result
+
 
 class PageCrewRun:
     def __init__(self):
         self.name = "Kickoff!"
         self.maintain_session_state()
+        if 'results' not in ss:
+            ss.results = load_results()
     
     @staticmethod
     def maintain_session_state():
@@ -154,6 +158,28 @@ class PageCrewRun:
             st.success("Crew stopped successfully.")
             st.rerun()
 
+    def serialize_result(self, result):
+        """
+        Serialize the crew result for database storage.
+        """
+        if isinstance(result, dict):
+            serialized = {}
+            for key, value in result.items():
+                if hasattr(value, 'raw'):
+                    serialized[key] = {
+                        'raw': value.raw,
+                        'type': 'CrewOutput'
+                    }
+                elif hasattr(value, '__dict__'):
+                    serialized[key] = {
+                        'data': value.__dict__,
+                        'type': value.__class__.__name__
+                    }
+                else:
+                    serialized[key] = value
+            return serialized
+        return str(result)
+
     def display_result(self):
         if ss.running and ss.page != "Kickoff!":
             ss.page = "Kickoff!"
@@ -173,6 +199,26 @@ class PageCrewRun:
 
         if ss.result is not None:
             if isinstance(ss.result, dict):
+                # Save the result
+                from result import Result
+                from utils import rnd_id
+                
+                # Create a new Result instance with serialized result
+                result = Result(
+                    id=f"R_{rnd_id()}",
+                    crew_id=ss.selected_crew_name,
+                    crew_name=ss.selected_crew_name,
+                    inputs={key.split('_')[1]: value for key, value in ss.placeholders.items()},
+                    result=self.serialize_result(ss.result)  # Serialize the result before saving
+                )
+                
+                # Save to database and update session state
+                save_result(result)
+                if 'results' not in ss:
+                    ss.results = []
+                ss.results.append(result)
+
+                # Display the result
                 if 'final_output' in ss.result["result"]:
                     st.expander("Final output", expanded=True).write(ss.result["result"]['final_output'])
                 elif hasattr(ss.result["result"], 'raw'):
