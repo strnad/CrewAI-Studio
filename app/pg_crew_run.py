@@ -199,24 +199,35 @@ class PageCrewRun:
 
         if ss.result is not None:
             if isinstance(ss.result, dict):
-                # Save the result
+                # Save the result only if it's a new result (not already in ss.results)
                 from result import Result
                 from utils import rnd_id
                 
-                # Create a new Result instance with serialized result
-                result = Result(
-                    id=f"R_{rnd_id()}",
-                    crew_id=ss.selected_crew_name,
-                    crew_name=ss.selected_crew_name,
-                    inputs={key.split('_')[1]: value for key, value in ss.placeholders.items()},
-                    result=self.serialize_result(ss.result)  # Serialize the result before saving
-                )
+                # Create a unique identifier for the current result based on its content
+                result_identifier = str(hash(str(ss.result)))
                 
-                # Save to database and update session state
-                save_result(result)
-                if 'results' not in ss:
-                    ss.results = []
-                ss.results.append(result)
+                # Check if this result has already been saved
+                if not hasattr(ss, 'saved_results'):
+                    ss.saved_results = set()
+                
+                if result_identifier not in ss.saved_results:
+                    # Create a new Result instance with serialized result
+                    result = Result(
+                        id=f"R_{rnd_id()}",
+                        crew_id=ss.selected_crew_name,
+                        crew_name=ss.selected_crew_name,
+                        inputs={key.split('_')[1]: value for key, value in ss.placeholders.items()},
+                        result=self.serialize_result(ss.result)  # Serialize the result before saving
+                    )
+                    
+                    # Save to database and update session state
+                    save_result(result)
+                    if 'results' not in ss:
+                        ss.results = []
+                    ss.results.append(result)
+                    
+                    # Mark this result as saved
+                    ss.saved_results.add(result_identifier)
 
                 # Display the result
                 if 'final_output' in ss.result["result"]:
