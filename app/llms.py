@@ -7,7 +7,7 @@ from langchain_anthropic import ChatAnthropic
 from crewai import LLM
 from langchain_openai.chat_models.base import BaseChatOpenAI
 
-# Načtení prostředí z .env
+
 load_dotenv(override=True)
 
 # Inicializace session_state pro uložení přepnutých hodnot prostředí
@@ -24,6 +24,7 @@ if "env_vars" not in st.session_state:
     }
 else:
     st.session_state.env_vars = st.session_state.env_vars
+
 
 def switch_environment(new_env_vars):
     for key, value in new_env_vars.items():

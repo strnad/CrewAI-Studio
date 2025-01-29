@@ -255,3 +255,36 @@ def import_from_json(file_path):
 
     conn.commit()
     conn.close()
+
+def save_result(result):
+    """Save a result to the database."""
+    data = {
+        'crew_id': result.crew_id,
+        'crew_name': result.crew_name,
+        'inputs': result.inputs,
+        'result': result.result,
+        'created_at': result.created_at
+    }
+    save_entity('result', result.id, data)
+
+def load_results():
+    """Load all results from the database."""
+    from result import Result
+    rows = load_entities('result')
+    results = []
+    for row in rows:
+        data = row[1]
+        result = Result(
+            id=row[0],
+            crew_id=data['crew_id'],
+            crew_name=data['crew_name'],
+            inputs=data['inputs'],
+            result=data['result'],
+            created_at=data['created_at']
+        )
+        results.append(result)
+    return sorted(results, key=lambda x: x.created_at, reverse=True)
+
+def delete_result(result_id):
+    """Delete a result from the database."""
+    delete_entity('result', result_id)
