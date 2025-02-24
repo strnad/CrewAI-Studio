@@ -1,6 +1,6 @@
-# CrewAI Studio
+# Cats Crew
 
-Welcome to CrewAI Studio! This application provides a user-friendly interface written in Streamlit for interacting with CrewAI, suitable even for those who don't want to write any code. Follow the steps below to install and run the application on Windows or Linux (probably also MacOS) using either Conda or a virtual environment.
+Welcome to Cats Crew! This application provides a user-friendly interface written in Streamlit for interacting with CrewAI, suitable even for those who don't want to write any code. Follow the steps below to install and run the application on Windows or Linux (probably also MacOS) using either Conda or a virtual environment.
 
 ## Features
 
@@ -15,8 +15,8 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 
 ## Screenshots
 
-<img src="https://raw.githubusercontent.com/strnad/CrewAI-Studio/main/img/crews.png" alt="crews definition" style="width:50%;"/>
-<img src="https://raw.githubusercontent.com/strnad/CrewAI-Studio/main/img/kickoff.png" alt="kickoff" style="width:50%;"/>
+<img src="https://raw.githubusercontent.com/strnad/Cats Crew/main/img/crews.png" alt="crews definition" style="width:50%;"/>
+<img src="https://raw.githubusercontent.com/strnad/Cats Crew/main/img/kickoff.png" alt="kickoff" style="width:50%;"/>
 
 ## Installation
 
@@ -29,8 +29,8 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 1. **Clone the repository (or use downloaded ZIP file)**:
 
    ```bash
-   git clone https://github.com/strnad/CrewAI-Studio.git
-   cd CrewAI-Studio
+   git clone https://github.com/strnad/Cats Crew.git
+   cd Cats Crew
    ```
 
 2. **Run the installation script**:
@@ -49,8 +49,8 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 1. **Clone the repository (or use downloaded ZIP file)**:
 
    ```powershell
-   git clone https://github.com/strnad/CrewAI-Studio.git
-   cd CrewAI-Studio
+   git clone https://github.com/strnad/Cats Crew.git
+   cd Cats Crew
    ```
 
 2. **Run the Conda installation script**:
@@ -73,8 +73,8 @@ Conda will be installed locally in the project folder. No need for a pre-existin
 1. **Clone the repository (or use downloaded ZIP file)**:
 
    ```bash
-   git clone https://github.com/strnad/CrewAI-Studio.git
-   cd CrewAI-Studio
+   git clone https://github.com/strnad/Cats Crew.git
+   cd Cats Crew
    ```
 
 2. **Run the Conda installation script**:
@@ -93,8 +93,8 @@ Conda will be installed locally in the project folder. No need for a pre-existin
 1. **Clone the repository (or use downloaded ZIP file)**:
 
    ```powershell
-   git clone https://github.com/strnad/CrewAI-Studio.git
-   cd CrewAI-Studio
+   git clone https://github.com/strnad/Cats Crew.git
+   cd Cats Crew
    ```
 
 2. **Run the Conda installation script**:
@@ -114,7 +114,7 @@ Conda will be installed locally in the project folder. No need for a pre-existin
 
 ## Running with Docker Compose
 
-To quickly set up and run CrewAI-Studio using Docker Compose, follow these steps:
+To quickly set up and run Cats Crew using Docker Compose, follow these steps:
 
 ### Prerequisites
 
@@ -124,8 +124,8 @@ To quickly set up and run CrewAI-Studio using Docker Compose, follow these steps
 
 1. Clone the repository:
 ```
-git clone https://github.com/chadsly/CrewAI-Studio.git
-cd CrewAI-Studio
+git clone https://github.com/chadsly/Cats Crew.git
+cd Cats Crew
 ```
 
 2. Create a .env file for configuration.  Edit for your own configuration:
@@ -146,21 +146,21 @@ Before running the application, ensure you update the `.env` file with your API 
 
 ## Troubleshooting
 In case of problems:
-- Delete the `venv/miniconda` folder and reinstall `crewai-studio`.
+- Delete the `venv/miniconda` folder and reinstall `Cats Crew`.
 - Rename `crewai.db` (it contains your crews but sometimes new versions can break compatibility).
 - Raise an issue and I will help you.
 
 ## Video tutorial
-Video tutorial on CrewAI Studio made by Josh Poco
+Video tutorial on Cats Crew made by Josh Poco
 
-[![FREE CrewAI Studio GUI EASY AI Agent Creation!🤖 Open Source AI Agent Orchestration Self Hosted](https://img.youtube.com/vi/3Uxdggt88pY/hqdefault.jpg)](https://www.youtube.com/watch?v=3Uxdggt88pY)
+[![FREE Cats Crew GUI EASY AI Agent Creation!🤖 Open Source AI Agent Orchestration Self Hosted](https://img.youtube.com/vi/3Uxdggt88pY/hqdefault.jpg)](https://www.youtube.com/watch?v=3Uxdggt88pY)
 
 ## Star History
 
-<a href="https://star-history.com/#strnad/CrewAI-Studio&Date">
+<a href="https://star-history.com/#strnad/Cats Crew&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=strnad/CrewAI-Studio&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=strnad/CrewAI-Studio&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=strnad/CrewAI-Studio&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=strnad/Cats Crew&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=strnad/Cats Crew&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=strnad/Cats Crew&type=Date" />
  </picture>   
 </a>
