@@ -200,16 +200,16 @@ def main():
     placeholders = {{
         {placeholders_dict}
     }}
-        with st.spinner("Running crew..."):
-            try:
-                result = crew.kickoff(inputs=placeholders)
-                with st.expander("Final output", expanded=True):
-                    if hasattr(result, 'raw'):
-                        st.write(result.raw)                
-                with st.expander("Full output", expanded=False):
-                    st.write(result)
-            except Exception as e:
-                st.error(f"An error occurred: {{str(e)}}")
+    with st.spinner("Running crew..."):
+        try:
+            result = crew.kickoff(inputs=placeholders)
+            with st.expander("Final output", expanded=True):
+                if hasattr(result, 'raw'):
+                    st.write(result.raw)                
+            with st.expander("Full output", expanded=False):
+                st.write(result)
+        except Exception as e:
+            st.error(f"An error occurred: {{str(e)}}")
 
 if __name__ == '__main__':
     main()
