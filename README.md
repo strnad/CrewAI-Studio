@@ -124,7 +124,7 @@ To quickly set up and run CrewAI-Studio using Docker Compose, follow these steps
 
 1. Clone the repository:
 ```
-git clone https://github.com/chadsly/CrewAI-Studio.git
+git clone https://github.com/strnad/CrewAI-Studio.git
 cd CrewAI-Studio
 ```
 
