@@ -1,0 +1,268 @@
+:root {
+    --primary-color: #2196F3;
+    --secondary-color: #1976D2;
+    --background-color: #f5f5f5;
+    --sidebar-bg: #fff;
+    --text-color: #333;
+    --border-color: #e0e0e0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.5;
+}
+
+/* Mobile First Layout */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Mobile Navigation */
+.sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--sidebar-bg);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.logo-container {
+    display: none; /* Hidden on mobile */
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    justify-content: space-around;
+    padding: 0.5rem;
+}
+
+.nav-links li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.nav-links li i {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.nav-links li span {
+    display: none;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 1rem;
+    margin-bottom: 4rem; /* Space for bottom navigation */
+}
+
+.page {
+    display: none;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.page.active {
+    display: block;
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+}
+
+h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Cards */
+.crew-item, .tool-item, .agent-item, .task-item {
+    background: white;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Buttons */
+.add-btn, .kickoff-btn, .export-btn, .import-btn {
+    width: 100%;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.add-btn:hover, .kickoff-btn:hover, .export-btn:hover, .import-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+/* Form Elements */
+select, input[type="file"] {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+}
+
+/* Containers */
+.crews-container, .tools-container, .agents-container, .tasks-container {
+    padding: 1rem;
+}
+
+.execution-output {
+    background: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+    overflow-x: auto;
+}
+
+.export-container {
+    display: grid;
+    gap: 1rem;
+}
+
+.export-section, .import-section {
+    background: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+/* Action buttons within items */
+.crew-actions, .tool-actions, .agent-actions, .task-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.crew-actions button, .tool-actions button, .agent-actions button, .task-actions button {
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--primary-color);
+}
+
+/* Tablet and up */
+@media (min-width: 768px) {
+    .app-container {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        position: static;
+        width: 250px;
+        padding: 1rem 0;
+    }
+
+    .logo-container {
+        display: block;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .nav-links {
+        flex-direction: column;
+    }
+
+    .nav-links li {
+        flex-direction: row;
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    .nav-links li span {
+        display: inline;
+        margin-left: 0.5rem;
+    }
+
+    .main-content {
+        margin-bottom: 0;
+        padding: 2rem;
+    }
+
+    .export-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .add-btn, .kickoff-btn, .export-btn, .import-btn {
+        width: auto;
+    }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+    .main-content {
+        padding: 2rem 3rem;
+    }
+
+    .page {
+        max-width: 1200px;
+    }
+
+    .crew-list, .tool-list, .agent-list, .task-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #121212;
+        --sidebar-bg: #1e1e1e;
+        --text-color: #ffffff;
+        --border-color: #333333;
+    }
+
+    .crew-item, .tool-item, .agent-item, .task-item,
+    .export-section, .import-section, .execution-output {
+        background: #1e1e1e;
+    }
+
+    select, input[type="file"] {
+        background: #1e1e1e;
+        color: white;
+    }
+}
