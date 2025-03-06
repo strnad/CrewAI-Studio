@@ -5,20 +5,26 @@ from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 from langchain_anthropic import ChatAnthropic
 from crewai import LLM
+from langchain_openai.chat_models.base import BaseChatOpenAI
 
-def load_secrets_fron_env():
-    load_dotenv(override=True)
-    if "env_vars" not in st.session_state:
-        st.session_state.env_vars = {
-            "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
-            "OPENAI_API_BASE": os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1/"),
-            "GROQ_API_KEY": os.getenv("GROQ_API_KEY"),
-            "LMSTUDIO_API_BASE": os.getenv("LMSTUDIO_API_BASE"),
-            "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY"),
-            "OLLAMA_HOST": os.getenv("OLLAMA_HOST"),
-        }
-    else:
-        st.session_state.env_vars = st.session_state.env_vars
+
+load_dotenv(override=True)
+
+# Inicializace session_state pro uložení přepnutých hodnot prostředí
+if "env_vars" not in st.session_state:
+    st.session_state.env_vars = {
+        "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
+        "OPENAI_API_BASE": os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1/"),
+        "GROQ_API_KEY": os.getenv("GROQ_API_KEY"),
+        "LMSTUDIO_API_BASE": os.getenv("LMSTUDIO_API_BASE"),
+        "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY"),
+        "OLLAMA_HOST": os.getenv("OLLAMA_HOST"),
+        "DEEPSEEK_API_KEY": os.getenv("DEEPSEEK_API_KEY"),
+        "DEEPSEEK_BASE_URL": os.getenv("DEEPSEEK_BASE_URL"),
+    }
+else:
+    st.session_state.env_vars = st.session_state.env_vars
+
 
 def switch_environment(new_env_vars):
     for key, value in new_env_vars.items():
@@ -87,6 +93,28 @@ def create_ollama_llm(model, temperature):
     else:
         raise ValueError("Ollama Host is not set in .env file")
     
+
+def create_deepseek_llm(model, temperature):
+    host = st.session_state.env_vars.get("DEEPSEEK_BASE_URL")
+    api_key = st.session_state.env_vars.get("DEEPSEEK_API_KEY")
+    
+    if not host or not api_key:
+        raise ValueError("DEEPSEEK_BASE_URL and DEEPSEEK_API_KEY must be set in .env file")
+        
+    switch_environment({
+        "OPENAI_API_KEY": api_key,
+        "OPENAI_API_BASE": host,
+    })
+    
+    return LLM(
+        model="deepseek/deepseek-chat",  # Format correct pour DeepSeek selon liteLLM
+        temperature=temperature,
+        api_key=api_key,
+        base_url=host
+    )
+    
+
+    
 def create_lmstudio_llm(model, temperature):
     switch_environment({
         "OPENAI_API_KEY": "lm-studio",
@@ -120,6 +148,10 @@ LLM_CONFIG = {
     "Anthropic": {
         "models": ["claude-3-5-sonnet-20240620"],
         "create_llm": create_anthropic_llm,
+    },
+    "DeepSeek": {
+        "models": ["deepseek/deepseek-chat"],
+        "create_llm": create_deepseek_llm,
     },
     "LM Studio": {
         "models": ["lms-default"],
