@@ -30,6 +30,24 @@ class MyKnowledgeSource:
     def edit(self, value):
         ss[self.edit_key] = value
 
+    def fix_file_path(self, file_path):
+        """
+        Fix file paths to handle various issues with knowledge directory
+        """
+        if not file_path:
+            return file_path
+            
+        # Convert backslashes to forward slashes for consistency
+        normalized_path = file_path.replace('\\', '/')
+        
+        # Handle double "knowledge" directory
+        parts = normalized_path.split('/')
+        if len(parts) >= 2 and parts[0] == 'knowledge' and parts[1] == 'knowledge':
+            # Remove the duplicate "knowledge/" prefix
+            return '/'.join(parts[1:])
+            
+        return file_path
+        
     def get_crewai_knowledge_source(self):
         # Import knowledge source classes based on type
         if self.source_type == "string":
@@ -42,40 +60,50 @@ class MyKnowledgeSource:
             )
         elif self.source_type == "text_file":
             from crewai.knowledge.source.text_file_knowledge_source import TextFileKnowledgeSource
+            fixed_path = self.fix_file_path(self.source_path)
+            print(f"Using file path: {fixed_path}")
             return TextFileKnowledgeSource(
-                file_paths=[self.source_path],
+                file_paths=[fixed_path],
                 metadata=self.metadata,
                 chunk_size=self.chunk_size,
                 chunk_overlap=self.chunk_overlap
             )
         elif self.source_type == "pdf":
             from crewai.knowledge.source.pdf_knowledge_source import PDFKnowledgeSource
+            fixed_path = self.fix_file_path(self.source_path)
+            print(f"Using file path: {fixed_path}")
             return PDFKnowledgeSource(
-                file_paths=[self.source_path],
+                file_paths=[fixed_path],
                 metadata=self.metadata,
                 chunk_size=self.chunk_size,
                 chunk_overlap=self.chunk_overlap
             )
         elif self.source_type == "csv":
             from crewai.knowledge.source.csv_knowledge_source import CSVKnowledgeSource
+            fixed_path = self.fix_file_path(self.source_path)
+            print(f"Using file path: {fixed_path}")
             return CSVKnowledgeSource(
-                file_paths=[self.source_path],
+                file_paths=[fixed_path],
                 metadata=self.metadata,
                 chunk_size=self.chunk_size,
                 chunk_overlap=self.chunk_overlap
             )
         elif self.source_type == "excel":
             from crewai.knowledge.source.excel_knowledge_source import ExcelKnowledgeSource
+            fixed_path = self.fix_file_path(self.source_path)
+            print(f"Using file path: {fixed_path}")
             return ExcelKnowledgeSource(
-                file_paths=[self.source_path],
+                file_paths=[fixed_path],
                 metadata=self.metadata,
                 chunk_size=self.chunk_size,
                 chunk_overlap=self.chunk_overlap
             )
         elif self.source_type == "json":
             from crewai.knowledge.source.json_knowledge_source import JSONKnowledgeSource
+            fixed_path = self.fix_file_path(self.source_path)
+            print(f"Using file path: {fixed_path}")
             return JSONKnowledgeSource(
-                file_paths=[self.source_path],
+                file_paths=[fixed_path],
                 metadata=self.metadata,
                 chunk_size=self.chunk_size,
                 chunk_overlap=self.chunk_overlap
@@ -104,7 +132,24 @@ class MyKnowledgeSource:
             return False
             
         # For file-based sources, check if the file exists (except for docling URLs)
-        if self.source_type != "string" and self.source_type != "docling" and not os.path.exists(self.source_path):
+        if self.source_type != "string" and self.source_type != "docling":
+            # Try different path variations to find the file
+            paths_to_check = [
+                self.source_path,  # Original path
+                self.fix_file_path(self.source_path),  # Fixed path
+                os.path.basename(self.source_path),  # Just the filename
+                os.path.join("knowledge", os.path.basename(self.source_path))  # knowledge/filename
+            ]
+            
+            for path in paths_to_check:
+                if os.path.exists(path):
+                    if path != self.source_path:
+                        # Update to the correct path if it's different
+                        print(f"Found file at {path}, updating source_path")
+                        self.source_path = path
+                        db_utils.save_knowledge_source(self)
+                    return True
+            
             if show_warning:
                 st.warning(f"File not found: {self.source_path}")
             return False
@@ -161,10 +206,13 @@ class MyKnowledgeSource:
                                 # Create knowledge directory if it doesn't exist
                                 os.makedirs("knowledge", exist_ok=True)
                                 
-                                # Save the uploaded file
-                                file_path = os.path.join("knowledge", uploaded_file.name)
+                                # Save the uploaded file directly to the knowledge directory
+                                file_name = uploaded_file.name
+                                file_path = os.path.join("knowledge", file_name)
                                 with open(file_path, "wb") as f:
                                     f.write(uploaded_file.getbuffer())
+                                
+                                # Store just the file path as is
                                 self.source_path = file_path
                     
                     # Advanced settings (not in an expander)

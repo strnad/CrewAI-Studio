@@ -21,7 +21,7 @@ class MyCrew:
         self.max_rpm = max_rpm or 1000
         self.planning = planning if planning is not None else False
         self.created_at = created_at or datetime.now().isoformat()
-        self.knowledge_source_ids = knowledge_source_ids or []  # Add this line
+        self.knowledge_source_ids = knowledge_source_ids or []
         self.edit_key = f'edit_{self.id}'
         if self.edit_key not in ss:
             ss[self.edit_key] = False
@@ -78,10 +78,21 @@ class MyCrew:
         # Add knowledge sources if they exist
         knowledge_sources = []
         if 'knowledge_sources' in ss and self.knowledge_source_ids:
+            valid_knowledge_source_ids = []
+            
             for ks_id in self.knowledge_source_ids:
                 ks = next((k for k in ss.knowledge_sources if k.id == ks_id), None)
                 if ks:
-                    knowledge_sources.append(ks.get_crewai_knowledge_source())
+                    try:
+                        knowledge_sources.append(ks.get_crewai_knowledge_source())
+                        valid_knowledge_source_ids.append(ks_id)
+                    except Exception as e:
+                        print(f"Error loading knowledge source {ks.id}: {str(e)}")
+            
+            # If any knowledge sources were invalid, update the list
+            if len(valid_knowledge_source_ids) != len(self.knowledge_source_ids):
+                self.knowledge_source_ids = valid_knowledge_source_ids
+                db_utils.save_crew(self)
 
         # Create the crew with knowledge sources
         if self.manager_llm:
@@ -243,15 +254,24 @@ class MyCrew:
                 st.checkbox("Cache", value=self.cache, key=cache_key, on_change=self.update_cache)
                 st.checkbox("Planning", value=self.planning, key=planning_key, on_change=self.update_planning)
                 st.number_input("Max req/min", value=self.max_rpm, key=max_rpm_key, on_change=self.update_max_rpm)   
-                if 'knowledge_sources' in ss and ss.knowledge_sources:
+                if 'knowledge_sources' in ss and len(ss.knowledge_sources) > 0:
+                    knowledge_source_options = [ks.id for ks in ss.knowledge_sources]
+                    knowledge_source_labels = {ks.id: ks.name for ks in ss.knowledge_sources}
+                    valid_knowledge_sources = [ks_id for ks_id in self.knowledge_source_ids 
+                                            if ks_id in knowledge_source_options]
+
+                    if len(valid_knowledge_sources) != len(self.knowledge_source_ids):
+                        self.knowledge_source_ids = valid_knowledge_sources
+                        db_utils.save_crew(self)
                     st.multiselect(
-                        "Knowledge Sources", 
-                        options=[ks.id for ks in ss.knowledge_sources], 
-                        default=self.knowledge_source_ids, 
-                        format_func=lambda x: next((ks.name for ks in ss.knowledge_sources if ks.id == x), "Unknown"),
-                        key=f'knowledge_sources_{self.id}',
+                        "Knowledge Sources",
+                        options=knowledge_source_options,
+                        default=valid_knowledge_sources,
+                        format_func=lambda x: knowledge_source_labels.get(x, "Unknown"),
+                        key=f"knowledge_sources_{self.id}",
                         on_change=self.update_knowledge_sources
-                    ) 
+                    )
+
                 st.button("Save", on_click=self.set_editable, args=(False,), key=rnd_id())
         else:
             fix_columns_width()
