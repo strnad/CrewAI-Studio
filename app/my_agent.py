@@ -7,7 +7,7 @@ from llms import llm_providers_and_models, create_llm
 from datetime import datetime
 
 class MyAgent:
-    def __init__(self, id=None, role=None, backstory=None, goal=None, temperature=None, allow_delegation=False, verbose=False, cache= None, llm_provider_model=None, max_iter=None, created_at=None, tools=None):
+    def __init__(self, id=None, role=None, backstory=None, goal=None, temperature=None, allow_delegation=False, verbose=False, cache=None, llm_provider_model=None, max_iter=None, created_at=None, tools=None, knowledge_source_ids=None):
         self.id = id or "A_" + rnd_id()
         self.role = role or "Senior Researcher"
         self.backstory = backstory or "Driven by curiosity, you're at the forefront of innovation, eager to explore and share knowledge that could change the world."
@@ -20,6 +20,7 @@ class MyAgent:
         self.tools = tools or []
         self.max_iter = max_iter or 25
         self.cache = cache if cache is not None else True
+        self.knowledge_source_ids = knowledge_source_ids or []  # Add this line
         self.edit_key = f'edit_{self.id}'
         if self.edit_key not in ss:
             ss[self.edit_key] = False
@@ -33,19 +34,35 @@ class MyAgent:
         ss[self.edit_key] = value
 
     def get_crewai_agent(self) -> Agent:
-            llm = create_llm(self.llm_provider_model, temperature=self.temperature)
-            tools = [tool.create_tool() for tool in self.tools]
-            return Agent(
-                role=self.role,
-                backstory=self.backstory,
-                goal=self.goal,
-                allow_delegation=self.allow_delegation,
-                verbose=self.verbose,
-                max_iter=self.max_iter,
-                cache=self.cache,
-                tools=tools,
-                llm=llm
-            )
+        llm = create_llm(self.llm_provider_model, temperature=self.temperature)
+        tools = [tool.create_tool() for tool in self.tools]
+        
+        # Add knowledge sources if they exist
+        knowledge_sources = []
+        if 'knowledge_sources' in ss and self.knowledge_source_ids:
+            for ks_id in self.knowledge_source_ids:
+                ks = next((k for k in ss.knowledge_sources if k.id == ks_id), None)
+                if ks:
+                    knowledge_sources.append(ks.get_crewai_knowledge_source())
+        
+        # Create the agent with knowledge sources
+        return Agent(
+            role=self.role,
+            backstory=self.backstory,
+            goal=self.goal,
+            allow_delegation=self.allow_delegation,
+            verbose=self.verbose,
+            max_iter=self.max_iter,
+            cache=self.cache,
+            tools=tools,
+            llm=llm,
+            knowledge_sources=knowledge_sources if knowledge_sources else None
+        )
+
+    # Add a method to update knowledge sources
+    def update_knowledge_sources(self):
+        self.knowledge_source_ids = ss[f'knowledge_sources_{self.id}']
+        save_agent(self)
 
     def delete(self):
         ss.agents = [agent for agent in ss.agents if agent.id != self.id]
@@ -91,6 +108,14 @@ class MyAgent:
                         default=[self.get_tool_display_name(tool) for tool in self.tools],
                         key=f"{self.id}_tools{key}"
                     )
+                    if 'knowledge_sources' in ss and ss.knowledge_sources:
+                        self.knowledge_source_ids = st.multiselect(
+                            "Knowledge Sources", 
+                            options=[ks.id for ks in ss.knowledge_sources], 
+                            default=self.knowledge_source_ids, 
+                            format_func=lambda x: next((ks.name for ks in ss.knowledge_sources if ks.id == x), "Unknown"),
+                            key=f'knowledge_sources_{self.id}'
+                        )
                     submitted = st.form_submit_button("Save")
                     if submitted:
                         self.tools = [tool for tool in enabled_tools if self.get_tool_display_name(tool) in selected_tools]
@@ -108,6 +133,9 @@ class MyAgent:
                 st.markdown(f"**Temperature:** {self.temperature}")
                 st.markdown(f"**Max Iterations:** {self.max_iter}")
                 st.markdown(f"**Tools:** {[self.get_tool_display_name(tool) for tool in self.tools]}")
+                if self.knowledge_source_ids and 'knowledge_sources' in ss:
+                    source_names = [ks.name for ks in ss.knowledge_sources if ks.id in self.knowledge_source_ids]
+                    st.markdown(f"**Knowledge Sources:** {', '.join(source_names)}")
 
                 self.is_valid(show_warning=True)
 
