@@ -50,7 +50,9 @@ class MyAgent:
                         valid_knowledge_source_ids.append(ks_id)
                     except Exception as e:
                         print(f"Error loading knowledge source {ks.id}: {str(e)}")
-            
+        if knowledge_sources:
+            print(f"Loaded {len(knowledge_sources)} knowledge sources for agent {self.id}")
+            print(knowledge_sources)
         return Agent(
             role=self.role,
             backstory=self.backstory,

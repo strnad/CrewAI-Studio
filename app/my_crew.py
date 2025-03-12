@@ -253,24 +253,25 @@ class MyCrew:
                 st.checkbox("Memory", value=self.memory, key=memory_key, on_change=self.update_memory)
                 st.checkbox("Cache", value=self.cache, key=cache_key, on_change=self.update_cache)
                 st.checkbox("Planning", value=self.planning, key=planning_key, on_change=self.update_planning)
-                st.number_input("Max req/min", value=self.max_rpm, key=max_rpm_key, on_change=self.update_max_rpm)   
-                if 'knowledge_sources' in ss and len(ss.knowledge_sources) > 0:
-                    knowledge_source_options = [ks.id for ks in ss.knowledge_sources]
-                    knowledge_source_labels = {ks.id: ks.name for ks in ss.knowledge_sources}
-                    valid_knowledge_sources = [ks_id for ks_id in self.knowledge_source_ids 
-                                            if ks_id in knowledge_source_options]
+                st.number_input("Max req/min", value=self.max_rpm, key=max_rpm_key, on_change=self.update_max_rpm)  
+                # for some reason knowledge sources for crews are not working, use the knowledge sources in the agents instead
+                # if 'knowledge_sources' in ss and len(ss.knowledge_sources) > 0:
+                #     knowledge_source_options = [ks.id for ks in ss.knowledge_sources]
+                #     knowledge_source_labels = {ks.id: ks.name for ks in ss.knowledge_sources}
+                #     valid_knowledge_sources = [ks_id for ks_id in self.knowledge_source_ids 
+                #                             if ks_id in knowledge_source_options]
 
-                    if len(valid_knowledge_sources) != len(self.knowledge_source_ids):
-                        self.knowledge_source_ids = valid_knowledge_sources
-                        db_utils.save_crew(self)
-                    st.multiselect(
-                        "Knowledge Sources",
-                        options=knowledge_source_options,
-                        default=valid_knowledge_sources,
-                        format_func=lambda x: knowledge_source_labels.get(x, "Unknown"),
-                        key=f"knowledge_sources_{self.id}",
-                        on_change=self.update_knowledge_sources
-                    )
+                #     if len(valid_knowledge_sources) != len(self.knowledge_source_ids):
+                #         self.knowledge_source_ids = valid_knowledge_sources
+                #         db_utils.save_crew(self)
+                #     st.multiselect(
+                #         "Knowledge Sources",
+                #         options=knowledge_source_options,
+                #         default=valid_knowledge_sources,
+                #         format_func=lambda x: knowledge_source_labels.get(x, "Unknown"),
+                #         key=f"knowledge_sources_{self.id}",
+                #         on_change=self.update_knowledge_sources
+                #     )
 
                 st.button("Save", on_click=self.set_editable, args=(False,), key=rnd_id())
         else:

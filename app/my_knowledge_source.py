@@ -31,37 +31,6 @@ class MyKnowledgeSource:
     def edit(self, value):
         ss[self.edit_key] = value
 
-    def normalize_path(self, file_path):
-        """
-        Normalizes file paths, removing any duplicate 'knowledge' prefixes
-        and ensuring the path uses the correct separators.
-        """
-        if not file_path:
-            return ""
-            
-        # Convert to Path object for cross-platform normalization
-        path = Path(file_path)
-        
-        # Get parts of the path
-        parts = list(path.parts)
-        
-        # Check if there are multiple "knowledge" directories in the path
-        knowledge_indices = [i for i, part in enumerate(parts) if part.lower() == "knowledge"]
-        
-        # If there are multiple knowledge directories, keep only the rightmost one
-        if len(knowledge_indices) > 1:
-            # Keep only one 'knowledge' directory (the rightmost one)
-            for idx in sorted(knowledge_indices[:-1], reverse=True):
-                parts.pop(idx)
-        
-        # Reconstruct the path
-        normalized_path = os.path.join(*parts) if parts else ""
-        
-        # Print debug info
-        print(f"Normalized path: {file_path} -> {normalized_path}")
-        
-        return normalized_path
-
     def find_file(self, file_path):
         """
         Tries to find the file at various possible locations.
@@ -69,40 +38,11 @@ class MyKnowledgeSource:
         """
         if not file_path:
             return None
-            
-        # Normalize the path first
-        normalized_path = self.normalize_path(file_path)
-        
-        # Potential paths to check in order of preference
-        paths_to_check = [
-            normalized_path,                                          # Normalized path as-is
-            os.path.basename(normalized_path),                        # Just the filename
-            os.path.join("knowledge", os.path.basename(normalized_path))  # In knowledge directory
-        ]
-        
-        # For Windows paths, also try with forward slashes
-        if os.name == 'nt':
-            paths_to_check.extend([
-                normalized_path.replace('\\', '/'),
-                normalized_path.replace('/', '\\')
-            ])
-        
-        # Remove duplicates while preserving order
-        unique_paths = []
-        for p in paths_to_check:
-            if p and p not in unique_paths:
-                unique_paths.append(p)
-        
-        print(f"Checking paths: {unique_paths}")
-        
-        # Try each path
-        for path in unique_paths:
-            if os.path.exists(path):
-                print(f"Found file at: {path}")
-                return path
-                
-        print(f"File not found. Checked: {unique_paths}")
-        return None
+        else: #simply check if the file exists in the folder knowledge
+            if os.path.exists(file_path):
+                return file_path
+            else:
+                return None
 
     def get_crewai_knowledge_source(self):
         # Import knowledge source classes based on type
@@ -138,7 +78,7 @@ class MyKnowledgeSource:
                     chunk_overlap=self.chunk_overlap
                 )
             elif self.source_type == "pdf":
-                from crewai.knowledge.source.pdf_knowledge_source import PDFKnowledgeSource
+                from crewai.knowledge.source.pdf_knowledge_source import PDFKnowledgeSource               
                 return PDFKnowledgeSource(
                     file_paths=[actual_path],
                     metadata=self.metadata,
@@ -191,12 +131,7 @@ class MyKnowledgeSource:
                 if show_warning:
                     st.warning(f"File not found: {self.source_path}")
                 return False
-                
-            # If the actual path is different from the stored path, update it
-            if actual_path != self.source_path:
-                print(f"Updating path from {self.source_path} to {actual_path}")
-                self.source_path = actual_path
-                db_utils.save_knowledge_source(self)
+
             
         return True
 
@@ -276,14 +211,14 @@ class MyKnowledgeSource:
                                     os.makedirs("knowledge", exist_ok=True)
                                     
                                     # Save the uploaded file to the knowledge directory
-                                    file_name = uploaded_file.name
+                                    file_name = uploaded_file.name                                   
                                     file_path = os.path.join("knowledge", file_name)
                                     
                                     with open(file_path, "wb") as f:
                                         f.write(uploaded_file.getbuffer())
                                     
                                     # Set the source path to just the filename with knowledge prefix
-                                    self.source_path = file_path
+                                    self.source_path = file_name
                     
                     # Advanced settings
                     st.subheader("Advanced Settings")
