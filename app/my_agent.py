@@ -123,13 +123,16 @@ class MyAgent:
                             self.knowledge_source_ids = valid_knowledge_sources
                             save_agent(self)
                         
-                        # Now use the filtered list for the multiselect
+                        # Generate a unique key for the knowledge sources multiselect
+                        ks_key = f"knowledge_sources_{self.id}_{key}" if key else f"knowledge_sources_{self.id}"
+                        
+                        # Now use the filtered list for the multiselect with the unique key
                         selected_knowledge_sources = st.multiselect(
                             "Knowledge Sources",
                             options=knowledge_source_options,
                             default=valid_knowledge_sources,
                             format_func=lambda x: knowledge_source_labels.get(x, "Unknown"),
-                            key=f"knowledge_sources_{self.id}"
+                            key=ks_key
                         )
                         self.knowledge_source_ids = selected_knowledge_sources                
                     submitted = st.form_submit_button("Save")
