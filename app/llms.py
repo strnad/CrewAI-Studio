@@ -5,6 +5,8 @@ from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 from langchain_anthropic import ChatAnthropic
 from crewai import LLM
+from langchain_openai.chat_models.base import BaseChatOpenAI
+from litellm import completion
 
 def load_secrets_fron_env():
     load_dotenv(override=True)
@@ -16,6 +18,7 @@ def load_secrets_fron_env():
             "LMSTUDIO_API_BASE": os.getenv("LMSTUDIO_API_BASE"),
             "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY"),
             "OLLAMA_HOST": os.getenv("OLLAMA_HOST"),
+            "XAI_API_KEY": os.getenv("XAI_API_KEY"),
         }
     else:
         st.session_state.env_vars = st.session_state.env_vars
@@ -86,7 +89,27 @@ def create_ollama_llm(model, temperature):
         return LLM(model=model, temperature=temperature, base_url=host)
     else:
         raise ValueError("Ollama Host is not set in .env file")
-    
+
+
+def create_xai_llm(model, temperature):
+    host = "https://api.x.ai/v1"
+    api_key = st.session_state.env_vars.get("XAI_API_KEY")
+
+    if not api_key:
+        raise ValueError("XAI_API_KEY must be set in .env file")
+
+    switch_environment({
+        "OPENAI_API_KEY": api_key,
+        "OPENAI_API_BASE": host,
+    })
+
+    return LLM(
+        model=model,
+        temperature=temperature,
+        api_key=api_key,
+        base_url=host
+    )
+
 def create_lmstudio_llm(model, temperature):
     switch_environment({
         "OPENAI_API_KEY": "lm-studio",
@@ -124,6 +147,10 @@ LLM_CONFIG = {
     "LM Studio": {
         "models": ["lms-default"],
         "create_llm": create_lmstudio_llm,
+    },
+     "Xai": {
+        "models": ["xai/grok-2-1212", "xai/grok-beta"],
+        "create_llm": create_xai_llm,
     },
 }
 
