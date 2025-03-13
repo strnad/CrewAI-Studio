@@ -141,7 +141,7 @@ LLM_CONFIG = {
         "create_llm": create_ollama_llm,
     },
     "Anthropic": {
-        "models": ["claude-3-5-sonnet-20240620"],
+        "models": ["claude-3-5-sonnet-20240620","claude-3-7-sonnet-20250219"],
         "create_llm": create_anthropic_llm,
     },
     "LM Studio": {
