@@ -39,7 +39,7 @@ class MyKnowledgeSource:
         if not file_path:
             return None
         else: #simply check if the file exists in the folder knowledge
-            if os.path.exists(file_path):
+            if Path("knowledge", file_path).exists():
                 return file_path
             else:
                 return None
