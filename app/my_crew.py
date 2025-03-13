@@ -7,7 +7,7 @@ from llms import llm_providers_and_models, create_llm
 import db_utils
 
 class MyCrew:
-    def __init__(self, id=None, name=None, agents=None, tasks=None, process=None, cache=None,max_rpm=None, verbose=None, manager_llm=None, manager_agent=None, created_at=None, memory=None, planning=None):
+    def __init__(self, id=None, name=None, agents=None, tasks=None, process=None, cache=None, max_rpm=None, verbose=None, manager_llm=None, manager_agent=None, created_at=None, memory=None, planning=None, knowledge_source_ids=None):
         self.id = id or "C_" + rnd_id()
         self.name = name or "Crew 1"
         self.agents = agents or []
@@ -21,6 +21,7 @@ class MyCrew:
         self.max_rpm = max_rpm or 1000
         self.planning = planning if planning is not None else False
         self.created_at = created_at or datetime.now().isoformat()
+        self.knowledge_source_ids = knowledge_source_ids or []
         self.edit_key = f'edit_{self.id}'
         if self.edit_key not in ss:
             ss[self.edit_key] = False
@@ -74,6 +75,26 @@ class MyCrew:
         # Collect the final list of tasks in the original order
         crewai_tasks = [task_objects[task.id] for task in self.tasks]
 
+        # Add knowledge sources if they exist
+        knowledge_sources = []
+        if 'knowledge_sources' in ss and self.knowledge_source_ids:
+            valid_knowledge_source_ids = []
+            
+            for ks_id in self.knowledge_source_ids:
+                ks = next((k for k in ss.knowledge_sources if k.id == ks_id), None)
+                if ks:
+                    try:
+                        knowledge_sources.append(ks.get_crewai_knowledge_source())
+                        valid_knowledge_source_ids.append(ks_id)
+                    except Exception as e:
+                        print(f"Error loading knowledge source {ks.id}: {str(e)}")
+            
+            # If any knowledge sources were invalid, update the list
+            if len(valid_knowledge_source_ids) != len(self.knowledge_source_ids):
+                self.knowledge_source_ids = valid_knowledge_source_ids
+                db_utils.save_crew(self)
+
+        # Create the crew with knowledge sources
         if self.manager_llm:
             return Crew(
                 agents=crewai_agents,
@@ -85,6 +106,7 @@ class MyCrew:
                 manager_llm=create_llm(self.manager_llm),
                 memory=self.memory,
                 planning=self.planning,
+                knowledge_sources=knowledge_sources if knowledge_sources else None,
                 *args, **kwargs
             )
         elif self.manager_agent:
@@ -98,21 +120,27 @@ class MyCrew:
                 manager_agent=self.manager_agent.get_crewai_agent(),
                 memory=self.memory,
                 planning=self.planning,
+                knowledge_sources=knowledge_sources if knowledge_sources else None,
                 *args, **kwargs
             )
         cr = Crew(
-        agents=crewai_agents,
-        tasks=crewai_tasks,
-        cache=self.cache,
-        process=self.process,
-        max_rpm=self.max_rpm,
-        verbose=self.verbose,
-        memory=self.memory,
-        planning=self.planning,
-        *args, **kwargs
+            agents=crewai_agents,
+            tasks=crewai_tasks,
+            cache=self.cache,
+            process=self.process,
+            max_rpm=self.max_rpm,
+            verbose=self.verbose,
+            memory=self.memory,
+            planning=self.planning,
+            knowledge_sources=knowledge_sources if knowledge_sources else None,
+            *args, **kwargs
         )
         return cr
     
+    def update_knowledge_sources(self):
+        self.knowledge_source_ids = ss[f'knowledge_sources_{self.id}']
+        db_utils.save_crew(self)
+
     def delete(self):
         ss.crews = [crew for crew in ss.crews if crew.id != self.id]
         db_utils.delete_crew(self.id)
@@ -225,7 +253,26 @@ class MyCrew:
                 st.checkbox("Memory", value=self.memory, key=memory_key, on_change=self.update_memory)
                 st.checkbox("Cache", value=self.cache, key=cache_key, on_change=self.update_cache)
                 st.checkbox("Planning", value=self.planning, key=planning_key, on_change=self.update_planning)
-                st.number_input("Max req/min", value=self.max_rpm, key=max_rpm_key, on_change=self.update_max_rpm)    
+                st.number_input("Max req/min", value=self.max_rpm, key=max_rpm_key, on_change=self.update_max_rpm)  
+                # for some reason knowledge sources for crews are not working, use the knowledge sources in the agents instead
+                # if 'knowledge_sources' in ss and len(ss.knowledge_sources) > 0:
+                #     knowledge_source_options = [ks.id for ks in ss.knowledge_sources]
+                #     knowledge_source_labels = {ks.id: ks.name for ks in ss.knowledge_sources}
+                #     valid_knowledge_sources = [ks_id for ks_id in self.knowledge_source_ids 
+                #                             if ks_id in knowledge_source_options]
+
+                #     if len(valid_knowledge_sources) != len(self.knowledge_source_ids):
+                #         self.knowledge_source_ids = valid_knowledge_sources
+                #         db_utils.save_crew(self)
+                #     st.multiselect(
+                #         "Knowledge Sources",
+                #         options=knowledge_source_options,
+                #         default=valid_knowledge_sources,
+                #         format_func=lambda x: knowledge_source_labels.get(x, "Unknown"),
+                #         key=f"knowledge_sources_{self.id}",
+                #         on_change=self.update_knowledge_sources
+                #     )
+
                 st.button("Save", on_click=self.set_editable, args=(False,), key=rnd_id())
         else:
             fix_columns_width()
@@ -249,6 +296,9 @@ class MyCrew:
                         tools_list = ", ".join([tool.name for tool in task.agent.tools]) if task.agent else "None"
                         st.markdown(f" **Tools:** {tools_list}")
                         st.markdown(f" **LLM:** {task.agent.llm_provider_model}")
+                if self.knowledge_source_ids and 'knowledge_sources' in ss:
+                    source_names = [ks.name for ks in ss.knowledge_sources if ks.id in self.knowledge_source_ids]
+                    st.markdown(f"**Knowledge Sources:** {', '.join(source_names)}")
                 if buttons:
                     col1, col2 = st.columns(2)
                     with col1:                    

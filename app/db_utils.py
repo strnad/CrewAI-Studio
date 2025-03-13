@@ -94,6 +94,32 @@ def load_tools_state():
         return rows[0][1].get('enabled_tools', {})
     return {}
 
+def save_knowledge_source(knowledge_source):
+    data = {
+        'name': knowledge_source.name,
+        'source_type': knowledge_source.source_type,
+        'source_path': knowledge_source.source_path,
+        'content': knowledge_source.content,
+        'metadata': knowledge_source.metadata,
+        'chunk_size': knowledge_source.chunk_size,
+        'chunk_overlap': knowledge_source.chunk_overlap,
+        'created_at': knowledge_source.created_at
+    }
+    save_entity('knowledge_source', knowledge_source.id, data)
+
+def load_knowledge_sources():
+    from my_knowledge_source import MyKnowledgeSource
+    rows = load_entities('knowledge_source')
+    knowledge_sources = []
+    for row in rows:
+        data = row[1]
+        knowledge_source = MyKnowledgeSource(id=row[0], **data)
+        knowledge_sources.append(knowledge_source)
+    return sorted(knowledge_sources, key=lambda x: x.created_at)
+
+def delete_knowledge_source(knowledge_source_id):
+    delete_entity('knowledge_source', knowledge_source_id)
+
 def save_agent(agent):
     data = {
         'created_at': agent.created_at,
@@ -106,7 +132,8 @@ def save_agent(agent):
         'llm_provider_model': agent.llm_provider_model,
         'temperature': agent.temperature,
         'max_iter': agent.max_iter,
-        'tool_ids': [tool.tool_id for tool in agent.tools]  # Save tool IDs
+        'tool_ids': [tool.tool_id for tool in agent.tools],
+        'knowledge_source_ids': agent.knowledge_source_ids
     }
     save_entity('agent', agent.id, data)
 
@@ -118,10 +145,12 @@ def load_agents():
     for row in rows:
         data = row[1]
         tool_ids = data.pop('tool_ids', [])
-        agent = MyAgent(id=row[0], **data)
+        knowledge_source_ids = data.pop('knowledge_source_ids', [])
+        agent = MyAgent(id=row[0], knowledge_source_ids=knowledge_source_ids, **data)
         agent.tools = [tools_dict[tool_id] for tool_id in tool_ids if tool_id in tools_dict]
         agents.append(agent)
     return sorted(agents, key=lambda x: x.created_at)
+
 
 def delete_agent(agent_id):
     delete_entity('agent', agent_id)
@@ -163,10 +192,11 @@ def save_crew(crew):
         'memory': crew.memory,
         'cache': crew.cache,
         'planning': crew.planning,
-        'max_rpm' : crew.max_rpm,
+        'max_rpm': crew.max_rpm,
         'manager_llm': crew.manager_llm,
         'manager_agent_id': crew.manager_agent.id if crew.manager_agent else None,
-        'created_at': crew.created_at
+        'created_at': crew.created_at,
+        'knowledge_source_ids': crew.knowledge_source_ids  # Add this line
     }
     save_entity('crew', crew.id, data)
 
@@ -189,7 +219,8 @@ def load_crews():
             planning=data.get('planning'),
             max_rpm=data.get('max_rpm'), 
             manager_llm=data.get('manager_llm'),
-            manager_agent=agents_dict.get(data.get('manager_agent_id'))
+            manager_agent=agents_dict.get(data.get('manager_agent_id')),
+            knowledge_source_ids=data.get('knowledge_source_ids', [])  # Add this line
         )
         crew.agents = [agents_dict[agent_id] for agent_id in data['agent_ids'] if agent_id in agents_dict]
         crew.tasks = [tasks_dict[task_id] for task_id in data['task_ids'] if task_id in tasks_dict]
