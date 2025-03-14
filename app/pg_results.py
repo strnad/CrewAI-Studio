@@ -48,7 +48,35 @@ class PageResults:
 
         # Display results
         for result in filtered_results:
-            with st.expander(f"{result.crew_name} - {datetime.fromisoformat(result.created_at).strftime('%Y-%m-%d %H:%M:%S')}", expanded=False):
+            # Format inputs for display in expander title
+            input_summary = ""
+            input_items = list(result.inputs.items())
+            
+            # Handle different numbers of input fields
+            if len(input_items) == 0:
+                input_summary = ""
+            elif len(input_items) == 1:
+                # For just one input, show more of its value
+                key, value = input_items[0]
+                input_summary = f" | {key}: {value[:30]}" + ("..." if len(value) > 30 else "")
+            else:
+                # For multiple inputs, show brief summaries
+                max_chars = max(40 // len(input_items), 10)  # Adjust based on number of inputs
+                input_parts = []
+                
+                for key, value in input_items:
+                    if len(value) <= max_chars:
+                        input_parts.append(f"{key}: {value}")
+                    else:
+                        input_parts.append(f"{key}: {value[:max_chars]}...")
+                
+                input_summary = " | " + " | ".join(input_parts)
+            
+            # Create the expander with enhanced title
+            timestamp = datetime.fromisoformat(result.created_at).strftime('%Y-%m-%d %H:%M:%S')
+            expander_title = f"{result.crew_name} - {timestamp}{input_summary}"
+            
+            with st.expander(expander_title, expanded=False):
                 st.markdown("#### Inputs")
                 for key, value in result.inputs.items():
                     st.text_input(key, value, disabled=True, key=rnd_id())
