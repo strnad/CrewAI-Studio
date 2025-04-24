@@ -32,7 +32,14 @@ def generate_printable_view(crew_name, result, inputs, formatted_result, created
     if created_at is None:
         created_at = datetime.now().isoformat()
     created_at_str = datetime.fromisoformat(created_at).strftime('%Y-%m-%d %H:%M:%S')
-    markdown_html = md.markdown(formatted_result)
+    
+    fixed_md = normalize_list_indentation(formatted_result)
+
+    # Convert Markdown -> HTML
+    markdown_html = md.markdown(
+        fixed_md,
+        extensions=['markdown.extensions.extra']  # optional: extra for tables, code, sane_lists
+    )
 
     html_content = f"""
     <html>
@@ -126,3 +133,25 @@ def format_result(result):
                 return result['result'].raw
         return str(result)
     return str(result)
+
+def normalize_list_indentation(md_text: str) -> str:
+    """
+    Converts lines starting with multiples of 2 spaces (AI-generated) into
+    multiples of 4 spaces so Python-Markdown sees nested lists correctly.
+    Preserves both '-' and '*' bullets.
+    """
+    import re
+    normalized_lines = []
+    for line in md_text.splitlines():
+        # match lines with leading spaces, then '*' or '-' bullet
+        m = re.match(r'^(?P<spaces> +)(?P<bullet>[-*])\s+(.*)$', line)
+        if m:
+            spaces = len(m.group('spaces'))
+            level = spaces // 2  # AI indent levels (2 spaces each)
+            new_indent = ' ' * (level * 4)
+            bullet = m.group('bullet')
+            content = m.group(3)
+            normalized_lines.append(f"{new_indent}{bullet} {content}")
+        else:
+            normalized_lines.append(line)
+    return "\n".join(normalized_lines)
