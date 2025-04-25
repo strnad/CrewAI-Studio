@@ -7,6 +7,7 @@ from tools.CustomApiTool import CustomApiTool
 from tools.CustomCodeInterpreterTool import CustomCodeInterpreterTool
 from tools.CustomFileWriteTool import CustomFileWriteTool
 from tools.ScrapeWebsiteToolEnhanced import ScrapeWebsiteToolEnhanced
+from tools.ScrapflyScrapeWebsiteTool import ScrapflyScrapeWebsiteTool
 
 from langchain_community.tools import YahooFinanceNewsTool
 
@@ -359,7 +360,7 @@ class MyScrapeWebsiteToolEnhanced(MyTool):
             'show_urls': {'mandatory': False},
             'css_selector': {'mandatory': False}
         }
-        super().__init__(tool_id, 'ScrapeWebsiteToolEnhanced', "A tool that can be used to read website content.", parameters, website_url=website_url, cookies=cookies, show_urls=show_urls, css_selector=css_selector)
+        super().__init__(tool_id, 'ScrapeWebsiteToolEnhanced', "An enhanced tool that can be used to read website content.", parameters, website_url=website_url, cookies=cookies, show_urls=show_urls, css_selector=css_selector)
 
     def create_tool(self) -> ScrapeWebsiteToolEnhanced:
         return ScrapeWebsiteToolEnhanced(
@@ -369,12 +370,28 @@ class MyScrapeWebsiteToolEnhanced(MyTool):
             css_selector=self.parameters.get('css_selector') if self.parameters.get('css_selector') else None
         )
 
+class MyScrapflyScrapeWebsiteTool(MyTool):
+    def __init__(self, tool_id=None, api_key=None):
+        parameters = {
+            'api_key': {'mandatory': False}
+        }
+        super().__init__(tool_id, 'ScrapflyScrapeWebsiteTool', "A tool that uses Scrapfly API to scrape websites with advanced features like headless browser support, proxies, and anti-bot bypass.", parameters, api_key=api_key)
+
+    def create_tool(self) -> ScrapflyScrapeWebsiteTool:
+        api_key = self.parameters.get('api_key') or os.getenv('SCRAPFLY_API_KEY')
+        if not api_key:
+            raise ValueError("Scrapfly API key not provided and not set in .env file (SCRAPFLY_API_KEY)")
+        return ScrapflyScrapeWebsiteTool(
+            api_key=api_key
+        )
+
 # Register all tools here
 TOOL_CLASSES = {
     'SerperDevTool': MySerperDevTool,
     'WebsiteSearchTool': MyWebsiteSearchTool,
     'ScrapeWebsiteTool': MyScrapeWebsiteTool,
     'ScrapeWebsiteToolEnhanced': MyScrapeWebsiteToolEnhanced,
+    'ScrapflyScrapeWebsiteTool': MyScrapflyScrapeWebsiteTool,
     
     'SeleniumScrapingTool': MySeleniumScrapingTool,
     'ScrapeElementFromWebsiteTool': MyScrapeElementFromWebsiteTool,
