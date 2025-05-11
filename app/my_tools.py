@@ -8,6 +8,8 @@ from tools.CustomCodeInterpreterTool import CustomCodeInterpreterTool
 from tools.CustomFileWriteTool import CustomFileWriteTool
 from tools.ScrapeWebsiteToolEnhanced import ScrapeWebsiteToolEnhanced
 
+from tools.DuckDuckGoSearchTool import DuckDuckGoSearchTool
+
 from langchain_community.tools import YahooFinanceNewsTool
 
 class MyTool:
@@ -322,6 +324,15 @@ class MyCustomFileWriteTool(MyTool):
         )
 
 
+class MyDuckDuckGoSearchTool(MyTool):
+    def __init__(self, tool_id=None):
+        parameters = {}
+        super().__init__(tool_id, 'DuckDuckGoSearchTool', "A tool to search the web using DuckDuckGo engine.", parameters)
+
+    def create_tool(self) -> DuckDuckGoSearchTool:
+        return DuckDuckGoSearchTool()
+
+
 class MyCodeInterpreterTool(MyTool):
     def __init__(self, tool_id=None):
         parameters = {}
@@ -371,6 +382,7 @@ class MyScrapeWebsiteToolEnhanced(MyTool):
 
 # Register all tools here
 TOOL_CLASSES = {
+    'DuckDuckGoSearchTool': MyDuckDuckGoSearchTool,
     'SerperDevTool': MySerperDevTool,
     'WebsiteSearchTool': MyWebsiteSearchTool,
     'ScrapeWebsiteTool': MyScrapeWebsiteTool,
