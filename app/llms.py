@@ -129,7 +129,7 @@ def create_lmstudio_llm(model, temperature):
 
 LLM_CONFIG = {
     "OpenAI": {
-        "models": os.getenv("OPENAI_PROXY_MODELS", "").split(",") if os.getenv("OPENAI_PROXY_MODELS") else ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo", "gpt-4-turbo"],
+        "models": os.getenv("OPENAI_PROXY_MODELS", "").split(",") if os.getenv("OPENAI_PROXY_MODELS") else ["gpt-4.1-mini","gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo", "gpt-4-turbo"],
         "create_llm": create_openai_llm,
     },
     "Groq": {
