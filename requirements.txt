@@ -14,4 +14,4 @@ psycopg2-binary
 snowflake-connector-python
 markdown
 docling
-duckduckgo-search
+duckduckgo-search>=8.0.2
