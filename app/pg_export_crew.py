@@ -382,6 +382,7 @@ streamlit run app.py --server.headless true
                 'async_execution': task.async_execution,
                 'agent_id': task.agent.id if task.agent else None,
                 'context_from_async_tasks_ids': task.context_from_async_tasks_ids,
+                'context_from_sync_tasks_ids': task.context_from_sync_tasks_ids,
                 'created_at': task.created_at
             }
             crew_data['tasks'].append(task_data)
@@ -439,6 +440,7 @@ streamlit run app.py --server.headless true
                 async_execution=task_data['async_execution'],
                 agent=next((agent for agent in agents if agent.id == task_data['agent_id']), None),
                 context_from_async_tasks_ids=task_data['context_from_async_tasks_ids'],
+                context_from_sync_tasks_ids=task_data['context_from_sync_tasks_ids'],
                 created_at=task_data['created_at']
             )
             tasks.append(task)
