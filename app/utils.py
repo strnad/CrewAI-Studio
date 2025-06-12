@@ -3,6 +3,7 @@ import string
 from streamlit import markdown
 import markdown as md
 from datetime import datetime
+import re
 
 def rnd_id(length=8):
     characters = string.ascii_letters + string.digits
@@ -28,7 +29,7 @@ def fix_columns_width():
 
 def format_input_item_html(v):
     return f"""<pre>
-{v}
+{re.sub(r"\\n", "\n", v)}
 </pre>
 """
 
