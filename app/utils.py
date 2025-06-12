@@ -25,6 +25,16 @@ def fix_columns_width():
             </style>
             """, unsafe_allow_html=True)
 
+
+def format_input_item_html(v):
+    return f"""<pre>
+```markdown
+{v}
+```
+</pre>
+"""
+
+
 def generate_printable_view(crew_name, result, inputs, formatted_result, created_at=None):
     """
     Generates a simple HTML view for printing.
@@ -105,7 +115,7 @@ def generate_printable_view(crew_name, result, inputs, formatted_result, created
             </div>
             <div class="section">
                 <h2>Inputs</h2>
-                {''.join(f'<div class="input-item"><strong>{k}:</strong> {v}</div>' for k, v in inputs.items())}
+                {''.join(f'<div class="input-item"><strong>{k}:</strong> {format_input_item_html(v)}</div>' for k, v in inputs.items())}
             </div>
             <div class="page-break"></div>
             <div class="section">
