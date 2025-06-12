@@ -439,8 +439,8 @@ streamlit run app.py --server.headless true
                 expected_output=task_data['expected_output'],
                 async_execution=task_data['async_execution'],
                 agent=next((agent for agent in agents if agent.id == task_data['agent_id']), None),
-                context_from_async_tasks_ids=task_data['context_from_async_tasks_ids'],
-                context_from_sync_tasks_ids=task_data['context_from_sync_tasks_ids'],
+                context_from_async_tasks_ids=task_data.get('context_from_async_tasks_ids', None),
+                context_from_sync_tasks_ids=task_data.get('context_from_sync_tasks_ids', None),
                 created_at=task_data['created_at']
             )
             tasks.append(task)
