@@ -28,9 +28,7 @@ def fix_columns_width():
 
 def format_input_item_html(v):
     return f"""<pre>
-```markdown
 {v}
-```
 </pre>
 """
 
