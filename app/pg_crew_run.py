@@ -62,7 +62,7 @@ class PageCrewRun:
             result = crewai_crew.kickoff(inputs=inputs)
             message_queue.put({"result": result})
         except Exception as e:
-            if (str(os.getenv('AGENTOPS_ENABLED')).lower() in ['true', '1']) and not ss.get('agentops_failed', False):                       
+            if (str(os.getenv('AGENTOPS_ENABLED')).lower() in ['true', '1']) and not ss.get('agentops_failed', False):
                 agentops.end_session()
             stack_trace = traceback.format_exc()
             print(f"Error running crew: {str(e)}\n{stack_trace}")
@@ -80,7 +80,7 @@ class PageCrewRun:
             st.write('Placeholders to fill in:')
             for placeholder in placeholders:
                 placeholder_key = f'placeholder_{placeholder}'
-                ss.placeholders[placeholder_key] = st.text_input(
+                ss.placeholders[placeholder_key] = st.text_area(
                     label=placeholder,
                     key=placeholder_key,
                     value=ss.placeholders.get(placeholder_key, ''),
