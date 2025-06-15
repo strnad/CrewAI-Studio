@@ -258,7 +258,7 @@ class PageCrewRun:
 
                 tasks_result = getTasksOutputsStr(ss.result["result"].tasks_output)
                 formatted_tasks_result = format_result(tasks_result)
-                st.expander("Tasks resuls", expanded=False).write(formatted_tasks_result)
+                st.expander("Tasks results", expanded=False).write(formatted_tasks_result)
 
                 # Add print button
                 # FIXED: Also use the relevant placeholders for the printable view
