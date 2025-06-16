@@ -79,7 +79,7 @@ class PageResults:
             with st.expander(expander_title, expanded=False):
                 st.markdown("#### Inputs")
                 for key, value in result.inputs.items():
-                    st.text_input(key, value, disabled=True, key=rnd_id())
+                    st.text_area(key, value, disabled=True, key=rnd_id())
 
                 st.markdown("#### Result")
                 formatted_result = format_result(result.result)
