@@ -105,7 +105,7 @@ def generate_printable_view(crew_name, result, inputs, formatted_result, created
             </div>
             <div class="section">
                 <h2>Inputs</h2>
-                {''.join(f'<div class="input-item"><strong>{k}:</strong> {v}</div>' for k, v in inputs.items())}
+                {''.join(f'<div class="input-item"><strong>{k}:</strong><br><pre>{v}</pre></div>' for k, v in inputs.items())}
             </div>
             <div class="page-break"></div>
             <div class="section">
