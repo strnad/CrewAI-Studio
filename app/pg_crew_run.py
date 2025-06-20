@@ -97,7 +97,7 @@ class PageCrewRun:
             st.write('Placeholders to fill in:')
             for placeholder in placeholders:
                 placeholder_key = f'placeholder_{placeholder}'
-                ss.placeholders[placeholder_key] = st.text_input(
+                ss.placeholders[placeholder_key] = st.text_area(
                     label=placeholder,
                     key=placeholder_key,
                     value=ss.placeholders.get(placeholder_key, ''),

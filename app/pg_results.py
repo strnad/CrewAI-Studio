@@ -2,8 +2,7 @@ import streamlit as st
 from streamlit import session_state as ss
 from db_utils import delete_result, load_results
 from datetime import datetime
-from utils import rnd_id, format_result, generate_printable_view, get_tasks_outputs_str
-
+from utils import rnd_id, format_result, generate_printable_view
 
 class PageResults:
     def __init__(self):
@@ -80,7 +79,7 @@ class PageResults:
             with st.expander(expander_title, expanded=False):
                 st.markdown("#### Inputs")
                 for key, value in result.inputs.items():
-                    st.text_input(key, value, disabled=True, key=rnd_id())
+                    st.text_area(key, value, disabled=True, key=rnd_id())
 
                 st.markdown("#### Result")
                 formatted_result = format_result(result.result)
