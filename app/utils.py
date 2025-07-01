@@ -161,9 +161,15 @@ def normalize_list_indentation(md_text: str) -> str:
     return "\n".join(normalized_lines)
 
 
-def get_tasks_outputs_str(tasks_output: list[TaskOutput | str]):
+def get_tasks_outputs_str(tasks_output: list[TaskOutput | str], tasks: list = None):
+    """Return a formatted string of task outputs, optionally including task descriptions."""
     strRes = ""
-    for task_output in tasks_output:
+    for idx, task_output in enumerate(tasks_output):
         val = task_output.raw if isinstance(task_output, TaskOutput) else task_output
-        strRes += f"\n\n#  TASK \n{val}\n\n==========\n"
+        desc = ""
+        if tasks and idx < len(tasks):
+            task = tasks[idx]
+            desc = getattr(task, "description", str(task))
+        title = f"#  {desc}" if desc else "#  TASK"
+        strRes += f"\n\n{title}\n{val}\n\n==========\n"
     return strRes

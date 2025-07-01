@@ -86,11 +86,14 @@ class PageResults:
 
                 try:
                     tasks_output = result.result.get('tasks_output', None)
-                    tasks_output_str: list[str] = list(map(lambda t: t.get("raw", ""), tasks_output))
-
-                    tasks_result = get_tasks_outputs_str(tasks_output_str)
-                    formatted_tasks_result = format_result(tasks_result)
-                except:
+                    if tasks_output:
+                        tasks_output_str: list[str] = list(map(lambda t: t.get("raw", ""), tasks_output))
+                        tasks_descriptions = [t.get("description") for t in tasks_output]
+                        tasks_result = get_tasks_outputs_str(tasks_output_str, tasks_descriptions)
+                        formatted_tasks_result = format_result(tasks_result)
+                    else:
+                        formatted_tasks_result = ""
+                except Exception:
                     formatted_tasks_result = ""
 
                 # Show both rendered and raw versions using tabs
