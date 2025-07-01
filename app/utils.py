@@ -170,6 +170,6 @@ def get_tasks_outputs_str(tasks_output: list[TaskOutput | str], tasks: list = No
         if tasks and idx < len(tasks):
             task = tasks[idx]
             desc = getattr(task, "description", str(task))
-        title = f"#  TASK {desc}" if desc else "#  TASK"
+        title = f"#  {desc}" if desc else "#  TASK"
         strRes += f"\n\n{title}\n{val}\n\n==========\n"
     return strRes
