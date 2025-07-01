@@ -12,3 +12,6 @@ pdfminer.six
 sqlalchemy
 psycopg2-binary
 snowflake-connector-python
+markdown
+docling
+duckduckgo-search>=8.0.2

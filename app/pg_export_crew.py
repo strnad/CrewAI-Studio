@@ -200,16 +200,16 @@ def main():
     placeholders = {{
         {placeholders_dict}
     }}
-        with st.spinner("Running crew..."):
-            try:
-                result = crew.kickoff(inputs=placeholders)
-                with st.expander("Final output", expanded=True):
-                    if hasattr(result, 'raw'):
-                        st.write(result.raw)                
-                with st.expander("Full output", expanded=False):
-                    st.write(result)
-            except Exception as e:
-                st.error(f"An error occurred: {{str(e)}}")
+    with st.spinner("Running crew..."):
+        try:
+            result = crew.kickoff(inputs=placeholders)
+            with st.expander("Final output", expanded=True):
+                if hasattr(result, 'raw'):
+                    st.write(result.raw)                
+            with st.expander("Full output", expanded=False):
+                st.write(result)
+        except Exception as e:
+            st.error(f"An error occurred: {{str(e)}}")
 
 if __name__ == '__main__':
     main()
@@ -382,6 +382,7 @@ streamlit run app.py --server.headless true
                 'async_execution': task.async_execution,
                 'agent_id': task.agent.id if task.agent else None,
                 'context_from_async_tasks_ids': task.context_from_async_tasks_ids,
+                'context_from_sync_tasks_ids': task.context_from_sync_tasks_ids,
                 'created_at': task.created_at
             }
             crew_data['tasks'].append(task_data)
@@ -438,7 +439,8 @@ streamlit run app.py --server.headless true
                 expected_output=task_data['expected_output'],
                 async_execution=task_data['async_execution'],
                 agent=next((agent for agent in agents if agent.id == task_data['agent_id']), None),
-                context_from_async_tasks_ids=task_data['context_from_async_tasks_ids'],
+                context_from_async_tasks_ids=task_data.get('context_from_async_tasks_ids', None),
+                context_from_sync_tasks_ids=task_data.get('context_from_sync_tasks_ids', None),
                 created_at=task_data['created_at']
             )
             tasks.append(task)

@@ -5,22 +5,23 @@ from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 from langchain_anthropic import ChatAnthropic
 from crewai import LLM
+from langchain_openai.chat_models.base import BaseChatOpenAI
+from litellm import completion
 
-# Načtení prostředí z .env
-load_dotenv(override=True)
-
-# Inicializace session_state pro uložení přepnutých hodnot prostředí
-if "env_vars" not in st.session_state:
-    st.session_state.env_vars = {
-        "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
-        "OPENAI_API_BASE": os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1/"),
-        "GROQ_API_KEY": os.getenv("GROQ_API_KEY"),
-        "LMSTUDIO_API_BASE": os.getenv("LMSTUDIO_API_BASE"),
-        "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY"),
-        "OLLAMA_HOST": os.getenv("OLLAMA_HOST"),
-    }
-else:
-    st.session_state.env_vars = st.session_state.env_vars
+def load_secrets_fron_env():
+    load_dotenv(override=True)
+    if "env_vars" not in st.session_state:
+        st.session_state.env_vars = {
+            "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
+            "OPENAI_API_BASE": os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1/"),
+            "GROQ_API_KEY": os.getenv("GROQ_API_KEY"),
+            "LMSTUDIO_API_BASE": os.getenv("LMSTUDIO_API_BASE"),
+            "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY"),
+            "OLLAMA_HOST": os.getenv("OLLAMA_HOST"),
+            "XAI_API_KEY": os.getenv("XAI_API_KEY"),
+        }
+    else:
+        st.session_state.env_vars = st.session_state.env_vars
 
 def switch_environment(new_env_vars):
     for key, value in new_env_vars.items():
@@ -88,7 +89,27 @@ def create_ollama_llm(model, temperature):
         return LLM(model=model, temperature=temperature, base_url=host)
     else:
         raise ValueError("Ollama Host is not set in .env file")
-    
+
+
+def create_xai_llm(model, temperature):
+    host = "https://api.x.ai/v1"
+    api_key = st.session_state.env_vars.get("XAI_API_KEY")
+
+    if not api_key:
+        raise ValueError("XAI_API_KEY must be set in .env file")
+
+    switch_environment({
+        "OPENAI_API_KEY": api_key,
+        "OPENAI_API_BASE": host,
+    })
+
+    return LLM(
+        model=model,
+        temperature=temperature,
+        api_key=api_key,
+        base_url=host
+    )
+
 def create_lmstudio_llm(model, temperature):
     switch_environment({
         "OPENAI_API_KEY": "lm-studio",
@@ -108,7 +129,7 @@ def create_lmstudio_llm(model, temperature):
 
 LLM_CONFIG = {
     "OpenAI": {
-        "models": os.getenv("OPENAI_PROXY_MODELS", "").split(",") if os.getenv("OPENAI_PROXY_MODELS") else ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo", "gpt-4-turbo"],
+        "models": os.getenv("OPENAI_PROXY_MODELS", "").split(",") if os.getenv("OPENAI_PROXY_MODELS") else ["gpt-4.1-mini","gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo", "gpt-4-turbo"],
         "create_llm": create_openai_llm,
     },
     "Groq": {
@@ -120,12 +141,16 @@ LLM_CONFIG = {
         "create_llm": create_ollama_llm,
     },
     "Anthropic": {
-        "models": ["claude-3-5-sonnet-20240620"],
+        "models": ["claude-3-5-sonnet-20240620","claude-3-7-sonnet-20250219"],
         "create_llm": create_anthropic_llm,
     },
     "LM Studio": {
         "models": ["lms-default"],
         "create_llm": create_lmstudio_llm,
+    },
+     "Xai": {
+        "models": ["xai/grok-2-1212", "xai/grok-beta"],
+        "create_llm": create_xai_llm,
     },
 }
 
