@@ -20,15 +20,19 @@ class PageCrewRun:
         if 'results' not in ss:
             ss.results = load_results()
 
-    def get_tasks_output(self, tasks_output: list[TaskOutput]) :
+    def get_tasks_output(self, tasks_output: list[TaskOutput], tasks=None):
         res = []
 
         index = 0
         for task_output in tasks_output:
+            task_desc = None
+            if tasks and index < len(tasks):
+                task_desc = getattr(tasks[index], 'description', None)
             res.append({
                 'raw': task_output.raw,
                 'type': 'TaskOutput',
-                'index': index
+                'index': index,
+                'description': task_desc
             })
             index += 1
 
@@ -176,7 +180,7 @@ class PageCrewRun:
             st.success("Crew stopped successfully.")
             st.rerun()
 
-    def serialize_result(self, result) -> str | dict :
+    def serialize_result(self, result, crew=None) -> str | dict :
         """
         Serialize the crew result for database storage.
         """
@@ -191,7 +195,10 @@ class PageCrewRun:
 
                     tasks_output_key = 'tasks_output'
                     if hasattr(value, tasks_output_key):
-                        serialized[tasks_output_key] = self.get_tasks_output(value.tasks_output)
+                        serialized[tasks_output_key] = self.get_tasks_output(
+                            value.tasks_output,
+                            crew.tasks if crew else None
+                        )
                 elif hasattr(value, '__dict__'):
                     serialized[key] = {
                         'data': value.__dict__,
@@ -252,7 +259,7 @@ class PageCrewRun:
                         crew_id=ss.selected_crew_name,
                         crew_name=ss.selected_crew_name,
                         inputs={key.split('_')[1]: value for key, value in relevant_placeholders.items()},
-                        result=self.serialize_result(ss.result)  # Serialize the result before saving
+                        result=self.serialize_result(ss.result, curr_crew)  # Serialize the result before saving
                     )
                     
                     # Save to database and update session state
@@ -269,7 +276,11 @@ class PageCrewRun:
                 st.expander("Final output", expanded=True).write(formatted_result)
                 st.expander("Full output", expanded=False).write(ss.result)
 
-                tasks_result = get_tasks_outputs_str(ss.result["result"].tasks_output)
+                task_list = curr_crew.tasks if curr_crew else None
+                tasks_result = get_tasks_outputs_str(
+                    ss.result["result"].tasks_output,
+                    task_list
+                )
                 formatted_tasks_result = format_result(tasks_result)
                 st.expander("Tasks results", expanded=False).write(formatted_tasks_result)
 
