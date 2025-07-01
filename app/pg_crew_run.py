@@ -276,6 +276,8 @@ class PageCrewRun:
                 st.expander("Final output", expanded=True).write(formatted_result)
                 st.expander("Full output", expanded=False).write(ss.result)
 
+                # Always define curr_crew before use
+                curr_crew = self.get_mycrew_by_name(ss.selected_crew_name)
                 task_list = curr_crew.tasks if curr_crew else None
                 tasks_result = get_tasks_outputs_str(
                     ss.result["result"].tasks_output,
@@ -287,14 +289,13 @@ class PageCrewRun:
                 # Add print button
                 # FIXED: Also use the relevant placeholders for the printable view
                 relevant_inputs = {}
-                curr_crew = self.get_mycrew_by_name(ss.selected_crew_name)
                 if curr_crew:
                     crew_placeholders = self.get_placeholders_from_crew(curr_crew)
                     for placeholder in crew_placeholders:
                         placeholder_key = f'placeholder_{placeholder}'
                         if placeholder_key in ss.placeholders:
                             relevant_inputs[placeholder] = ss.placeholders[placeholder_key]
-                
+
                 html_content = generate_printable_view(
                     ss.selected_crew_name,
                     ss.result,
