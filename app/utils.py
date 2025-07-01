@@ -3,6 +3,9 @@ import string
 from streamlit import markdown
 import markdown as md
 from datetime import datetime
+import re
+from crewai import TaskOutput
+
 
 def rnd_id(length=8):
     characters = string.ascii_letters + string.digits
@@ -24,6 +27,7 @@ def fix_columns_width():
                 }
             </style>
             """, unsafe_allow_html=True)
+
 
 def generate_printable_view(crew_name, result, inputs, formatted_result, created_at=None):
     """
@@ -155,3 +159,11 @@ def normalize_list_indentation(md_text: str) -> str:
         else:
             normalized_lines.append(line)
     return "\n".join(normalized_lines)
+
+
+def get_tasks_outputs_str(tasks_output: list[TaskOutput | str]):
+    strRes = ""
+    for task_output in tasks_output:
+        val = task_output.raw if isinstance(task_output, TaskOutput) else task_output
+        strRes += f"\n\n#  TASK \n{val}\n\n==========\n"
+    return strRes

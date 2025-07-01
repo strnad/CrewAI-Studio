@@ -1,5 +1,6 @@
 import re
 import streamlit as st
+from crewai import TaskOutput
 from streamlit import session_state as ss
 import threading
 import ctypes
@@ -9,7 +10,7 @@ import traceback
 import os
 from console_capture import ConsoleCapture
 from db_utils import load_results, save_result
-from utils import format_result, generate_printable_view, rnd_id
+from utils import format_result, generate_printable_view, rnd_id, get_tasks_outputs_str
 
 
 class PageCrewRun:
@@ -18,7 +19,23 @@ class PageCrewRun:
         self.maintain_session_state()
         if 'results' not in ss:
             ss.results = load_results()
-    
+
+    def get_tasks_output(self, tasks_output: list[TaskOutput]) :
+        res = []
+
+        index = 0
+        for task_output in tasks_output:
+            res.append({
+                'raw': task_output.raw,
+                'type': 'TaskOutput',
+                'index': index
+            })
+            index += 1
+
+
+        return res
+
+
     @staticmethod
     def maintain_session_state():
         defaults = {
@@ -159,7 +176,7 @@ class PageCrewRun:
             st.success("Crew stopped successfully.")
             st.rerun()
 
-    def serialize_result(self, result):
+    def serialize_result(self, result) -> str | dict :
         """
         Serialize the crew result for database storage.
         """
@@ -171,6 +188,10 @@ class PageCrewRun:
                         'raw': value.raw,
                         'type': 'CrewOutput'
                     }
+
+                    tasks_output_key = 'tasks_output'
+                    if hasattr(value, tasks_output_key):
+                        serialized[tasks_output_key] = self.get_tasks_output(value.tasks_output)
                 elif hasattr(value, '__dict__'):
                     serialized[key] = {
                         'data': value.__dict__,
@@ -248,6 +269,10 @@ class PageCrewRun:
                 st.expander("Final output", expanded=True).write(formatted_result)
                 st.expander("Full output", expanded=False).write(ss.result)
 
+                tasks_result = get_tasks_outputs_str(ss.result["result"].tasks_output)
+                formatted_tasks_result = format_result(tasks_result)
+                st.expander("Tasks results", expanded=False).write(formatted_tasks_result)
+
                 # Add print button
                 # FIXED: Also use the relevant placeholders for the printable view
                 relevant_inputs = {}
@@ -270,6 +295,22 @@ class PageCrewRun:
                     <script>
                         var printWindow = window.open('', '_blank');
                         printWindow.document.write({html_content!r});
+                        printWindow.document.close();
+                    </script>
+                    """
+                    st.components.v1.html(js, height=0)
+
+                html_tasks_content = generate_printable_view(
+                    ss.selected_crew_name,
+                    ss.result,
+                    relevant_inputs,
+                    formatted_tasks_result
+                )
+                if st.button("Open Printable Complete View"):
+                    js = f"""
+                    <script>
+                        var printWindow = window.open('', '_blank');
+                        printWindow.document.write({html_tasks_content!r});
                         printWindow.document.close();
                     </script>
                     """
