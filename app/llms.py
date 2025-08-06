@@ -158,7 +158,10 @@ def llm_providers_and_models():
     return [f"{provider}: {model}" for provider in LLM_CONFIG.keys() for model in LLM_CONFIG[provider]["models"]]
 
 def create_llm(provider_and_model, temperature=0.15):
-    provider, model = provider_and_model.split(": ")
+    # Rozdělit pouze na první výskyt ': ', aby model mohl obsahovat dvojtečku
+    if ": " not in provider_and_model:
+        raise ValueError("Input string must be in format 'Provider: Model'")
+    provider, model = provider_and_model.split(": ", 1)
     create_llm_func = LLM_CONFIG.get(provider, {}).get("create_llm")
 
     if create_llm_func:
