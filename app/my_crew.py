@@ -7,7 +7,7 @@ from llms import llm_providers_and_models, create_llm
 import db_utils
 
 class MyCrew:
-    def __init__(self, id=None, name=None, agents=None, tasks=None, process=None, cache=None, max_rpm=None, verbose=None, manager_llm=None, manager_agent=None, created_at=None, memory=None, planning=None, knowledge_source_ids=None):
+    def __init__(self, id=None, name=None, agents=None, tasks=None, process=None, cache=None, max_rpm=None, verbose=None, manager_llm=None, manager_agent=None, created_at=None, memory=None, planning=None, planning_llm=None, knowledge_source_ids=None):
         self.id = id or "C_" + rnd_id()
         self.name = name or "Crew 1"
         self.agents = agents or []
@@ -20,6 +20,7 @@ class MyCrew:
         self.cache = cache if cache is not None else True
         self.max_rpm = max_rpm or 1000
         self.planning = planning if planning is not None else False
+        self.planning_llm = planning_llm
         self.created_at = created_at or datetime.now().isoformat()
         self.knowledge_source_ids = knowledge_source_ids or []
         self.edit_key = f'edit_{self.id}'
@@ -96,46 +97,55 @@ class MyCrew:
 
         # Create the crew with knowledge sources
         if self.manager_llm:
-            return Crew(
-                agents=crewai_agents,
-                tasks=crewai_tasks,
-                cache=self.cache,
-                process=self.process,
-                max_rpm=self.max_rpm,
-                verbose=self.verbose,
-                manager_llm=create_llm(self.manager_llm),
-                memory=self.memory,
-                planning=self.planning,
-                knowledge_sources=knowledge_sources if knowledge_sources else None,
-                *args, **kwargs
-            )
+            crew_params = {
+                'agents': crewai_agents,
+                'tasks': crewai_tasks,
+                'cache': self.cache,
+                'process': self.process,
+                'max_rpm': self.max_rpm,
+                'verbose': self.verbose,
+                'manager_llm': create_llm(self.manager_llm),
+                'memory': self.memory,
+                'planning': self.planning,
+                'knowledge_sources': knowledge_sources if knowledge_sources else None,
+            }
+            if self.planning and self.planning_llm:
+                crew_params['planning_llm'] = create_llm(self.planning_llm)
+            crew_params.update(kwargs)
+            return Crew(*args, **crew_params)
         elif self.manager_agent:
-            return Crew(
-                agents=crewai_agents,
-                tasks=crewai_tasks,
-                cache=self.cache,
-                process=self.process,
-                max_rpm=self.max_rpm,
-                verbose=self.verbose,
-                manager_agent=self.manager_agent.get_crewai_agent(),
-                memory=self.memory,
-                planning=self.planning,
-                knowledge_sources=knowledge_sources if knowledge_sources else None,
-                *args, **kwargs
-            )
-        cr = Crew(
-            agents=crewai_agents,
-            tasks=crewai_tasks,
-            cache=self.cache,
-            process=self.process,
-            max_rpm=self.max_rpm,
-            verbose=self.verbose,
-            memory=self.memory,
-            planning=self.planning,
-            knowledge_sources=knowledge_sources if knowledge_sources else None,
-            *args, **kwargs
-        )
-        return cr
+            crew_params = {
+                'agents': crewai_agents,
+                'tasks': crewai_tasks,
+                'cache': self.cache,
+                'process': self.process,
+                'max_rpm': self.max_rpm,
+                'verbose': self.verbose,
+                'manager_agent': self.manager_agent.get_crewai_agent(),
+                'memory': self.memory,
+                'planning': self.planning,
+                'knowledge_sources': knowledge_sources if knowledge_sources else None,
+            }
+            if self.planning and self.planning_llm:
+                crew_params['planning_llm'] = create_llm(self.planning_llm)
+            crew_params.update(kwargs)
+            return Crew(*args, **crew_params)
+        
+        crew_params = {
+            'agents': crewai_agents,
+            'tasks': crewai_tasks,
+            'cache': self.cache,
+            'process': self.process,
+            'max_rpm': self.max_rpm,
+            'verbose': self.verbose,
+            'memory': self.memory,
+            'planning': self.planning,
+            'knowledge_sources': knowledge_sources if knowledge_sources else None,
+        }
+        if self.planning and self.planning_llm:
+            crew_params['planning_llm'] = create_llm(self.planning_llm)
+        crew_params.update(kwargs)
+        return Crew(*args, **crew_params)
     
     def update_knowledge_sources(self):
         self.knowledge_source_ids = ss[f'knowledge_sources_{self.id}']
@@ -199,6 +209,11 @@ class MyCrew:
         self.planning = ss[f'planning_{self.id}']
         db_utils.save_crew(self)
 
+    def update_planning_llm(self):
+        selected_llm = ss[f'planning_llm_{self.id}']
+        self.planning_llm = selected_llm if selected_llm != "None" else None
+        db_utils.save_crew(self)
+
     def is_valid(self, show_warning=False):
         if len(self.agents) == 0:
             if show_warning:
@@ -216,6 +231,10 @@ class MyCrew:
             if show_warning:
                 st.warning(f"Crew {self.name} has no manager agent or manager llm set for hierarchical process")
             return False
+        if self.planning and not self.planning_llm:
+            if show_warning:
+                st.warning(f"Crew {self.name} has planning enabled but no planning LLM selected")
+            return False
         return True
 
     def validate_manager_llm(self):
@@ -223,8 +242,14 @@ class MyCrew:
         if self.manager_llm and self.manager_llm not in available_models:
             self.manager_llm = None
 
+    def validate_planning_llm(self):
+        available_models = llm_providers_and_models()
+        if self.planning_llm and self.planning_llm not in available_models:
+            self.planning_llm = None
+
     def draw(self,expanded=False, buttons=True):
         self.validate_manager_llm()
+        self.validate_planning_llm()
         name_key = f"name_{self.id}"
         process_key = f"process_{self.id}"
         verbose_key = f"verbose_{self.id}"
@@ -234,6 +259,7 @@ class MyCrew:
         manager_agent_key = f"manager_agent_{self.id}"
         memory_key = f"memory_{self.id}"
         planning_key = f"planning_{self.id}"
+        planning_llm_key = f"planning_llm_{self.id}"
         cache_key = f"cache_{self.id}"
         max_rpm_key = f"max_rpm_{self.id}"
         
@@ -253,6 +279,7 @@ class MyCrew:
                 st.checkbox("Memory", value=self.memory, key=memory_key, on_change=self.update_memory)
                 st.checkbox("Cache", value=self.cache, key=cache_key, on_change=self.update_cache)
                 st.checkbox("Planning", value=self.planning, key=planning_key, on_change=self.update_planning)
+                st.selectbox("Planning LLM", options=["None"] + llm_providers_and_models(), index=0 if self.planning_llm is None else llm_providers_and_models().index(self.planning_llm) + 1, key=planning_llm_key, on_change=self.update_planning_llm, disabled=not self.planning)
                 st.number_input("Max req/min", value=self.max_rpm, key=max_rpm_key, on_change=self.update_max_rpm)  
                 # for some reason knowledge sources for crews are not working, use the knowledge sources in the agents instead
                 # if 'knowledge_sources' in ss and len(ss.knowledge_sources) > 0:
@@ -286,6 +313,8 @@ class MyCrew:
                 st.markdown(f"**Memory:** {self.memory}")
                 st.markdown(f"**Cache:** {self.cache}")
                 st.markdown(f"**Planning:** {self.planning}")
+                if self.planning and self.planning_llm:
+                    st.markdown(f"**Planning LLM:** {self.planning_llm}")
                 st.markdown(f"**Max req/min:** {self.max_rpm}")
                 st.markdown("**Tasks:**")
                 for i, task in enumerate([task for task in self.tasks if task.agent and task.agent.id in [agent.id for agent in self.agents]], 1):
