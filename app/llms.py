@@ -126,6 +126,12 @@ def create_lmstudio_llm(model, temperature):
         )
     else:
         raise ValueError("LM Studio API base not set in .env file")
+    
+def create_bedrock_llm(model, temperature):
+    return LLM(
+        model=model,
+        temperature=temperature
+    )
 
 LLM_CONFIG = {
     "OpenAI": {
@@ -152,6 +158,10 @@ LLM_CONFIG = {
         "models": ["xai/grok-2-1212", "xai/grok-beta"],
         "create_llm": create_xai_llm,
     },
+    "Bedrock":{
+        "models":["bedrock/amazon.nova-pro-v1:0","bedrock/amazon.titan-text-express-v1","bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0","bedrock/meta.llama3-1-70b-instruct-v1:0","bedrock/mistral.mixtral-8x7b-instruct-v0:1"],
+        "create_llm":create_bedrock_llm
+    }
 }
 
 def llm_providers_and_models():
