@@ -333,9 +333,140 @@ class MyCrew:
                     with col1:                    
                         st.button("Edit", on_click=self.set_editable, key=rnd_id(), args=(True,))
                     with col2:                   
-                        st.button("Delete", on_click=self.delete, key=rnd_id())
+                        # Instead of direct delete, open modal for cascade delete handling
+                        st.button("Delete", on_click=self.request_delete_modal, key=rnd_id())
                 self.is_valid(show_warning=True)
+                # If this crew was selected for deletion, draw the modal here
+                if ss.get('delete_crew_target_id') == self.id:
+                    self.draw_delete_dialog()
 
     def set_editable(self, edit):
         self.edit = edit
         db_utils.save_crew(self)
+
+    # ---------------------- Deletion & Cascade Handling ----------------------
+    def request_delete_modal(self):
+        """Flag this crew for deletion and trigger modal display."""
+        ss['delete_crew_target_id'] = self.id
+
+    def clear_delete_modal(self):
+        if 'delete_crew_target_id' in ss:
+            del ss['delete_crew_target_id']
+
+    def analyze_dependencies(self):
+        """Analyze agents and tasks belonging to this crew for conflicts.
+
+        Returns:
+            dict with keys 'agents' and 'tasks'. Each value is a list of dicts:
+            {'obj': <agent|task>, 'conflicts': [str,...]}
+        """
+        # Other crews
+        other_crews = [c for c in ss.crews if c.id != self.id]
+
+        # Map task id -> tasks referencing it as context (across all tasks)
+        context_refs = {}
+        for t in ss.tasks:
+            for ref in (t.context_from_async_tasks_ids or []) + (t.context_from_sync_tasks_ids or []):
+                context_refs.setdefault(ref, []).append(t)
+
+        agents_info = []
+        for agent in self.agents:
+            conflicts = []
+            # Used in other crews
+            used_in_crews = [c.name for c in other_crews if any(a.id == agent.id for a in c.agents)]
+            if used_in_crews:
+                conflicts.append(f"Used in other crews: {', '.join(used_in_crews)}")
+            # Tasks outside this crew that use the agent
+            external_tasks = [t for t in ss.tasks if t.agent and t.agent.id == agent.id and t.id not in [ct.id for ct in self.tasks]]
+            if external_tasks:
+                conflicts.append("Used in tasks outside this crew: " + ", ".join([t.description[:40] for t in external_tasks]))
+            agents_info.append({'obj': agent, 'conflicts': conflicts})
+
+        tasks_info = []
+        for task in self.tasks:
+            conflicts = []
+            # Used in other crews
+            used_in_crews = [c.name for c in other_crews if any(t.id == task.id for t in c.tasks)]
+            if used_in_crews:
+                conflicts.append(f"Shared with other crews: {', '.join(used_in_crews)}")
+            # Referenced as context by tasks not being deleted
+            ref_tasks = [rt for rt in context_refs.get(task.id, []) if rt.id not in [t.id for t in self.tasks]]
+            if ref_tasks:
+                conflicts.append("Referenced as context in other tasks: " + ", ".join([rt.description[:40] for rt in ref_tasks]))
+            tasks_info.append({'obj': task, 'conflicts': conflicts})
+
+        return {'agents': agents_info, 'tasks': tasks_info}
+
+    def draw_delete_dialog(self):
+        deps = self.analyze_dependencies()
+
+        if not hasattr(st, 'dialog'):
+            st.error("This Streamlit version does not support st.dialog – please upgrade Streamlit.")
+            return
+
+        @st.dialog(f"Delete crew: {self.name}")
+        def _dlg():
+            st.markdown("### Confirm deleting entire crew")
+            st.markdown("This action will delete the selected crew. You can optionally delete its agents and tasks.")
+            st.markdown("If an item is used elsewhere it's marked as a conflict and unchecked by default.")
+
+            st.markdown("#### Agents")
+            for info in deps['agents']:
+                agent = info['obj']
+                conflict = len(info['conflicts']) > 0
+                checkbox_key = f"del_agent_{agent.id}"
+                label = f"Agent: {agent.role}"
+                default_val = False if conflict else True
+                st.checkbox(label, value=default_val if checkbox_key not in ss else ss[checkbox_key], key=checkbox_key, help=("Conflict: " + " | ".join(info['conflicts'])) if conflict else None)
+
+            st.markdown("#### Tasks")
+            for info in deps['tasks']:
+                task = info['obj']
+                conflict = len(info['conflicts']) > 0
+                checkbox_key = f"del_task_{task.id}"
+                label = f"Task: {task.description[:60]}"
+                default_val = False if conflict else True
+                st.checkbox(label, value=default_val if checkbox_key not in ss else ss[checkbox_key], key=checkbox_key, help=("Conflict: " + " | ".join(info['conflicts'])) if conflict else None)
+
+            st.divider()
+            col_a, col_b, col_c = st.columns(3)
+            with col_a:
+                if st.button("Cancel"):
+                    self.clear_delete_modal()
+                    st.rerun()
+            with col_b:
+                if st.button("Delete crew only"):
+                    self.delete()
+                    self.clear_delete_modal()
+                    st.rerun()
+            with col_c:
+                if st.button("Delete crew + selected items", type="primary"):
+                    selected_agent_ids = [info['obj'].id for info in deps['agents'] if ss.get(f"del_agent_{info['obj'].id}")]
+                    selected_task_ids = [info['obj'].id for info in deps['tasks'] if ss.get(f"del_task_{info['obj'].id}")]
+                    if selected_task_ids:
+                        ss.tasks = [t for t in ss.tasks if t.id not in selected_task_ids]
+                        for crew in ss.crews:
+                            original_len = len(crew.tasks)
+                            crew.tasks = [t for t in crew.tasks if t.id not in selected_task_ids]
+                            if len(crew.tasks) != original_len:
+                                db_utils.save_crew(crew)
+                        for tid in selected_task_ids:
+                            db_utils.delete_task(tid)
+                    if selected_agent_ids:
+                        ss.agents = [a for a in ss.agents if a.id not in selected_agent_ids]
+                        for crew in ss.crews:
+                            orig_len = len(crew.agents)
+                            crew.agents = [a for a in crew.agents if a.id not in selected_agent_ids]
+                            if len(crew.agents) != orig_len:
+                                db_utils.save_crew(crew)
+                        for task in ss.tasks:
+                            if task.agent and task.agent.id in selected_agent_ids:
+                                task.agent = None
+                                db_utils.save_task(task)
+                        for aid in selected_agent_ids:
+                            db_utils.delete_agent(aid)
+                    self.delete()
+                    self.clear_delete_modal()
+                    st.rerun()
+
+        _dlg()
