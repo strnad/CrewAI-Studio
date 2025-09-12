@@ -86,6 +86,19 @@ class MyAgent:
     def validate_llm_provider_model(self):
         available_models = llm_providers_and_models()
         if self.llm_provider_model not in available_models:
+            # Try to convert legacy format instead of resetting
+            if self.llm_provider_model.startswith("Google Gemini:"):
+                provider, model = self.llm_provider_model.split(": ", 1)
+                if provider == "Google Gemini":
+                    # Convert legacy Gemini models to new format
+                    legacy_gemini_models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+                    clean_model = model.replace("models/", "") if model.startswith("models/") else model
+                    if clean_model in legacy_gemini_models:
+                        new_format = f"Google Gemini: gemini/{clean_model}"
+                        if new_format in available_models:
+                            self.llm_provider_model = new_format
+                            return
+            # If conversion failed, reset to first available
             self.llm_provider_model = available_models[0]
 
     def draw(self, key=None):

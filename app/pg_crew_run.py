@@ -279,12 +279,25 @@ class PageCrewRun:
                 # Always define curr_crew before use
                 curr_crew = self.get_mycrew_by_name(ss.selected_crew_name)
                 task_list = curr_crew.tasks if curr_crew else None
-                tasks_result = get_tasks_outputs_str(
-                    ss.result["result"].tasks_output,
-                    task_list
-                )
-                formatted_tasks_result = format_result(tasks_result)
-                st.expander("Tasks results", expanded=False).write(formatted_tasks_result)
+                
+                # Initialize formatted_tasks_result to avoid UnboundLocalError
+                formatted_tasks_result = "No task results available."
+                
+                # Check if result is a successful object with tasks_output or an error string
+                if isinstance(ss.result["result"], str):
+                    # Error case - result is an error message string
+                    st.expander("Tasks results", expanded=False).write("No task results available due to error.")
+                else:
+                    # Success case - result is an object with tasks_output
+                    try:
+                        tasks_result = get_tasks_outputs_str(
+                            ss.result["result"].tasks_output,
+                            task_list
+                        )
+                        formatted_tasks_result = format_result(tasks_result)
+                        st.expander("Tasks results", expanded=False).write(formatted_tasks_result)
+                    except AttributeError:
+                        st.expander("Tasks results", expanded=False).write("No task results available.")
 
                 # Add print button
                 # FIXED: Also use the relevant placeholders for the printable view

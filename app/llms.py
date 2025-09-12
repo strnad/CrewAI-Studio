@@ -4,6 +4,8 @@ import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 from langchain_anthropic import ChatAnthropic
+# Note: No longer using ChatGoogleGenerativeAI due to its automatic "models/" prefix
+# from langchain_google_genai import ChatGoogleGenerativeAI
 from crewai import LLM
 from langchain_openai.chat_models.base import BaseChatOpenAI
 from litellm import completion
@@ -17,6 +19,7 @@ def load_secrets_fron_env():
             "GROQ_API_KEY": os.getenv("GROQ_API_KEY"),
             "LMSTUDIO_API_BASE": os.getenv("LMSTUDIO_API_BASE"),
             "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY"),
+            "GEMINI_API_KEY": os.getenv("GEMINI_API_KEY"),
             "OLLAMA_HOST": os.getenv("OLLAMA_HOST"),
             "XAI_API_KEY": os.getenv("XAI_API_KEY"),
         }
@@ -91,6 +94,26 @@ def create_ollama_llm(model, temperature):
         raise ValueError("Ollama Host is not set in .env file")
 
 
+def create_gemini_llm(model, temperature):
+    switch_environment({
+        "GEMINI_API_KEY": st.session_state.env_vars["GEMINI_API_KEY"],
+    })
+    api_key = os.getenv("GEMINI_API_KEY")
+
+    if api_key:
+        # Use the full model name with gemini/ prefix for CrewAI LLM
+        # CrewAI's LLM class handles this correctly with litellm, unlike LangChain's ChatGoogleGenerativeAI
+        # which adds an unwanted "models/" prefix
+        model_name = model if model.startswith("gemini/") else f"gemini/{model}"
+        
+        return LLM(
+            model=model_name,
+            api_key=api_key,
+            temperature=temperature,
+            max_tokens=4095,
+        )
+    else:
+        raise ValueError("Gemini API key not set in .env file")
 def create_xai_llm(model, temperature):
     host = "https://api.x.ai/v1"
     api_key = st.session_state.env_vars.get("XAI_API_KEY")
@@ -144,6 +167,10 @@ LLM_CONFIG = {
         "models": ["claude-3-5-sonnet-20240620","claude-3-7-sonnet-20250219"],
         "create_llm": create_anthropic_llm,
     },
+    "Google Gemini": {
+        "models": ["gemini/gemini-2.5-flash", "gemini/gemini-2.5-pro", "gemini/gemini-2.0-flash", "gemini/gemini-1.5-flash", "gemini/gemini-1.5-pro"],
+        "create_llm": create_gemini_llm,
+    },
     "LM Studio": {
         "models": ["lms-default"],
         "create_llm": create_lmstudio_llm,
@@ -162,6 +189,21 @@ def create_llm(provider_and_model, temperature=0.15):
     if ": " not in provider_and_model:
         raise ValueError("Input string must be in format 'Provider: Model'")
     provider, model = provider_and_model.split(": ", 1)
+    
+    # Backward compatibility: Handle legacy model formats
+    if provider == "Google Gemini":
+        # Convert legacy format to new format if needed
+        if not model.startswith("gemini/"):
+            # Check if it's a known Gemini model without prefix
+            legacy_gemini_models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+            if model in legacy_gemini_models:
+                model = f"gemini/{model}"
+            # Handle the mysterious "models/" prefix
+            elif model.startswith("models/"):
+                clean_model = model.replace("models/", "")
+                if clean_model in legacy_gemini_models:
+                    model = f"gemini/{clean_model}"
+    
     create_llm_func = LLM_CONFIG.get(provider, {}).get("create_llm")
 
     if create_llm_func:
