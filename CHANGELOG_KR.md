@@ -342,9 +342,115 @@ CrewAI-Studio/
 
 ## 🔜 다음 작업 (Phase 2 계속)
 
-### Phase 2-2: Agent 도메인 모델 분리
-- [ ] `app/my_agent.py` → `bend/models/agent.py`
-- [ ] `bend/schemas/agent.py` 생성
+### Phase 2-2: Agent 도메인 모델 분리 ✅
+
+**작업 일시**: 2025-10-20
+
+**새로 생성된 파일**:
+- `bend/models/agent.py` - 순수 도메인 모델
+- `bend/schemas/agent.py` - Pydantic API 스키마
+
+**주요 변경사항**:
+
+#### 1. `bend/models/agent.py`
+**설계 철학**: Streamlit 의존성을 완전히 제거한 순수 비즈니스 로직
+
+```python
+@dataclass
+class AgentModel:
+    """Streamlit 없는 순수 도메인 모델"""
+    id: str
+    role: str
+    backstory: str
+    goal: str
+    temperature: float
+    allow_delegation: bool
+    verbose: bool
+    cache: bool
+    llm_provider_model: str
+    max_iter: int
+    tools: List[Any]
+    knowledge_source_ids: List[str]
+```
+
+**제거된 UI 관련 코드**:
+- ❌ `import streamlit as st`
+- ❌ `from streamlit import session_state as ss`
+- ❌ `draw()` 메서드 (UI 렌더링)
+- ❌ `set_editable()` 메서드
+- ❌ `delete()` 메서드 (UI 상태 업데이트)
+- ❌ `edit_key`, `edit` 프로퍼티 (세션 상태 키)
+
+**추가된 기능**:
+- ✅ `validate(available_llm_models)` - 에러/경고 딕셔너리 반환
+- ✅ `validate_llm_provider_model(available_models)` - LLM 모델 검증
+- ✅ `to_dict()` - 직렬화
+- ✅ `from_dict()` - 역직렬화 (with registries)
+- ✅ `get_crewai_agent()` - CrewAI Agent 인스턴스 변환
+
+**검증 로직 개선**:
+```python
+# 변경 전 (my_agent.py)
+def is_valid(self, show_warning=False):
+    for tool in self.tools:
+        if not tool.is_valid(show_warning=show_warning):
+            if show_warning:
+                st.warning(t('agents.warning_tool_invalid', tool_name=tool.name))
+            return False
+    return True
+
+# 변경 후 (agent.py)
+def validate(self, available_llm_models=None) -> Dict[str, Any]:
+    errors = []
+    warnings = []
+    if not self.role or not self.role.strip():
+        errors.append(f"Agent '{self.id}' has no role defined")
+    # ... 추가 검증 로직
+    for tool in self.tools:
+        tool_validation = tool.validate()
+        if not tool_validation.get('is_valid', False):
+            errors.append(f"Agent '{self.id}' has invalid tool '{tool.name}'")
+    return {'errors': errors, 'warnings': warnings, 'is_valid': len(errors) == 0}
+```
+
+#### 2. `bend/schemas/agent.py`
+**Pydantic 기반 API 요청/응답 스키마**:
+
+```python
+class AgentCreate(BaseModel):
+    """에이전트 생성 요청"""
+    role: str = Field(..., min_length=1, max_length=500)
+    backstory: str
+    goal: str
+    temperature: float = Field(default=0.1, ge=0.0, le=1.0)
+    llm_provider_model: str
+    tool_ids: List[str] = Field(default_factory=list)
+    # ... 기타 필드
+
+class AgentUpdate(BaseModel):
+    """에이전트 수정 요청 (모든 필드 optional)"""
+    role: Optional[str] = None
+    # ...
+
+class AgentResponse(BaseModel):
+    """에이전트 조회 응답"""
+    id: str
+    role: str
+    created_at: str
+    # ...
+
+class AgentValidationResponse(BaseModel):
+    """에이전트 검증 응답"""
+    is_valid: bool
+    errors: List[str]
+    warnings: List[str]
+```
+
+**기존 코드 유지**:
+- ✅ `app/my_agent.py` - Streamlit UI에서 계속 사용
+- ✅ 기존 기능 100% 호환 유지
+
+---
 
 ### Phase 2-3: Task 도메인 모델 분리
 - [ ] `app/my_task.py` → `bend/models/task.py`
