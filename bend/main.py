@@ -15,7 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from bend.config import settings
-from bend.api import health, crews, agents, tasks, tools
+from bend.api import health, crews, agents, tasks, tools, knowledge
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -62,6 +62,7 @@ app.include_router(crews.router, prefix=f"{settings.api_prefix}/crews", tags=["C
 app.include_router(agents.router, prefix=f"{settings.api_prefix}/agents", tags=["Agents"])
 app.include_router(tasks.router, prefix=f"{settings.api_prefix}/tasks", tags=["Tasks"])
 app.include_router(tools.router, prefix=f"{settings.api_prefix}/tools", tags=["Tools"])
+app.include_router(knowledge.router, prefix=f"{settings.api_prefix}/knowledge", tags=["Knowledge Sources"])
 
 
 # Error handlers

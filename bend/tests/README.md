@@ -31,6 +31,9 @@ python bend/tests/test_api_tasks.py
 
 # Tools API 테스트
 python bend/tests/test_api_tools.py
+
+# Knowledge Sources API 테스트
+python bend/tests/test_api_knowledge.py
 ```
 
 ## 테스트 스크립트 목록
@@ -43,6 +46,38 @@ Agents CRUD API 테스트
 
 ### `test_api_tasks.py`
 Tasks CRUD API 테스트
+
+### `test_api_knowledge.py`
+Knowledge Sources CRUD API 테스트
+
+**테스트 항목**:
+- ✅ Health Check
+- ✅ CREATE: 새 Knowledge Source 생성
+- ✅ READ: Knowledge Source 조회 (단일/목록)
+- ✅ UPDATE: Knowledge Source 수정
+- ✅ DELETE: Knowledge Source 삭제
+- ✅ VALIDATE: Knowledge Source 검증
+- ✅ 에러 처리 (404, 400 등)
+- ✅ 잘못된 source_type 검증
+- ✅ String 타입 content 누락 검증
+- ✅ Agent 의존성 검증 (사용 중인 Knowledge Source 삭제 방지)
+- ✅ Crew 의존성 검증 (사용 중인 Knowledge Source 삭제 방지)
+
+**실행 결과 예시**:
+```
+============================================================
+CrewAI Studio - Knowledge Sources API Tests
+Base URL: http://localhost:8000/api
+============================================================
+
+============================================================
+Health Check
+============================================================
+
+GET /api/health
+Status: 200 OK
+...
+```
 
 ### `test_api_tools.py`
 Tools CRUD API 테스트
