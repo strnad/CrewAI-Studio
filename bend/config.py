@@ -3,6 +3,7 @@ Application Configuration
 Supports Keycloak/OIDC integration for future authentication
 """
 from pydantic_settings import BaseSettings
+from pydantic import Field
 from typing import Optional
 import os
 
@@ -25,8 +26,11 @@ class Settings(BaseSettings):
     port: int = 8000
     reload: bool = True  # Development mode - auto reload on file changes
 
-    # Database
-    database_url: str = os.getenv("DB_URL", "sqlite:///crewai.db")
+    # Database (accepts both DATABASE_URL and DB_URL from .env)
+    database_url: str = Field(
+        default="sqlite:///crewai.db",
+        validation_alias="DB_URL"  # Also accept DB_URL from .env
+    )
 
     # CORS
     cors_origins: list = [
@@ -64,6 +68,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"  # Ignore extra fields from .env
 
 
 # Global settings instance
