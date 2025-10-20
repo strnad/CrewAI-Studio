@@ -27,7 +27,7 @@ class KnowledgeSource(Base):
     source_type = Column(String(50), nullable=False)  # string, text_file, pdf, csv, excel, json, docling
     source_path = Column(Text, default="")
     content = Column(Text, default="")
-    metadata = Column(JSON, default=dict)
+    meta_data = Column(JSON, default=dict)  # Renamed from metadata (reserved by SQLAlchemy)
     chunk_size = Column(Integer, default=4000)
     chunk_overlap = Column(Integer, default=200)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -47,7 +47,7 @@ class KnowledgeSource(Base):
             "source_type": self.source_type,
             "source_path": self.source_path,
             "content": self.content,
-            "metadata": self.metadata or {},
+            "metadata": self.meta_data or {},  # Return as 'metadata' for API compatibility
             "chunk_size": self.chunk_size,
             "chunk_overlap": self.chunk_overlap,
             "created_at": self.created_at.isoformat() if self.created_at else None,
