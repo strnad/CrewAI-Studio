@@ -3,7 +3,6 @@ import os
 from utils import rnd_id
 from i18n import t
 from crewai_tools import CodeInterpreterTool,ScrapeElementFromWebsiteTool,TXTSearchTool,SeleniumScrapingTool,PGSearchTool,PDFSearchTool,MDXSearchTool,JSONSearchTool,GithubSearchTool,EXASearchTool,DOCXSearchTool,CSVSearchTool,ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, DirectoryReadTool, CodeDocsSearchTool, YoutubeVideoSearchTool,SerperDevTool,YoutubeChannelSearchTool,WebsiteSearchTool
-from tools.CSVSearchToolEnhanced import CSVSearchToolEnhanced
 from tools.CustomApiTool import CustomApiTool
 from tools.CustomCodeInterpreterTool import CustomCodeInterpreterTool
 from tools.CustomFileWriteTool import CustomFileWriteTool
@@ -353,15 +352,6 @@ class MyCustomCodeInterpreterTool(MyTool):
     def create_tool(self) -> CustomCodeInterpreterTool:
         return CustomCodeInterpreterTool(workspace_dir=self.parameters.get('workspace_dir') if self.parameters.get('workspace_dir') else "workspace")
 
-class MyCSVSearchToolEnhanced(MyTool):
-    def __init__(self, tool_id=None, csv=None):
-        parameters = {
-            'csv': {'mandatory': False}
-        }
-        super().__init__(tool_id, 'CSVSearchToolEnhanced', t('tools.desc_csv_search_enhanced'), parameters, csv=csv)
-
-    def create_tool(self) -> CSVSearchToolEnhanced:
-        return CSVSearchToolEnhanced(csv=self.parameters.get('csv') if self.parameters.get('csv') else None)
 
 class MyScrapeWebsiteToolEnhanced(MyTool):
     def __init__(self, tool_id=None, website_url=None, cookies=None, show_urls=None, css_selector=None):
@@ -423,7 +413,6 @@ TOOL_CLASSES = {
 
     'TXTSearchTool': MyTXTSearchTool,
     'CSVSearchTool': MyCSVSearchTool,
-    'CSVSearchToolEnhanced': MyCSVSearchToolEnhanced,
     'DOCXSearchTool': MyDocxSearchTool, 
     'EXASearchTool': MyEXASearchTool,
     'JSONSearchTool': MyJSONSearchTool,

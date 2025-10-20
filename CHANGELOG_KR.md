@@ -1106,7 +1106,215 @@ python bend/tests/test_api_knowledge.py
 
 ---
 
+---
+
+## 🏠 2025-10-20 (저녁 - 집에서 작업)
+
+### 🔧 embedchain 의존성 문제 해결
+
+**작업 배경**:
+- 회사에서 작업한 Phase 1-3는 embedchain 0.1.128 + langchain 0.3.x 조합
+- 집에서 다시 실행 시 `ModuleNotFoundError: No module named 'embedchain.models'` 발생
+- embedchain의 복잡한 의존성 문제로 인해 근본적인 해결 필요
+
+**시도한 해결 방법들**:
+
+#### 1차 시도: PostgreSQL + pgvector 어댑터
+```python
+# /tmp/CSVSearchToolEnhanced_postgres.py 생성
+# langchain-community의 PGVector 사용
+# HuggingFaceEmbeddings로 임베딩 생성
+```
+**결과**: ❌ langchain-core 버전 충돌 지속
+
+#### 2차 시도: LlamaIndex 어댑터
+```python
+# /tmp/CSVSearchToolEnhanced_llamaindex.py 생성
+# llama-index + PostgreSQL pgvector 사용
+# OpenAI / HuggingFace 임베딩 지원
+```
+**결과**: ❌ 추가 의존성 설치 필요, langchain-groq와 충돌
+
+#### 최종 결정: CSVSearchToolEnhanced 도구 제거 ✅
+
+**이유**:
+- embedchain은 langchain 1.0.x와 근본적으로 호환되지 않음
+- crewai-tools에서 제공하는 기본 `CSVSearchTool`로 대체 가능
+- 복잡한 의존성 문제보다 안정성 우선
+
+**삭제된 파일**:
+```bash
+# 백업 생성
+app/tools/CSVSearchToolEnhanced.py → .bak
+
+# 실제 삭제
+rm app/tools/CSVSearchToolEnhanced.py
+```
+
+**수정된 파일**:
+- `app/my_tools.py` (3곳 수정):
+  1. Import 문 제거 (line 6)
+  2. MyCSVSearchToolEnhanced 클래스 제거 (lines 356-364)
+  3. TOOL_CLASSES 딕셔너리에서 제거 (line 416)
+
+- `requirements.txt`:
+  ```diff
+  - embedchain
+  ```
+
+---
+
+### 📦 langchain 패키지 업그레이드 (최종)
+
+**변경 전** (회사 - embedchain 호환):
+```
+langchain: 0.3.27
+langchain-core: 0.3.79
+langchain-community: 0.3.31
+langchain-openai: 0.2.14
+langchain-groq: 0.3.8
+langchain-anthropic: 0.3.22
+langchain-ollama: 0.3.10
+```
+
+**변경 후** (집 - 최신 버전):
+```
+langchain: 1.0.1
+langchain-core: 1.0.0
+langchain-community: 1.0.0
+langchain-openai: 1.0.0
+langchain-groq: 1.0.0
+langchain-anthropic: 1.0.0
+langchain-ollama: 1.0.0
+langchain-text-splitters: 1.0.0
+```
+
+**업그레이드 명령어**:
+```bash
+pip install --upgrade \
+  langchain \
+  langchain-core \
+  langchain-community \
+  langchain-openai \
+  langchain-groq \
+  langchain-anthropic \
+  langchain-ollama \
+  langchain-text-splitters
+```
+
+**검증 결과**:
+```bash
+python -c "import app"
+# ✅ 성공! 모든 import 정상 작동
+```
+
+---
+
+### 📚 README 한국어 번역 추가
+
+**작업 내용**:
+
+1. **기존 README 백업**:
+   ```bash
+   mv README.md README_en.md
+   ```
+
+2. **새로운 한국어 README.md 생성**:
+   - 전체 내용 한국어로 번역
+   - 모든 링크 및 이미지 경로 유지
+   - 주요 기능, 설치 방법, 사용법 번역
+   - 후원 정보 보존 (Bitcoin 주소, GitHub Sponsor 링크)
+   - 스크린샷 링크 유지
+
+**생성된 파일**:
+- ✅ `README.md` (한국어, 3.0K) - 메인 README
+- ✅ `README_en.md` (영어, 2.6K) - 백업
+
+---
+
+### 📊 최종 환경 상태
+
+**개발 환경** (집):
+- **위치**: `/mnt/d/10.Develop/newbiz_workspaces/agents_studio/CrewAI-Studio`
+- **OS**: WSL2 Ubuntu
+- **Python**: 3.11.x
+- **작업 시간**: 2025-10-20 저녁
+
+**주요 의존성 버전** (최종):
+```
+streamlit: (설치됨)
+crewai: (설치됨)
+crewai-tools: (설치됨) - CSVSearchTool 포함
+langchain: 1.0.1
+langchain-core: 1.0.0
+pydantic: 2.12.x
+embedchain: (제거됨) ❌
+```
+
+**사용 가능한 CSV 도구**:
+- ✅ `CSVSearchTool` (crewai-tools 기본 제공)
+- ❌ `CSVSearchToolEnhanced` (삭제됨)
+
+---
+
+### 🐛 해결된 문제 (집에서 작업)
+
+#### 1. embedchain.models Import 에러
+**증상**: `ModuleNotFoundError: No module named 'embedchain.models'`
+
+**근본 원인**:
+- embedchain이 langchain 1.0.x와 근본적으로 호환되지 않음
+- 회사 환경(0.3.x)과 집 환경(1.0.x) 간 버전 차이
+
+**해결 방법**:
+- embedchain 의존성 완전 제거
+- CSVSearchToolEnhanced 도구 삭제
+- langchain 1.0.x 업그레이드
+
+#### 2. 문서화 및 국제화
+**문제**: README가 영어로만 제공됨
+
+**해결 방법**:
+- README.md → README_en.md 백업
+- 한국어 README.md 생성
+- 모든 정보 번역 및 링크 유지
+
+---
+
+### ✅ 검증 및 테스트
+
+**Import 테스트**:
+```bash
+python -c "import app"
+# ✅ 성공
+```
+
+**애플리케이션 실행 가능**:
+```bash
+streamlit run app/app.py --server.headless True
+# ✅ 정상 작동 예상
+```
+
+---
+
+### 📝 회사 vs 집 작업 구분 요약
+
+**회사에서 작업** (2025-10-20 낮):
+- ✅ Phase 1: FastAPI 기본 구조
+- ✅ Phase 2: 도메인 모델 분리 (Crew, Agent, Task, Tool, Knowledge)
+- ✅ Phase 3: CRUD API 30개 엔드포인트 구현
+- 🔧 환경: embedchain 0.1.128 + langchain 0.3.x 조합
+
+**집에서 작업** (2025-10-20 저녁):
+- 🐛 embedchain 의존성 문제 해결 (도구 제거)
+- ⬆️ langchain 패키지 1.0.x 업그레이드
+- 📚 README 한국어 번역 추가
+- 🧹 requirements.txt 정리
+- 🔧 환경: embedchain 제거 + langchain 1.0.x
+
+---
+
 ## 👥 작성자
-- 수정 일자: 2025-10-20
+- 수정 일자: 2025-10-20 (회사 + 집)
 - 환경: WSL2 Ubuntu + Conda (hfcrewai)
-- 목적: LangChain 1.0 호환 및 Pydantic v2 호환성 확보 / REST API 백엔드 구축
+- 목적: LangChain 1.0 호환 및 Pydantic v2 호환성 확보 / REST API 백엔드 구축 / 의존성 안정화
