@@ -1,0 +1,137 @@
+{
+  "app": {
+    "title": "CrewAI Studio",
+    "no_data": "No {item} defined yet."
+  },
+  "common": {
+    "create": "Create",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "Loading...",
+    "error": "Error",
+    "warning": "Warning",
+    "success": "Success",
+    "confirm": "Confirm"
+  },
+  "navigation": {
+    "page": "Page",
+    "crews": "Crews",
+    "agents": "Agents",
+    "tasks": "Tasks",
+    "tools": "Tools",
+    "knowledge": "Knowledge",
+    "kickoff": "Kickoff!",
+    "results": "Results",
+    "import_export": "Import/export"
+  },
+  "crews": {
+    "title": "Crews",
+    "create_crew": "Create crew",
+    "name": "Name",
+    "process": "Process",
+    "verbose": "Verbose",
+    "memory": "Memory",
+    "cache": "Cache",
+    "planning": "Planning",
+    "max_rpm": "Max RPM",
+    "manager_llm": "Manager LLM",
+    "manager_agent": "Manager Agent",
+    "planning_llm": "Planning LLM",
+    "select_agents": "Select Agents",
+    "select_tasks": "Select Tasks",
+    "knowledge_sources": "Knowledge Sources",
+    "no_crews": "No crews defined yet."
+  },
+  "agents": {
+    "title": "Agents",
+    "create_agent": "Create agent",
+    "all_agents": "All Agents",
+    "unassigned_agents": "Unassigned Agents",
+    "role": "Role",
+    "backstory": "Backstory",
+    "goal": "Goal",
+    "allow_delegation": "Allow delegation",
+    "verbose": "Verbose",
+    "cache": "Cache",
+    "llm_provider": "LLM Provider and Model",
+    "temperature": "Temperature",
+    "max_iterations": "Max Iterations",
+    "select_tools": "Select Tools",
+    "knowledge_sources": "Knowledge Sources",
+    "no_agents": "No agents defined yet."
+  },
+  "tasks": {
+    "title": "Tasks",
+    "create_task": "Create task",
+    "description": "Description",
+    "expected_output": "Expected Output",
+    "agent": "Agent",
+    "async_execution": "Async Execution",
+    "context": "Context",
+    "output_file": "Output File",
+    "output_json": "Output JSON",
+    "output_pydantic": "Output Pydantic",
+    "tools": "Tools",
+    "no_tasks": "No tasks defined yet."
+  },
+  "tools": {
+    "title": "Tools",
+    "create_tool": "Create tool",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "name": "Name",
+    "description": "Description",
+    "parameters": "Parameters",
+    "no_tools": "No tools defined yet."
+  },
+  "knowledge": {
+    "title": "Knowledge",
+    "create_source": "Create knowledge source",
+    "source_type": "Source Type",
+    "content": "Content",
+    "metadata": "Metadata",
+    "no_sources": "No knowledge sources defined yet."
+  },
+  "kickoff": {
+    "title": "Kickoff!",
+    "select_crew": "Select a crew to run",
+    "run_crew": "Run Crew",
+    "stop_crew": "Stop Crew",
+    "running": "Running...",
+    "console_output": "Console Output",
+    "result": "Result",
+    "no_result": "No result yet. Run a crew to see the output."
+  },
+  "results": {
+    "title": "Results",
+    "crew_name": "Crew Name",
+    "date": "Date",
+    "status": "Status",
+    "view": "View",
+    "download": "Download",
+    "delete": "Delete",
+    "no_results": "No results yet."
+  },
+  "import_export": {
+    "title": "Import/export",
+    "import": "Import",
+    "export": "Export",
+    "export_crew": "Export Crew",
+    "import_crew": "Import Crew",
+    "select_file": "Select File",
+    "download_crew": "Download Crew"
+  },
+  "messages": {
+    "confirm_delete": "Are you sure you want to delete this {item}?",
+    "delete_success": "{item} deleted successfully.",
+    "save_success": "{item} saved successfully.",
+    "error_occurred": "An error occurred: {error}",
+    "invalid_input": "Invalid input. Please check your data.",
+    "no_crew_selected": "Please select a crew first."
+  }
+}

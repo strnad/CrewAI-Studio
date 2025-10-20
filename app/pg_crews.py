@@ -2,10 +2,11 @@ import streamlit as st
 from streamlit import session_state as ss
 from my_crew import MyCrew
 import db_utils
+from i18n import t
 
 class PageCrews:
     def __init__(self):
-        self.name = "Crews"
+        self.name = t('crews.title')
 
     def create_crew(self):
         crew = MyCrew()
@@ -18,7 +19,7 @@ class PageCrews:
 
     def draw(self):
         with st.container():
-            st.subheader(self.name)
+            st.subheader(t('crews.title'))
             editing = False
             if 'crews' not in ss:
                 ss.crews = db_utils.load_crews()  # Load crews from database
@@ -27,5 +28,5 @@ class PageCrews:
                 if crew.edit:
                     editing = True
             if len(ss.crews) == 0:
-                st.write("No crews defined yet.")
-            st.button('Create crew', on_click=self.create_crew, disabled=editing)
+                st.write(t('crews.no_crews'))
+            st.button(t('crews.create_crew'), on_click=self.create_crew, disabled=editing)
