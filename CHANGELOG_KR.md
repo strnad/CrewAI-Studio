@@ -803,16 +803,129 @@ class KnowledgeSourceTypesListResponse(BaseModel):
 ---
 
 ### Phase 3: API 엔드포인트 구현
-- [ ] Crews CRUD API
-- [ ] Agents CRUD API
-- [ ] Tasks CRUD API
-- [ ] Tools CRUD API
-- [ ] Knowledge CRUD API
-- [ ] Execution API (WebSocket)
+
+#### Phase 3-1: Crews CRUD API ✅
+
+**작업 일시**: 2025-10-20
+
+**새로 생성된 파일**:
+- `bend/api/crews.py` - Crews CRUD API 엔드포인트
+- `bend/storage/memory.py` - In-memory 저장소 (개발용)
+- `bend/tests/test_api_crews.py` - Python 기반 API 테스트 스크립트
+- `bend/tests/README.md` - 테스트 사용 가이드
+
+**구현된 API 엔드포인트**:
+```
+GET    /api/crews              # 모든 Crew 조회
+GET    /api/crews/{crew_id}    # 특정 Crew 조회
+POST   /api/crews              # Crew 생성
+PUT    /api/crews/{crew_id}    # Crew 수정
+DELETE /api/crews/{crew_id}    # Crew 삭제
+POST   /api/crews/{crew_id}/validate  # Crew 검증
+```
+
+**주요 기능**:
+- ✅ CRUD 전체 작업 (Create, Read, Update, Delete)
+- ✅ Crew 검증 API (validate() 메서드 활용)
+- ✅ Agent/Task 참조 검증 (404, 400 에러 처리)
+- ✅ Process 타입 지원 (sequential, hierarchical)
+- ✅ Manager LLM/Agent 지원
+- ✅ Knowledge Source 참조
+- ✅ In-memory 저장소 (Phase 4에서 DB로 변경 예정)
+
+**테스트 스크립트** (`test_api_crews.py`):
+- ✅ 컬러 출력 (성공/실패 구분)
+- ✅ Health Check 테스트
+- ✅ CRUD 전체 플로우 테스트
+- ✅ 에러 케이스 테스트 (404, 400)
+- ✅ 검증 API 테스트
+
+**실행 방법**:
+```bash
+# 서버 실행
+cd bend
+python run.py
+
+# 테스트 실행 (다른 터미널)
+python bend/tests/test_api_crews.py
+```
+
+**API 문서**:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+---
+
+#### Phase 3-2: Agents CRUD API ✅
+
+**작업 일시**: 2025-10-20
+
+**새로 생성된 파일**:
+- `bend/api/agents.py` - Agents CRUD API 엔드포인트
+- `bend/tests/test_api_agents.py` - Python 기반 API 테스트 스크립트
+
+**구현된 API 엔드포인트**:
+```
+GET    /api/agents              # 모든 Agent 조회
+GET    /api/agents/{agent_id}   # 특정 Agent 조회
+POST   /api/agents              # Agent 생성
+PUT    /api/agents/{agent_id}   # Agent 수정
+DELETE /api/agents/{agent_id}   # Agent 삭제
+POST   /api/agents/{agent_id}/validate  # Agent 검증
+```
+
+**주요 기능**:
+- ✅ CRUD 전체 작업 (Create, Read, Update, Delete)
+- ✅ Agent 검증 API (validate() 메서드 활용)
+- ✅ Tool 참조 검증 (404, 400 에러 처리)
+- ✅ Knowledge Source 참조 검증
+- ✅ LLM 설정 지원 (provider/model, temperature)
+- ✅ Crew 의존성 검사 (사용 중인 Agent 삭제 방지)
+- ✅ In-memory 저장소 연동
+
+**테스트 스크립트** (`test_api_agents.py`):
+- ✅ 컬러 출력 (성공/실패 구분)
+- ✅ Health Check 테스트
+- ✅ CRUD 전체 플로우 테스트
+- ✅ 에러 케이스 테스트 (404, 400)
+- ✅ 검증 API 테스트
+- ✅ Tool ID 검증 테스트
+- ✅ Crew 의존성 검증 테스트
+
+**실행 방법**:
+```bash
+# 서버 실행
+cd bend
+python run.py
+
+# 테스트 실행 (다른 터미널)
+python bend/tests/test_api_agents.py
+```
+
+**API 문서**:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+---
+
+#### Phase 3-3: Tasks CRUD API
+- [ ] Tasks CRUD API 엔드포인트
+- [ ] 테스트 스크립트
+
+#### Phase 3-4: Tools CRUD API
+- [ ] Tools CRUD API 엔드포인트
+- [ ] 테스트 스크립트
+
+#### Phase 3-5: Knowledge Sources CRUD API
+- [ ] Knowledge Sources CRUD API 엔드포인트
+- [ ] 테스트 스크립트
+
+---
 
 ### Phase 4: 비즈니스 로직 분리
 - [ ] Service 레이어 구현
 - [ ] Repository 패턴 적용
+- [ ] Database 연동 (SQLAlchemy)
 
 ### Phase 5: 인증 및 보안
 - [ ] Keycloak/OIDC 통합

@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     # Application
     app_name: str = "CrewAI Studio API"
     app_version: str = "1.0.0"
-    debug: bool = False
+    debug: bool = True  # Development mode - enables API docs
 
     # API
     api_prefix: str = "/api"
@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # Server
     host: str = "0.0.0.0"
     port: int = 8000
-    reload: bool = False
+    reload: bool = True  # Development mode - auto reload on file changes
 
     # Database
     database_url: str = os.getenv("DB_URL", "sqlite:///crewai.db")
