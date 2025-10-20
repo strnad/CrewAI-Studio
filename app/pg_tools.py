@@ -3,10 +3,11 @@ from utils import rnd_id
 from my_tools import TOOL_CLASSES
 from streamlit import session_state as ss
 import db_utils
+from i18n import t
 
 class PageTools:
     def __init__(self):
-        self.name = "Tools"
+        self.name = t('tools.title')
         self.available_tools = TOOL_CLASSES
 
     def create_tool(self, tool_name):
@@ -48,7 +49,7 @@ class PageTools:
                     self.create_tool(tool_name)
         with c2:
             if 'tools' in ss:
-                st.write("##### Enabled Tools")
+                st.write(f"##### {t('tools.enabled_tools')}")
                 for tool in ss.tools:
                     display_name = self.get_tool_display_name(tool)
                     is_complete = tool.is_valid()
@@ -57,13 +58,13 @@ class PageTools:
                         st.write(tool.description)
                         for param_name in tool.get_parameter_names():
                             param_value = tool.parameters.get(param_name, "")
-                            placeholder = "Required" if tool.is_parameter_mandatory(param_name) else "Optional"
+                            placeholder = t('tools.required') if tool.is_parameter_mandatory(param_name) else t('tools.optional')
                             new_value = st.text_input(f"{param_name}", value=param_value, key=f"{tool.tool_id}_{param_name}", placeholder=placeholder)
                             if new_value != param_value:
                                 self.set_tool_parameter(tool.tool_id, param_name, new_value)
-                        if st.button(f"Remove", key=f"remove_{tool.tool_id}"):
+                        if st.button(t('tools.remove'), key=f"remove_{tool.tool_id}"):
                             self.remove_tool(tool.tool_id)
 
     def draw(self):
-        st.subheader(self.name)
+        st.subheader(t('tools.title'))
         self.draw_tools()

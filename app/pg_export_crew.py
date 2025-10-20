@@ -13,10 +13,11 @@ from my_crew import MyCrew
 from my_agent import MyAgent
 from my_task import MyTask
 from datetime import datetime
+from i18n import t
 
 class PageExportCrew:
     def __init__(self):
-        self.name = "Import/export"
+        self.name = t('import_export.title')
 
     def extract_placeholders(self, text):
         return re.findall(r'\{(.*?)\}', text)
@@ -215,7 +216,7 @@ def main():
             with st.expander("Full output", expanded=False):
                 st.write(result)
         except Exception as e:
-            st.error(f"An error occurred: {{str(e)}}")
+            st.error(t('messages.error_occurred', error='{{str(e)}}'))
 
 if __name__ == '__main__':
     main()
@@ -482,55 +483,55 @@ streamlit run app.py --server.headless true
         st.subheader(self.name)
 
         # Full JSON Export Button
-        if st.button("Export everything to json"):
+        if st.button(t('import_export.export_all')):
             current_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
             file_path = f"all_crews_{current_datetime}.json"
             db_utils.export_to_json(file_path)
             with open(file_path, "rb") as fp:
                 st.download_button(
-                    label="Download All Crews JSON",
+                    label=t('import_export.download_all'),
                     data=fp,
                     file_name=file_path,
                     mime="application/json"
                 )
 
         # JSON Import Button
-        uploaded_file = st.file_uploader("Import JSON file", type="json")
+        uploaded_file = st.file_uploader(t('import_export.import_json'), type="json")
         if uploaded_file is not None:
             json_data = json.load(uploaded_file)
-            
+
             if isinstance(json_data, list):  # Full database export
                 with open("uploaded_file.json", "w") as f:
                     json.dump(json_data, f)
                 db_utils.import_from_json("uploaded_file.json")
-                st.success("Full database JSON file imported successfully!")
+                st.success(t('import_export.import_success_full'))
             elif isinstance(json_data, dict) and 'id' in json_data:  # Single crew export
                 imported_crew = self.import_crew_from_json(json_data)
-                st.success(f"Crew '{imported_crew.name}' imported successfully!")
+                st.success(t('import_export.import_success_crew', crew_name=imported_crew.name))
             else:
-                st.error("Invalid JSON format. Please upload a valid crew or full database export file.")
+                st.error(t('import_export.import_error_invalid'))
 
         if 'crews' not in ss or len(ss.crews) == 0:
-            st.write("No crews defined yet.")
+            st.write(t('crews.no_crews'))
         else:
             crew_names = [crew.name for crew in ss.crews]
-            selected_crew_name = st.selectbox("Select crew to export", crew_names)
-            
-            if st.button("Export singlepage app"):
+            selected_crew_name = st.selectbox(t('import_export.select_crew'), crew_names)
+
+            if st.button(t('import_export.export_app')):
                 zip_path = self.create_export(selected_crew_name)
                 with open(zip_path, "rb") as fp:
                     st.download_button(
-                        label="Download Exported App",
+                        label=t('import_export.download_app'),
                         data=fp,
                         file_name=f"{selected_crew_name}_app.zip",
                         mime="application/zip"
-                    )        
-            if st.button("Export crew to JSON"):
+                    )
+            if st.button(t('import_export.export_crew_json')):
                 selected_crew = next((crew for crew in ss.crews if crew.name == selected_crew_name), None)
                 if selected_crew:
                     crew_json = self.export_crew_to_json(selected_crew)
                     st.download_button(
-                        label="Download Crew JSON",
+                        label=t('import_export.download_crew_json'),
                         data=crew_json,
                         file_name=f"{selected_crew_name}_export.json",
                         mime="application/json"

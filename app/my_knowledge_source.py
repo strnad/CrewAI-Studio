@@ -5,6 +5,7 @@ import streamlit as st
 import os
 import db_utils
 from pathlib import Path  # Using Path for cross-platform path handling
+from i18n import t
 
 class MyKnowledgeSource:
     def __init__(self, id=None, name=None, source_type=None, source_path=None, 
@@ -116,23 +117,23 @@ class MyKnowledgeSource:
         # Validate the knowledge source based on its type
         if self.source_type == "string" and not self.content:
             if show_warning:
-                st.warning(f"Knowledge source {self.name} has no content")
+                st.warning(t('knowledge.warning_no_content', name=self.name))
             return False
-        
+
         if self.source_type != "string" and self.source_type != "docling" and not self.source_path:
             if show_warning:
-                st.warning(f"Knowledge source {self.name} has no source path")
+                st.warning(t('knowledge.warning_no_path', name=self.name))
             return False
-            
+
         # For file-based sources, check if the file exists (except for docling URLs)
         if self.source_type != "string" and self.source_type != "docling":
             actual_path = self.find_file(self.source_path)
             if not actual_path:
                 if show_warning:
-                    st.warning(f"File not found: {self.source_path}")
+                    st.warning(t('knowledge.warning_file_not_found', path=self.source_path))
                 return False
 
-            
+
         return True
 
     def delete(self):
@@ -141,13 +142,13 @@ class MyKnowledgeSource:
 
     def draw(self, key=None):
         source_types = {
-            "string": "Text String",
-            "text_file": "Text File (.txt)",
-            "pdf": "PDF Document",
-            "csv": "CSV File",
-            "excel": "Excel File",
-            "json": "JSON File",
-            "docling": "DocLing (URL or file)"
+            "string": t('knowledge.type_string'),
+            "text_file": t('knowledge.type_text_file'),
+            "pdf": t('knowledge.type_pdf'),
+            "csv": t('knowledge.type_csv'),
+            "excel": t('knowledge.type_excel'),
+            "json": t('knowledge.type_json'),
+            "docling": t('knowledge.type_docling')
         }
         
         # Create an ID for the upload field that includes both the knowledge source ID and type
@@ -157,14 +158,14 @@ class MyKnowledgeSource:
         if self.edit:
             # Use a container instead of an expander for the main form
             with st.container():
-                st.subheader(f"Knowledge Source: {self.name}")
-                
+                st.subheader(t('knowledge.source_label', name=self.name))
+
                 # Name and type are outside the form to trigger immediate updates
-                self.name = st.text_input("Name", value=self.name, key=f"name_{self.id}")
-                
+                self.name = st.text_input(t('knowledge.name'), value=self.name, key=f"name_{self.id}")
+
                 prev_type = self.source_type
                 self.source_type = st.selectbox(
-                    "Source Type", 
+                    t('knowledge.source_type'),
                     options=list(source_types.keys()),
                     format_func=lambda x: source_types[x],
                     index=list(source_types.keys()).index(self.source_type),
@@ -179,12 +180,12 @@ class MyKnowledgeSource:
                 # Create the form for the rest of the fields
                 with st.form(key=f'form_{self.id}' if key is None else key):
                     if self.source_type == "string":
-                        self.content = st.text_area("Content", value=self.content, height=200)
+                        self.content = st.text_area(t('knowledge.content'), value=self.content, height=200)
                     else:
                         self.source_path = st.text_input(
-                            "Source Path", 
+                            t('knowledge.source_path'),
                             value=self.source_path,
-                            help="Enter file path relative to the 'knowledge' directory or a URL for docling"
+                            help=t('knowledge.source_path_help')
                         )
                         
                         # File uploader for local files
@@ -201,7 +202,7 @@ class MyKnowledgeSource:
                             file_type = upload_types.get(self.source_type)
                             if file_type:
                                 uploaded_file = st.file_uploader(
-                                    f"Upload {source_types[self.source_type]}", 
+                                    t('knowledge.upload', type=source_types[self.source_type]),
                                     type=file_type,
                                     key=upload_field_id
                                 )
@@ -221,42 +222,42 @@ class MyKnowledgeSource:
                                     self.source_path = file_name
                     
                     # Advanced settings
-                    st.subheader("Advanced Settings")
-                    
+                    st.subheader(t('knowledge.advanced_settings'))
+
                     # Chunk configuration
                     col1, col2 = st.columns(2)
                     with col1:
                         self.chunk_size = st.number_input(
-                            "Chunk Size", 
+                            t('knowledge.chunk_size'),
                             value=self.chunk_size,
                             min_value=100,
                             max_value=8000,
-                            help="Maximum size of each chunk (default: 4000)"
+                            help=t('knowledge.chunk_size_help')
                         )
                     with col2:
                         self.chunk_overlap = st.number_input(
-                            "Chunk Overlap", 
+                            t('knowledge.chunk_overlap'),
                             value=self.chunk_overlap,
                             min_value=0,
                             max_value=1000,
-                            help="Overlap between chunks (default: 200)"
+                            help=t('knowledge.chunk_overlap_help')
                         )
-                    
+
                     # Metadata section
-                    st.subheader("Metadata (optional)")
+                    st.subheader(t('knowledge.metadata_optional'))
                     col1, col2 = st.columns([3, 1])
                     with col1:
-                        metadata_key = st.text_input("Key", key=f"metadata_key_{self.id}")
-                        metadata_value = st.text_input("Value", key=f"metadata_value_{self.id}")
+                        metadata_key = st.text_input(t('knowledge.metadata_key'), key=f"metadata_key_{self.id}")
+                        metadata_value = st.text_input(t('knowledge.metadata_value'), key=f"metadata_value_{self.id}")
                     with col2:
-                        add_metadata = st.form_submit_button("Add Metadata")
+                        add_metadata = st.form_submit_button(t('knowledge.add_metadata'))
                         if add_metadata and metadata_key:
                             self.metadata[metadata_key] = metadata_value
                             st.rerun()
                     
                     # Display current metadata
                     if self.metadata:
-                        st.write("Current Metadata:")
+                        st.write(t('knowledge.current_metadata'))
                         for key, value in dict(self.metadata).items():
                             col1, col2, col3 = st.columns([3, 3, 1])
                             with col1:
@@ -264,13 +265,13 @@ class MyKnowledgeSource:
                             with col2:
                                 st.text(value)
                             with col3:
-                                remove_key = st.form_submit_button(f"Remove {key[:6]}...")
+                                remove_key = st.form_submit_button(t('knowledge.remove', key=key[:6] + '...'))
                                 if remove_key:
                                     self.metadata.pop(key)
                                     st.rerun()
-                    
+
                     # Save button for the entire form
-                    submitted = st.form_submit_button("Save Knowledge Source")
+                    submitted = st.form_submit_button(t('knowledge.save_source'))
                     if submitted:
                         db_utils.save_knowledge_source(self)
                         self.set_editable(False)
@@ -278,28 +279,28 @@ class MyKnowledgeSource:
             fix_columns_width()
             source_name = f"{self.name}" if self.is_valid() else f"❗ {self.name}"
             with st.expander(source_name, expanded=False):
-                st.markdown(f"**Name:** {self.name}")
-                st.markdown(f"**Type:** {source_types[self.source_type]}")
-                
+                st.markdown(f"**{t('knowledge.name')}:** {self.name}")
+                st.markdown(f"**{t('knowledge.source_type')}:** {source_types[self.source_type]}")
+
                 if self.source_type == "string":
                     preview = self.content[:100] + "..." if len(self.content) > 100 else self.content
-                    st.markdown(f"**Content Preview:** {preview}")
+                    st.markdown(f"**{t('knowledge.content_preview')}** {preview}")
                 else:
-                    st.markdown(f"**Source Path:** {self.source_path}")
-                
-                st.markdown(f"**Chunk Size:** {self.chunk_size}")
-                st.markdown(f"**Chunk Overlap:** {self.chunk_overlap}")
-                
+                    st.markdown(f"**{t('knowledge.source_path')}:** {self.source_path}")
+
+                st.markdown(f"**{t('knowledge.chunk_size')}:** {self.chunk_size}")
+                st.markdown(f"**{t('knowledge.chunk_overlap')}:** {self.chunk_overlap}")
+
                 if self.metadata:
-                    st.markdown("**Metadata:**")
+                    st.markdown(f"**{t('knowledge.metadata')}:**")
                     for key, value in self.metadata.items():
                         st.markdown(f"- {key}: {value}")
-                
+
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.button("Edit", on_click=self.set_editable, args=(True,), key=rnd_id())
+                    st.button(t('common.edit'), on_click=self.set_editable, args=(True,), key=rnd_id())
                 with col2:
-                    st.button("Delete", on_click=self.delete, key=rnd_id())
+                    st.button(t('common.delete'), on_click=self.delete, key=rnd_id())
                 
                 self.is_valid(show_warning=True)
 

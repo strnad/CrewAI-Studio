@@ -2,10 +2,11 @@ import streamlit as st
 from streamlit import session_state as ss
 from my_agent import MyAgent
 import db_utils
+from i18n import t
 
 class PageAgents:
     def __init__(self):
-        self.name = "Agents"
+        self.name = t('agents.title')
 
     def create_agent(self, crew=None):
         agent = MyAgent()
@@ -23,7 +24,7 @@ class PageAgents:
 
     def draw(self):
         with st.container():
-            st.subheader(self.name)
+            st.subheader(t('agents.title'))
             editing = False
             if 'agents' not in ss:
                 ss.agents = db_utils.load_agents()  # Load agents from database
@@ -39,28 +40,28 @@ class PageAgents:
                     agent_assignment[agent.id].append(crew.name)
 
             # Display agents grouped by crew in tabs
-            tabs = ["All Agents"] + ["Unassigned Agents"] + [crew.name for crew in ss.crews]
+            tabs = [t('agents.all_agents')] + [t('agents.unassigned_agents')] + [crew.name for crew in ss.crews]
             tab_objects = st.tabs(tabs)
 
             # Display all agents
             with tab_objects[0]:
-                st.markdown("#### All Agents")
+                st.markdown(f"#### {t('agents.all_agents')}")
                 for agent in ss.agents:
                     agent.draw()
                     if agent.edit:
                         editing = True
-                st.button('Create agent', on_click=self.create_agent, disabled=editing, key="create_agent_all")
+                st.button(t('agents.create_agent'), on_click=self.create_agent, disabled=editing, key="create_agent_all")
 
             # Display unassigned agents
             with tab_objects[1]:
-                st.markdown("#### Unassigned Agents")
+                st.markdown(f"#### {t('agents.unassigned_agents')}")
                 unassigned_agents = [agent for agent in ss.agents if not agent_assignment[agent.id]]
                 for agent in unassigned_agents:
                     unique_key = f"{agent.id}_unassigned"
                     agent.draw(key=unique_key)
                     if agent.edit:
                         editing = True
-                st.button('Create agent', on_click=self.create_agent, disabled=editing, key="create_agent_unassigned")
+                st.button(t('agents.create_agent'), on_click=self.create_agent, disabled=editing, key="create_agent_unassigned")
 
             # Display agents grouped by crew
             for i, crew in enumerate(ss.crews, 2):
@@ -72,9 +73,9 @@ class PageAgents:
                         agent.draw(key=unique_key)
                         if agent.edit:
                             editing = True
-                    st.button('Create agent', on_click=self.create_agent, disabled=editing, kwargs={'crew': crew}, key=f"create_agent_{crew.name}")
+                    st.button(t('agents.create_agent'), on_click=self.create_agent, disabled=editing, kwargs={'crew': crew}, key=f"create_agent_{crew.name}")
 
             if len(ss.agents) == 0:
-                st.write("No agents defined yet.")
-                st.button('Create agent', on_click=self.create_agent, disabled=editing)
+                st.write(t('agents.no_agents'))
+                st.button(t('agents.create_agent'), on_click=self.create_agent, disabled=editing)
 

@@ -2,10 +2,11 @@ import streamlit as st
 from streamlit import session_state as ss
 from my_task import MyTask
 import db_utils
+from i18n import t
 
 class PageTasks:
     def __init__(self):
-        self.name = "Tasks"
+        self.name = t('tasks.title')
 
     def create_task(self, crew=None):
         task = MyTask()   
@@ -23,7 +24,7 @@ class PageTasks:
 
     def draw(self):
         with st.container():
-            st.subheader(self.name)
+            st.subheader(t('tasks.title'))
             editing = False
             if 'tasks' not in ss:
                 ss.tasks = db_utils.load_tasks()  # Load tasks from database
@@ -39,28 +40,28 @@ class PageTasks:
                     task_assignment[task.id].append(crew.name)
 
             # Display tasks grouped by crew in tabs
-            tabs = ["All Tasks"] + ["Unassigned Tasks"] + [crew.name for crew in ss.crews]
+            tabs = [t('tasks.title') + " (All)"] + [t('tasks.title') + " (Unassigned)"] + [crew.name for crew in ss.crews]
             tab_objects = st.tabs(tabs)
 
             # Display all tasks
             with tab_objects[0]:
-                st.markdown("#### All Tasks")
+                st.markdown(f"#### {t('tasks.title')} (All)")
                 for task in ss.tasks:
                     task.draw()
                     if task.edit:
                         editing = True
-                st.button('Create task', on_click=self.create_task, disabled=editing, key="create_task_all")
+                st.button(t('tasks.create_task'), on_click=self.create_task, disabled=editing, key="create_task_all")
 
             # Display unassigned tasks
             with tab_objects[1]:
-                st.markdown("#### Unassigned Tasks")
+                st.markdown(f"#### {t('tasks.title')} (Unassigned)")
                 unassigned_tasks = [task for task in ss.tasks if not task_assignment[task.id]]
                 for task in unassigned_tasks:
                     unique_key = f"{task.id}_unasigned"
                     task.draw(key=unique_key)
                     if task.edit:
                         editing = True
-                st.button('Create task', on_click=self.create_task, disabled=editing, key="create_task_unassigned")
+                st.button(t('tasks.create_task'), on_click=self.create_task, disabled=editing, key="create_task_unassigned")
 
             # Display tasks grouped by crew
             for i, crew in enumerate(ss.crews, 2):
@@ -72,10 +73,10 @@ class PageTasks:
                         task.draw(key=unique_key)
                         if task.edit:
                             editing = True
-                    st.button('Create task', on_click=self.create_task, disabled=editing,kwargs={'crew': crew}, key=f"create_task_{crew.name}")
+                    st.button(t('tasks.create_task'), on_click=self.create_task, disabled=editing,kwargs={'crew': crew}, key=f"create_task_{crew.name}")
 
 
             if len(ss.tasks) == 0:
-                st.write("No tasks defined yet.")
-                st.button('Create task', on_click=self.create_task, disabled=editing)
+                st.write(t('tasks.no_tasks'))
+                st.button(t('tasks.create_task'), on_click=self.create_task, disabled=editing)
 
