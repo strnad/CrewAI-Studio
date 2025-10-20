@@ -452,9 +452,114 @@ class AgentValidationResponse(BaseModel):
 
 ---
 
-### Phase 2-3: Task 도메인 모델 분리
-- [ ] `app/my_task.py` → `bend/models/task.py`
-- [ ] `bend/schemas/task.py` 생성
+### Phase 2-3: Task 도메인 모델 분리 ✅
+
+**작업 일시**: 2025-10-20
+
+**새로 생성된 파일**:
+- `bend/models/task.py` - 순수 도메인 모델
+- `bend/schemas/task.py` - Pydantic API 스키마
+
+**주요 변경사항**:
+
+#### 1. `bend/models/task.py`
+**설계 철학**: Streamlit 의존성을 완전히 제거한 순수 비즈니스 로직
+
+```python
+@dataclass
+class TaskModel:
+    """Streamlit 없는 순수 도메인 모델"""
+    id: str
+    description: str
+    expected_output: str
+    agent: Optional[Any]  # AgentModel reference
+    async_execution: bool
+    context_from_async_tasks_ids: Optional[List[str]]
+    context_from_sync_tasks_ids: Optional[List[str]]
+    created_at: str
+```
+
+**제거된 UI 관련 코드**:
+- ❌ `import streamlit as st`
+- ❌ `from streamlit import session_state as ss`
+- ❌ `draw()` 메서드 (UI 렌더링)
+- ❌ `set_editable()` 메서드
+- ❌ `delete()` 메서드 (UI 상태 업데이트)
+- ❌ `edit_key`, `edit` 프로퍼티 (세션 상태 키)
+
+**추가된 기능**:
+- ✅ `validate()` - 에러/경고 딕셔너리 반환
+- ✅ `to_dict()` - 직렬화
+- ✅ `from_dict()` - 역직렬화 (with agent registry)
+- ✅ `get_crewai_task()` - CrewAI Task 인스턴스 변환 (개선)
+
+**검증 로직 개선**:
+```python
+# 변경 전 (my_task.py)
+def is_valid(self, show_warning=False):
+    if not self.agent:
+        if show_warning:
+            st.warning(t('tasks.warning_no_agent', description=self.description))
+        return False
+    if not self.agent.is_valid(show_warning):
+        return False
+    return True
+
+# 변경 후 (task.py)
+def validate(self) -> Dict[str, Any]:
+    errors = []
+    warnings = []
+    if not self.description or not self.description.strip():
+        errors.append(f"Task '{self.id}' has no description")
+    if not self.agent:
+        errors.append(f"Task '{self.description[:50]}...' has no agent assigned")
+    else:
+        agent_validation = self.agent.validate()
+        if not agent_validation.get('is_valid', False):
+            errors.append(f"Task has invalid agent: {agent_validation.get('errors', [])}")
+    if self.async_execution and not self.context_from_async_tasks_ids:
+        warnings.append(f"Task is async but has no context tasks defined")
+    return {'errors': errors, 'warnings': warnings, 'is_valid': len(errors) == 0}
+```
+
+#### 2. `bend/schemas/task.py`
+**Pydantic 기반 API 요청/응답 스키마**:
+
+```python
+class TaskCreate(BaseModel):
+    """작업 생성 요청"""
+    description: str = Field(..., min_length=1)
+    expected_output: str = Field(..., min_length=1)
+    agent_id: str
+    async_execution: bool = Field(default=False)
+    context_from_async_tasks_ids: Optional[List[str]] = None
+    context_from_sync_tasks_ids: Optional[List[str]] = None
+
+class TaskUpdate(BaseModel):
+    """작업 수정 요청 (모든 필드 optional)"""
+    description: Optional[str] = None
+    # ...
+
+class TaskResponse(BaseModel):
+    """작업 조회 응답"""
+    id: str
+    description: str
+    agent_id: str
+    created_at: str
+    # ...
+
+class TaskValidationResponse(BaseModel):
+    """작업 검증 응답"""
+    is_valid: bool
+    errors: List[str]
+    warnings: List[str]
+```
+
+**기존 코드 유지**:
+- ✅ `app/my_task.py` - Streamlit UI에서 계속 사용
+- ✅ 기존 기능 100% 호환 유지
+
+---
 
 ### Phase 2-4: Tool 도메인 모델 분리
 - [ ] `app/my_tools.py` → `bend/models/tool.py`
