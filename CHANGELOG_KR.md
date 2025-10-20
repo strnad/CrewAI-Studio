@@ -672,9 +672,135 @@ class ToolTypesListResponse(BaseModel):
 
 ---
 
-### Phase 2-5: Knowledge 도메인 모델 분리
-- [ ] `app/my_knowledge_source.py` → `bend/models/knowledge.py`
-- [ ] `bend/schemas/knowledge.py` 생성
+### Phase 2-5: Knowledge 도메인 모델 분리 ✅
+
+**작업 일시**: 2025-10-20
+
+**새로 생성된 파일**:
+- `bend/models/knowledge.py` - 순수 도메인 모델
+- `bend/schemas/knowledge.py` - Pydantic API 스키마
+
+**주요 변경사항**:
+
+#### 1. `bend/models/knowledge.py`
+**설계 철학**: Streamlit 의존성을 완전히 제거한 순수 비즈니스 로직
+
+```python
+@dataclass
+class KnowledgeSourceModel:
+    """Streamlit 없는 순수 도메인 모델"""
+    id: str
+    name: str
+    source_type: str  # string, text_file, pdf, csv, excel, json, docling
+    source_path: str  # For file-based sources
+    content: str  # For string-based sources
+    metadata: Dict[str, Any]
+    chunk_size: int
+    chunk_overlap: int
+    created_at: str
+```
+
+**제거된 UI 관련 코드**:
+- ❌ `import streamlit as st`
+- ❌ `from streamlit import session_state as ss`
+- ❌ `draw()` 메서드 (UI 렌더링, 파일 업로더)
+- ❌ `set_editable()` 메서드
+- ❌ `delete()` 메서드 (UI 상태 업데이트)
+- ❌ `edit_key`, `edit` 프로퍼티 (세션 상태 키)
+
+**추가된 기능**:
+- ✅ `validate(knowledge_base_path)` - 에러/경고 딕셔너리 반환
+- ✅ `find_file(file_path, knowledge_base_path)` - 파일 경로 검증 (개선)
+- ✅ `to_dict()` - 직렬화
+- ✅ `from_dict()` - 역직렬화
+- ✅ `get_crewai_knowledge_source(knowledge_base_path)` - CrewAI 인스턴스 변환 (개선)
+
+**검증 로직 개선**:
+```python
+# 변경 전 (my_knowledge_source.py)
+def is_valid(self, show_warning=False):
+    if self.source_type == "string" and not self.content:
+        if show_warning:
+            st.warning(t('knowledge.warning_no_content', name=self.name))
+        return False
+    if self.source_type != "string" and not self.source_path:
+        if show_warning:
+            st.warning(t('knowledge.warning_no_path', name=self.name))
+        return False
+    # ... 파일 검증
+    return True
+
+# 변경 후 (knowledge.py)
+def validate(self, knowledge_base_path="knowledge") -> Dict[str, Any]:
+    errors = []
+    warnings = []
+    if self.source_type == "string" and not self.content:
+        errors.append(f"Knowledge source '{self.name}' (type: string) has no content")
+    if self.source_type not in ["string", "docling"] and not self.source_path:
+        errors.append(f"Knowledge source '{self.name}' has no source path")
+    else:
+        actual_path = self.find_file(self.source_path, knowledge_base_path)
+        if not actual_path:
+            errors.append(f"File not found at '{self.source_path}'")
+    if self.chunk_overlap >= self.chunk_size:
+        errors.append(f"chunk_overlap must be less than chunk_size")
+    return {'errors': errors, 'warnings': warnings, 'is_valid': len(errors) == 0}
+```
+
+**지원하는 Knowledge Source 타입** (7가지):
+1. **string**: 문자열 기반 지식 소스
+2. **text_file**: 텍스트 파일 (.txt)
+3. **pdf**: PDF 문서
+4. **csv**: CSV 파일
+5. **excel**: Excel 파일 (.xlsx, .xls)
+6. **json**: JSON 파일
+7. **docling**: Docling 기반 소스
+
+#### 2. `bend/schemas/knowledge.py`
+**Pydantic 기반 API 요청/응답 스키마**:
+
+```python
+class KnowledgeSourceCreate(BaseModel):
+    """지식 소스 생성 요청"""
+    name: str = Field(..., min_length=1, max_length=255)
+    source_type: str  # string, text_file, pdf, csv, excel, json, docling
+    source_path: str = Field(default="")
+    content: str = Field(default="")
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    chunk_size: int = Field(default=4000, ge=100, le=8000)
+    chunk_overlap: int = Field(default=200, ge=0, le=1000)
+
+class KnowledgeSourceUpdate(BaseModel):
+    """지식 소스 수정 요청 (모든 필드 optional)"""
+    name: Optional[str] = None
+    # ...
+
+class KnowledgeSourceResponse(BaseModel):
+    """지식 소스 조회 응답"""
+    id: str
+    name: str
+    source_type: str
+    created_at: str
+    # ...
+
+class KnowledgeSourceTypeInfo(BaseModel):
+    """지원하는 지식 소스 타입 정보"""
+    type: str
+    display_name: str
+    requires_file: bool
+    supported_extensions: List[str]
+
+class KnowledgeSourceTypesListResponse(BaseModel):
+    """지식 소스 타입 목록 응답 (7개 타입 정보)"""
+    source_types: List[KnowledgeSourceTypeInfo]
+    total: int
+```
+
+**기존 코드 유지**:
+- ✅ `app/my_knowledge_source.py` - Streamlit UI에서 계속 사용
+- ✅ 기존 기능 100% 호환 유지
+
+---
 
 ### Phase 3: API 엔드포인트 구현
 - [ ] Crews CRUD API
