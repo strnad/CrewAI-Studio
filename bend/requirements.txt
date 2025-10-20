@@ -1,0 +1,47 @@
+# FastAPI Core
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# Request/Response
+python-multipart>=0.0.6
+
+# Database
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+
+# Authentication & Security
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+
+# Rate Limiting
+slowapi>=0.1.9
+
+# Environment
+python-dotenv>=1.0.0
+
+# CrewAI Dependencies (from parent project)
+crewai
+crewai-tools
+langchain
+langchain-community
+langchain-openai
+langchain-groq
+langchain-anthropic
+langchain-ollama
+
+# Additional Tools
+pdfminer.six
+markdown
+docling
+duckduckgo-search>=8.0.2
+embedchain
+
+# Development
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+httpx>=0.24.0
+
+# CORS
+python-cors>=1.0.0
