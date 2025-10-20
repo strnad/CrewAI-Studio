@@ -15,11 +15,6 @@ CrewAI Studio에 오신 것을 환영합니다! 이 애플리케이션은 코드
 - **단일 페이지 앱 내보내기**: Crew를 간단한 단일 페이지 Streamlit 앱으로 내보내는 기능.
 - **스레드 방식 Crew 실행**: Crew를 백그라운드에서 실행할 수 있으며 중지할 수 있습니다.
 
-## CrewAI Studio 후원하기
-여러분의 후원은 프로젝트의 개발과 성장에 도움이 됩니다. 모든 기여에 진심으로 감사드립니다!
-
-
-
 ## 사용 방법
 ```bash
 streamlit run app/app.py --server.headless True
