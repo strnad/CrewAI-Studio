@@ -561,9 +561,116 @@ class TaskValidationResponse(BaseModel):
 
 ---
 
-### Phase 2-4: Tool 도메인 모델 분리
-- [ ] `app/my_tools.py` → `bend/models/tool.py`
-- [ ] `bend/schemas/tool.py` 생성
+### Phase 2-4: Tool 도메인 모델 분리 ✅
+
+**작업 일시**: 2025-10-20
+
+**새로 생성된 파일**:
+- `bend/models/tool.py` - 순수 도메인 모델 (베이스 클래스)
+- `bend/schemas/tool.py` - Pydantic API 스키마
+
+**주요 변경사항**:
+
+#### 1. `bend/models/tool.py`
+**설계 철학**: Streamlit 의존성을 제거한 베이스 Tool 모델
+
+```python
+@dataclass
+class ToolModel:
+    """베이스 Tool 도메인 모델"""
+    tool_id: str
+    name: str
+    description: str
+    parameters: Dict[str, Any]
+    parameters_metadata: Dict[str, Dict[str, Any]]
+
+    def create_tool(self):
+        """서브클래스에서 구현"""
+        raise NotImplementedError
+```
+
+**제거된 UI 관련 코드**:
+- ❌ `import streamlit as st`
+- ❌ `st.warning()` 호출 (검증 경고)
+
+**추가된 기능**:
+- ✅ `validate()` - 에러/경고 딕셔너리 반환
+- ✅ `to_dict()` - 직렬화
+- ✅ `from_dict()` - 역직렬화
+- ✅ `get_parameters()`, `set_parameters()` - 파라미터 관리
+- ✅ `is_parameter_mandatory()` - 필수 파라미터 확인
+
+**검증 로직 개선**:
+```python
+# 변경 전 (my_tools.py)
+def is_valid(self, show_warning=False):
+    for param_name, metadata in self.parameters_metadata.items():
+        if metadata['mandatory'] and not self.parameters.get(param_name):
+            if show_warning:
+                st.warning(t('tools.warning_parameter_mandatory',
+                           param_name=param_name, tool_name=self.name))
+            return False
+    return True
+
+# 변경 후 (tool.py)
+def validate(self) -> Dict[str, Any]:
+    errors = []
+    warnings = []
+    for param_name, metadata in self.parameters_metadata.items():
+        if metadata.get('mandatory', False) and not self.parameters.get(param_name):
+            errors.append(f"Parameter '{param_name}' is mandatory for tool '{self.name}'")
+    if not self.name:
+        errors.append("Tool has no name defined")
+    return {'errors': errors, 'warnings': warnings, 'is_valid': len(errors) == 0}
+```
+
+**29개 Tool 서브클래스 처리**:
+- 📝 `app/my_tools.py`의 29개 서브클래스는 Streamlit UI에서 계속 사용
+- 🔄 Phase 3 API 구현 시, 필요하면 bend/models/에 Streamlit 없는 버전 생성 예정
+- ✅ 베이스 ToolModel은 공통 기능 (검증, 직렬화) 제공
+
+#### 2. `bend/schemas/tool.py`
+**Pydantic 기반 API 요청/응답 스키마**:
+
+```python
+class ToolCreate(BaseModel):
+    """도구 생성 요청"""
+    name: str = Field(..., min_length=1, max_length=255)
+    description: str
+    parameters: Dict[str, Any] = Field(default_factory=dict)
+    parameters_metadata: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
+
+class ToolUpdate(BaseModel):
+    """도구 수정 요청 (모든 필드 optional)"""
+    name: Optional[str] = None
+    # ...
+
+class ToolResponse(BaseModel):
+    """도구 조회 응답"""
+    tool_id: str
+    name: str
+    description: str
+    parameters: Dict[str, Any]
+    # ...
+
+class ToolTypeInfo(BaseModel):
+    """사용 가능한 도구 타입 정보"""
+    name: str
+    description: str
+    required_parameters: List[str]
+    optional_parameters: List[str]
+
+class ToolTypesListResponse(BaseModel):
+    """도구 타입 목록 응답 (29개 도구 정보)"""
+    tool_types: List[ToolTypeInfo]
+    total: int
+```
+
+**기존 코드 유지**:
+- ✅ `app/my_tools.py` - Streamlit UI 및 29개 서브클래스 계속 사용
+- ✅ 기존 기능 100% 호환 유지
+
+---
 
 ### Phase 2-5: Knowledge 도메인 모델 분리
 - [ ] `app/my_knowledge_source.py` → `bend/models/knowledge.py`
