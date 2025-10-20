@@ -33,5 +33,21 @@ bc1qgsn45g02wran4lph5gsyqtk0k7t98zsg6qur0y
 <img src="https://raw.githubusercontent.com/strnad/CrewAI-Studio/main/img/ss5.png" alt="kickoff" style="width:50%;"/><img src="https://raw.githubusercontent.com/strnad/CrewAI-Studio/main/img/ss6.png" alt="kickoff" style="width:50%;"/>
 
 
+## 📚 Developer Documentation
+
+### Custom Tools Development Guide
+
+To develop new custom tools, refer to the following documentation:
+
+- **한국어**: [docs/CUSTOM_TOOLS_GUIDE_KR.md](docs/CUSTOM_TOOLS_GUIDE_KR.md)
+- **English**: [docs/CUSTOM_TOOLS_GUIDE_EN.md](docs/CUSTOM_TOOLS_GUIDE_EN.md)
+
+What's included:
+- 2-Layer architecture explanation
+- Step-by-step development guide
+- Practical examples (Simple, Intermediate, Advanced)
+- Best practices
+- Troubleshooting
+
 ## use
 streamlit run app/app.py --server.headless True
