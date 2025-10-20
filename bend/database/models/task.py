@@ -2,9 +2,10 @@
 Task ORM Model
 SQLAlchemy model for tasks table
 """
-from sqlalchemy import Column, String, Text, Boolean, Table, ForeignKey
+from sqlalchemy import Column, String, Text, Boolean, Table, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from bend.database.connection import Base
+from datetime import datetime
 import uuid
 
 
@@ -42,6 +43,7 @@ class Task(Base):
     description = Column(Text, nullable=False)
     expected_output = Column(Text, nullable=False)
     async_execution = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     # Foreign Key
     agent_id = Column(String(11), ForeignKey("agents.id"), nullable=False)
@@ -79,4 +81,5 @@ class Task(Base):
             "agent_id": self.agent_id,
             "context_from_async_tasks_ids": [task.id for task in self.context_async_tasks],
             "context_from_sync_tasks_ids": [task.id for task in self.context_sync_tasks],
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }

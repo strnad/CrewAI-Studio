@@ -2,9 +2,10 @@
 Agent ORM Model
 SQLAlchemy model for agents table
 """
-from sqlalchemy import Column, String, Text, Float, Boolean, Integer, Table, ForeignKey
+from sqlalchemy import Column, String, Text, Float, Boolean, Integer, Table, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from bend.database.connection import Base
+from datetime import datetime
 import uuid
 
 
@@ -48,6 +49,7 @@ class Agent(Base):
     allow_delegation = Column(Boolean, default=False)
     verbose = Column(Boolean, default=True)
     cache = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
     tools = relationship(
@@ -80,4 +82,5 @@ class Agent(Base):
             "cache": self.cache,
             "tool_ids": [tool.tool_id for tool in self.tools],
             "knowledge_source_ids": [ks.id for ks in self.knowledge_sources],
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }

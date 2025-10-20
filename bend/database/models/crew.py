@@ -2,9 +2,10 @@
 Crew ORM Model
 SQLAlchemy model for crews table
 """
-from sqlalchemy import Column, String, Boolean, Integer, Table, ForeignKey
+from sqlalchemy import Column, String, Boolean, Integer, Table, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from bend.database.connection import Base
+from datetime import datetime
 import uuid
 
 
@@ -54,6 +55,7 @@ class Crew(Base):
     max_rpm = Column(Integer, default=1000)
     memory = Column(Boolean, default=False)
     planning = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
     agents = relationship(
@@ -89,4 +91,5 @@ class Crew(Base):
             "agent_ids": [agent.id for agent in self.agents],
             "task_ids": [task.id for task in self.tasks],
             "knowledge_source_ids": [ks.id for ks in self.knowledge_sources],
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }
