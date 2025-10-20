@@ -28,6 +28,9 @@ python bend/tests/test_api_agents.py
 
 # Tasks API 테스트
 python bend/tests/test_api_tasks.py
+
+# Tools API 테스트
+python bend/tests/test_api_tools.py
 ```
 
 ## 테스트 스크립트 목록
@@ -37,6 +40,39 @@ Crews CRUD API 테스트
 
 ### `test_api_agents.py`
 Agents CRUD API 테스트
+
+### `test_api_tasks.py`
+Tasks CRUD API 테스트
+
+### `test_api_tools.py`
+Tools CRUD API 테스트
+
+**테스트 항목**:
+- ✅ Health Check
+- ✅ CREATE: 새 Tool 생성
+- ✅ READ: Tool 조회 (단일/목록)
+- ✅ UPDATE: Tool 수정
+- ✅ DELETE: Tool 삭제
+- ✅ VALIDATE: Tool 검증
+- ✅ 에러 처리 (404, 400 등)
+- ✅ 필수 파라미터 검증
+- ✅ Agent 의존성 검증 (사용 중인 Tool 삭제 방지)
+
+**실행 결과 예시**:
+```
+============================================================
+CrewAI Studio - Tools API Tests
+Base URL: http://localhost:8000/api
+============================================================
+
+============================================================
+Health Check
+============================================================
+
+GET /api/health
+Status: 200 OK
+...
+```
 
 ### `test_api_tasks.py`
 Tasks CRUD API 테스트

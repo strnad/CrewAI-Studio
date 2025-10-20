@@ -172,7 +172,7 @@ class AgentModel:
             'llm_provider_model': self.llm_provider_model,
             'max_iter': self.max_iter,
             'created_at': self.created_at,
-            'tool_ids': [tool.id for tool in self.tools],
+            'tool_ids': [tool.tool_id for tool in self.tools],
             'knowledge_source_ids': self.knowledge_source_ids,
         }
 
@@ -194,7 +194,7 @@ class AgentModel:
             if isinstance(tools_registry, dict):
                 tools = [tools_registry[tid] for tid in data['tool_ids'] if tid in tools_registry]
             else:  # list
-                tools = [tool for tool in tools_registry if tool.id in data.get('tool_ids', [])]
+                tools = [tool for tool in tools_registry if tool.tool_id in data.get('tool_ids', [])]
 
         return cls(
             id=data.get('id'),
