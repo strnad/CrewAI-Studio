@@ -908,9 +908,60 @@ python bend/tests/test_api_agents.py
 
 ---
 
-#### Phase 3-3: Tasks CRUD API
-- [ ] Tasks CRUD API 엔드포인트
-- [ ] 테스트 스크립트
+#### Phase 3-3: Tasks CRUD API ✅
+
+**작업 일시**: 2025-10-20
+
+**새로 생성된 파일**:
+- `bend/api/tasks.py` - Tasks CRUD API 엔드포인트
+- `bend/tests/test_api_tasks.py` - Python 기반 API 테스트 스크립트
+
+**구현된 API 엔드포인트**:
+```
+GET    /api/tasks              # 모든 Task 조회
+GET    /api/tasks/{task_id}    # 특정 Task 조회
+POST   /api/tasks              # Task 생성
+PUT    /api/tasks/{task_id}    # Task 수정
+DELETE /api/tasks/{task_id}    # Task 삭제
+POST   /api/tasks/{task_id}/validate  # Task 검증
+```
+
+**주요 기능**:
+- ✅ CRUD 전체 작업 (Create, Read, Update, Delete)
+- ✅ Task 검증 API (validate() 메서드 활용)
+- ✅ Agent ID 참조 검증 (404, 400 에러 처리)
+- ✅ Context Task 참조 검증 (async/sync)
+- ✅ Context로 사용 중인 Task 삭제 방지
+- ✅ Crew 의존성 검사 (사용 중인 Task 삭제 방지)
+- ✅ Async/Sync 실행 모드 지원
+- ✅ In-memory 저장소 연동
+
+**테스트 스크립트** (`test_api_tasks.py`):
+- ✅ 컬러 출력 (성공/실패 구분)
+- ✅ Health Check 테스트
+- ✅ CRUD 전체 플로우 테스트
+- ✅ 에러 케이스 테스트 (404, 400)
+- ✅ 검증 API 테스트
+- ✅ Agent ID 검증 테스트
+- ✅ Context Task 참조 테스트
+- ✅ Context 사용 중인 Task 삭제 방지 테스트
+- ✅ Crew 의존성 검증 테스트
+
+**실행 방법**:
+```bash
+# 서버 실행
+cd bend
+python run.py
+
+# 테스트 실행 (다른 터미널)
+python bend/tests/test_api_tasks.py
+```
+
+**API 문서**:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+---
 
 #### Phase 3-4: Tools CRUD API
 - [ ] Tools CRUD API 엔드포인트
