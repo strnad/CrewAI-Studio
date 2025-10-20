@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Type
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field, model_validator
 
@@ -15,7 +15,7 @@ class CustomFileWriteToolInputSchema(FixedCustomFileWriteToolInputSchema):
 class CustomFileWriteTool(BaseTool):
     name: str = "Write File"
     description: str = "Tool to write or append to files"
-    args_schema = CustomFileWriteToolInputSchema
+    args_schema: Type[BaseModel] = CustomFileWriteToolInputSchema
     filename: Optional[str] = None
 
     def __init__(self, base_folder: str, filename: Optional[str] = None, **kwargs):
