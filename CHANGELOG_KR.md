@@ -183,7 +183,210 @@ streamlit run app/app.py
 
 ---
 
+## 🚀 REST API 백엔드 전환 (모노레포 구조)
+
+### Phase 1: FastAPI 기본 구조 생성 ✅
+
+**작업 일시**: 2025-10-20
+
+**새로 생성된 파일**:
+```
+bend/                           # 백엔드 디렉토리
+├── main.py                     # FastAPI 엔트리포인트
+├── config.py                   # 설정 관리 (Keycloak 준비)
+├── requirements.txt            # 백엔드 의존성
+├── run.py                      # 개발 서버 실행 스크립트
+├── README.md                   # 백엔드 문서
+├── .gitignore                  # Git 제외 파일
+│
+├── api/
+│   └── health.py              # 헬스체크 API 엔드포인트
+│
+└── database/
+    └── connection.py          # DB 연결 관리 (SQLAlchemy)
+```
+
+**기술 스택**:
+- FastAPI 0.104+
+- SQLAlchemy 2.0+
+- Pydantic 2.0+
+- Uvicorn (ASGI server)
+- Python-Jose (JWT, Keycloak 준비)
+
+**주요 기능**:
+- ✅ CORS 설정 (Streamlit 연동 준비)
+- ✅ Rate Limiting (slowapi)
+- ✅ 데이터베이스 연결 (SQLite/PostgreSQL 지원)
+- ✅ API 자동 문서화 (Swagger UI, ReDoc)
+- ✅ Keycloak/OIDC 설정 준비 (환경변수)
+
+**API 엔드포인트**:
+- `GET /` - 루트 엔드포인트 (API 정보)
+- `GET /api/health` - 기본 헬스체크
+- `GET /api/health/detailed` - 상세 헬스체크 (DB 포함)
+- `GET /api/version` - 버전 정보
+
+**실행 방법**:
+```bash
+cd bend
+python run.py
+# 또는
+uvicorn main:app --reload
+```
+
+---
+
+### Phase 2-1: Crew 도메인 모델 분리 ✅
+
+**작업 일시**: 2025-10-20
+
+**새로 생성된 파일**:
+- `bend/models/crew.py` - 순수 도메인 모델
+- `bend/schemas/crew.py` - Pydantic API 스키마
+
+**주요 변경사항**:
+
+#### 1. `bend/models/crew.py`
+**설계 철학**: Streamlit 의존성을 완전히 제거한 순수 비즈니스 로직
+
+```python
+@dataclass
+class CrewModel:
+    """Streamlit 없는 순수 도메인 모델"""
+    id: str
+    name: str
+    agents: List[Any]
+    tasks: List[Any]
+    process: Process
+    # ... 기타 필드
+```
+
+**제거된 UI 관련 코드**:
+- ❌ `import streamlit as st`
+- ❌ `from streamlit import session_state as ss`
+- ❌ `draw()` 메서드 (UI 렌더링)
+- ❌ `set_editable()` 메서드
+- ❌ `update_*()` 메서드들 (UI 상태 업데이트)
+- ❌ `edit_key`, `tasks_order_key` (세션 상태 키)
+
+**추가된 기능**:
+- ✅ `validate()` - 에러/경고 딕셔너리 반환
+- ✅ `to_dict()` - 직렬화
+- ✅ `from_dict()` - 역직렬화 (with registries)
+- ✅ `get_crewai_crew()` - CrewAI 인스턴스 변환
+
+**검증 로직 개선**:
+```python
+# 변경 전 (my_crew.py)
+def is_valid(self, show_warning=False):
+    if len(self.agents) == 0:
+        if show_warning:
+            st.warning("...")
+        return False
+
+# 변경 후 (crew.py)
+def validate(self) -> Dict[str, List[str]]:
+    errors = []
+    warnings = []
+    if len(self.agents) == 0:
+        errors.append(f"Crew '{self.name}' has no agents")
+    return {'errors': errors, 'warnings': warnings, 'is_valid': len(errors) == 0}
+```
+
+#### 2. `bend/schemas/crew.py`
+**Pydantic 기반 API 요청/응답 스키마**:
+
+```python
+class CrewCreate(BaseModel):
+    """크루 생성 요청"""
+    name: str
+    agent_ids: List[str]
+    task_ids: List[str]
+    # ... 기타 필드
+
+class CrewUpdate(BaseModel):
+    """크루 수정 요청 (모든 필드 optional)"""
+    name: Optional[str] = None
+    # ...
+
+class CrewResponse(BaseModel):
+    """크루 조회 응답"""
+    id: str
+    name: str
+    created_at: str
+    # ...
+
+class CrewExecutionRequest(BaseModel):
+    """크루 실행 요청"""
+    crew_id: str
+    inputs: dict = {}
+```
+
+**기존 코드 유지**:
+- ✅ `app/my_crew.py` - Streamlit UI에서 계속 사용
+- ✅ 기존 기능 100% 호환 유지
+
+---
+
+## 📦 모노레포 구조
+
+```
+CrewAI-Studio/
+├── bend/              # 🆕 백엔드 (FastAPI REST API)
+├── app/               # 기존 Streamlit 프론트엔드 (점진적 전환 예정)
+├── frnt/              # (예정) 새 프론트엔드 (React/Vue)
+└── shared/            # (예정) 공유 코드
+```
+
+---
+
+## 🔜 다음 작업 (Phase 2 계속)
+
+### Phase 2-2: Agent 도메인 모델 분리
+- [ ] `app/my_agent.py` → `bend/models/agent.py`
+- [ ] `bend/schemas/agent.py` 생성
+
+### Phase 2-3: Task 도메인 모델 분리
+- [ ] `app/my_task.py` → `bend/models/task.py`
+- [ ] `bend/schemas/task.py` 생성
+
+### Phase 2-4: Tool 도메인 모델 분리
+- [ ] `app/my_tools.py` → `bend/models/tool.py`
+- [ ] `bend/schemas/tool.py` 생성
+
+### Phase 2-5: Knowledge 도메인 모델 분리
+- [ ] `app/my_knowledge_source.py` → `bend/models/knowledge.py`
+- [ ] `bend/schemas/knowledge.py` 생성
+
+### Phase 3: API 엔드포인트 구현
+- [ ] Crews CRUD API
+- [ ] Agents CRUD API
+- [ ] Tasks CRUD API
+- [ ] Tools CRUD API
+- [ ] Knowledge CRUD API
+- [ ] Execution API (WebSocket)
+
+### Phase 4: 비즈니스 로직 분리
+- [ ] Service 레이어 구현
+- [ ] Repository 패턴 적용
+
+### Phase 5: 인증 및 보안
+- [ ] Keycloak/OIDC 통합
+- [ ] JWT 토큰 검증
+- [ ] Role-based access control
+
+### Phase 6: 프론트엔드 연동
+- [ ] Streamlit UI를 REST API 클라이언트로 변경
+- [ ] (선택) React/Vue 새 프론트엔드
+
+### Phase 7: 배포 및 최적화
+- [ ] Docker 컨테이너화
+- [ ] docker-compose 멀티 서비스
+- [ ] 성능 최적화 및 캐싱
+
+---
+
 ## 👥 작성자
 - 수정 일자: 2025-10-20
 - 환경: WSL2 Ubuntu + Conda (hfcrewai)
-- 목적: LangChain 1.0 호환 및 Pydantic v2 호환성 확보
+- 목적: LangChain 1.0 호환 및 Pydantic v2 호환성 확보 / REST API 백엔드 구축
