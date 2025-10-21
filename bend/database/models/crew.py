@@ -47,6 +47,10 @@ class Crew(Base):
     # Primary Key
     id = Column(String(11), primary_key=True, default=generate_crew_id)
 
+    # Multi-tenant fields
+    workspace_id = Column(String(12), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=True, index=True)
+    created_by = Column(String(12), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+
     # Fields
     name = Column(String(255), nullable=False)
     process = Column(String(50), default="sequential")  # sequential or hierarchical
@@ -58,6 +62,11 @@ class Crew(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
+    # Multi-tenant relationships
+    workspace = relationship("Workspace", back_populates="crews")
+    creator = relationship("User", back_populates="created_crews", foreign_keys=[created_by])
+
+    # Agent, Task, Knowledge relationships
     agents = relationship(
         "Agent",
         secondary=crew_agents,
@@ -81,6 +90,8 @@ class Crew(Base):
         """Convert to dictionary"""
         return {
             "id": self.id,
+            "workspace_id": self.workspace_id,
+            "created_by": self.created_by,
             "name": self.name,
             "process": self.process,
             "verbose": self.verbose,

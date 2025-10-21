@@ -15,3 +15,4 @@ snowflake-connector-python
 markdown
 docling
 duckduckgo-search>=8.0.2
+bcrypt==4.1.2

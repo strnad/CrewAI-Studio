@@ -25,6 +25,9 @@ class CrewRun(Base):
     # Foreign Key with CASCADE DELETE
     crew_id = Column(String(11), ForeignKey("crews.id", ondelete="CASCADE"), nullable=False)
 
+    # Multi-tenant field (executor)
+    executed_by = Column(String(12), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+
     # Execution Status: pending, running, completed, failed
     status = Column(String(20), nullable=False, default="pending")
 
@@ -39,6 +42,7 @@ class CrewRun(Base):
 
     # Relationships
     crew = relationship("Crew", backref="runs")
+    executor = relationship("User", back_populates="executed_crew_runs", foreign_keys=[executed_by])
 
     def __repr__(self):
         return f"<CrewRun(id='{self.id}', crew_id='{self.crew_id}', status='{self.status}')>"
@@ -48,6 +52,7 @@ class CrewRun(Base):
         return {
             "id": self.id,
             "crew_id": self.crew_id,
+            "executed_by": self.executed_by,
             "status": self.status,
             "inputs": self.inputs,
             "result": self.result,

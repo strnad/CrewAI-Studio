@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from bend.config import settings
-from bend.api import health, crews, agents, tasks, tools, knowledge
+from bend.api import health, crews, agents, tasks, tools, knowledge, users
 from bend.database.connection import init_db
 
 # Initialize rate limiter
@@ -79,6 +79,7 @@ async def root():
 
 # Include routers
 app.include_router(health.router, prefix=settings.api_prefix, tags=["Health"])
+app.include_router(users.router, prefix=settings.api_prefix, tags=["Users"])
 app.include_router(crews.router, prefix=f"{settings.api_prefix}/crews", tags=["Crews"])
 app.include_router(agents.router, prefix=f"{settings.api_prefix}/agents", tags=["Agents"])
 app.include_router(tasks.router, prefix=f"{settings.api_prefix}/tasks", tags=["Tasks"])

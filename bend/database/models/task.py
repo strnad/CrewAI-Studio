@@ -39,6 +39,10 @@ class Task(Base):
     # Primary Key
     id = Column(String(11), primary_key=True, default=generate_task_id)
 
+    # Multi-tenant fields
+    workspace_id = Column(String(12), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=True, index=True)
+    created_by = Column(String(12), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+
     # Fields
     description = Column(Text, nullable=False)
     expected_output = Column(Text, nullable=False)
@@ -49,6 +53,11 @@ class Task(Base):
     agent_id = Column(String(11), ForeignKey("agents.id"), nullable=False)
 
     # Relationships
+    # Multi-tenant relationships
+    workspace = relationship("Workspace", back_populates="tasks")
+    creator = relationship("User", back_populates="created_tasks", foreign_keys=[created_by])
+
+    # Agent relationship
     agent = relationship("Agent", back_populates="tasks")
 
     # Self-referencing relationships for context tasks
@@ -75,6 +84,8 @@ class Task(Base):
         """Convert to dictionary"""
         return {
             "id": self.id,
+            "workspace_id": self.workspace_id,
+            "created_by": self.created_by,
             "description": self.description,
             "expected_output": self.expected_output,
             "async_execution": self.async_execution,

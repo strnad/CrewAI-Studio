@@ -2,7 +2,7 @@
 Knowledge Source ORM Model
 SQLAlchemy model for knowledge_sources table
 """
-from sqlalchemy import Column, String, Text, Integer, JSON, DateTime
+from sqlalchemy import Column, String, Text, Integer, JSON, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from bend.database.connection import Base
 from datetime import datetime
@@ -22,6 +22,10 @@ class KnowledgeSource(Base):
     # Primary Key
     id = Column(String(11), primary_key=True, default=generate_ks_id)
 
+    # Multi-tenant fields
+    workspace_id = Column(String(12), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=True, index=True)
+    created_by = Column(String(12), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+
     # Fields
     name = Column(String(255), nullable=False)
     source_type = Column(String(50), nullable=False)  # string, text_file, pdf, csv, excel, json, docling
@@ -32,9 +36,10 @@ class KnowledgeSource(Base):
     chunk_overlap = Column(Integer, default=200)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    # Relationships will be added when Agent and Crew models are created
-    # agents = relationship("Agent", secondary="agent_knowledge_sources", back_populates="knowledge_sources")
-    # crews = relationship("Crew", secondary="crew_knowledge_sources", back_populates="knowledge_sources")
+    # Relationships
+    # Multi-tenant relationships
+    workspace = relationship("Workspace", back_populates="knowledge_sources")
+    creator = relationship("User", back_populates="created_knowledge_sources", foreign_keys=[created_by])
 
     def __repr__(self):
         return f"<KnowledgeSource(id='{self.id}', name='{self.name}', type='{self.source_type}')>"
@@ -43,6 +48,8 @@ class KnowledgeSource(Base):
         """Convert to dictionary"""
         return {
             "id": self.id,
+            "workspace_id": self.workspace_id,
+            "created_by": self.created_by,
             "name": self.name,
             "source_type": self.source_type,
             "source_path": self.source_path,

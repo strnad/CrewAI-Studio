@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings
 from pydantic import Field
 from typing import Optional
 import os
+from pathlib import Path
 
 
 class Settings(BaseSettings):
@@ -66,7 +67,8 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
 
     class Config:
-        env_file = ".env"
+        # Look for .env in parent directory (project root) or current directory
+        env_file = str(Path(__file__).parent.parent / ".env") if (Path(__file__).parent.parent / ".env").exists() else ".env"
         case_sensitive = False
         extra = "ignore"  # Ignore extra fields from .env
 

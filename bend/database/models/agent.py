@@ -39,6 +39,10 @@ class Agent(Base):
     # Primary Key
     id = Column(String(11), primary_key=True, default=generate_agent_id)
 
+    # Multi-tenant fields
+    workspace_id = Column(String(12), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=True, index=True)
+    created_by = Column(String(12), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+
     # Fields
     role = Column(String(255), nullable=False)
     backstory = Column(Text, nullable=False)
@@ -52,6 +56,11 @@ class Agent(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
+    # Multi-tenant relationships
+    workspace = relationship("Workspace", back_populates="agents")
+    creator = relationship("User", back_populates="created_agents", foreign_keys=[created_by])
+
+    # Tool and Knowledge relationships
     tools = relationship(
         "Tool",
         secondary=agent_tools,
@@ -71,6 +80,8 @@ class Agent(Base):
         """Convert to dictionary"""
         return {
             "id": self.id,
+            "workspace_id": self.workspace_id,
+            "created_by": self.created_by,
             "role": self.role,
             "backstory": self.backstory,
             "goal": self.goal,
