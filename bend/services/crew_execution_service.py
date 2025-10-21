@@ -2,7 +2,7 @@
 Crew Execution Service
 Business logic for executing CrewAI crews
 """
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from sqlalchemy.orm import Session
 from crewai import Crew, Agent, Task, Process, LLM
 from bend.database.repositories.crew_repository import CrewRepository
@@ -13,6 +13,7 @@ from bend.database.repositories.knowledge_source_repository import KnowledgeSour
 from bend.database.repositories.tool_repository import ToolRepository
 from bend.database.models.crew import Crew as CrewModel
 from bend.database.models.crew_run import CrewRun
+from bend.my_tools import TOOL_CLASSES
 from datetime import datetime
 import json
 
@@ -30,6 +31,47 @@ class CrewExecutionService:
         self.ks_repo = KnowledgeSourceRepository(db)
         self.tool_repo = ToolRepository(db)
 
+    def _convert_db_tools_to_crewai(self, db_tools: List) -> List:
+        """
+        Convert database Tool models to CrewAI tools
+
+        Args:
+            db_tools: List of database Tool models
+
+        Returns:
+            List of CrewAI tool instances
+        """
+        crewai_tools = []
+
+        for db_tool in db_tools:
+            # Get the appropriate MyTool class from TOOL_CLASSES
+            tool_class = TOOL_CLASSES.get(db_tool.name)
+            if not tool_class:
+                print(f"Warning: Unknown tool type '{db_tool.name}', skipping")
+                continue
+
+            try:
+                # Create MyTool instance with parameters from database
+                my_tool = tool_class(
+                    tool_id=db_tool.tool_id,
+                    **db_tool.parameters  # Unpack parameters from JSON
+                )
+
+                # Validate tool parameters
+                if not my_tool.is_valid(show_warning=True):
+                    print(f"Warning: Tool '{db_tool.name}' has invalid parameters, skipping")
+                    continue
+
+                # Create actual CrewAI tool
+                crewai_tool = my_tool.create_tool()
+                crewai_tools.append(crewai_tool)
+
+            except Exception as e:
+                print(f"Error creating tool '{db_tool.name}': {str(e)}")
+                continue
+
+        return crewai_tools
+
     def _convert_db_agent_to_crewai(self, db_agent) -> Agent:
         """
         Convert database Agent model to CrewAI Agent
@@ -44,11 +86,7 @@ class CrewExecutionService:
         llm = LLM(model=db_agent.llm_provider_model, temperature=db_agent.temperature)
 
         # Convert tools (if any)
-        tools = []
-        for db_tool in db_agent.tools:
-            # TODO: Implement tool conversion
-            # For now, skip tools - will implement later
-            pass
+        tools = self._convert_db_tools_to_crewai(db_agent.tools)
 
         # Convert knowledge sources (if any)
         knowledge_sources = []

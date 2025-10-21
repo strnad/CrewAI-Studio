@@ -1,17 +1,45 @@
-import streamlit as st
+"""
+Backend Tool Wrapper Classes
+Wraps CrewAI tools for database integration
+"""
 import os
-from utils import rnd_id
-from i18n import t
-from crewai_tools import CodeInterpreterTool,ScrapeElementFromWebsiteTool,TXTSearchTool,SeleniumScrapingTool,PGSearchTool,PDFSearchTool,MDXSearchTool,JSONSearchTool,GithubSearchTool,EXASearchTool,DOCXSearchTool,CSVSearchTool,ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, DirectoryReadTool, CodeDocsSearchTool, YoutubeVideoSearchTool,SerperDevTool,YoutubeChannelSearchTool,WebsiteSearchTool
-from app.tools.CustomApiTool import CustomApiTool
-from app.tools.CustomCodeInterpreterTool import CustomCodeInterpreterTool
-from app.tools.CustomFileWriteTool import CustomFileWriteTool
-from app.tools.ScrapeWebsiteToolEnhanced import ScrapeWebsiteToolEnhanced
-from app.tools.ScrapflyScrapeWebsiteTool import ScrapflyScrapeWebsiteTool
-
-from app.tools.DuckDuckGoSearchTool import DuckDuckGoSearchTool
-
+import uuid
+from crewai_tools import (
+    CodeInterpreterTool,
+    ScrapeElementFromWebsiteTool,
+    TXTSearchTool,
+    SeleniumScrapingTool,
+    PGSearchTool,
+    PDFSearchTool,
+    MDXSearchTool,
+    JSONSearchTool,
+    GithubSearchTool,
+    EXASearchTool,
+    DOCXSearchTool,
+    CSVSearchTool,
+    ScrapeWebsiteTool,
+    FileReadTool,
+    DirectorySearchTool,
+    DirectoryReadTool,
+    CodeDocsSearchTool,
+    YoutubeVideoSearchTool,
+    SerperDevTool,
+    YoutubeChannelSearchTool,
+    WebsiteSearchTool
+)
+from bend.tools.CustomApiTool import CustomApiTool
+from bend.tools.CustomCodeInterpreterTool import CustomCodeInterpreterTool
+from bend.tools.CustomFileWriteTool import CustomFileWriteTool
+from bend.tools.ScrapeWebsiteToolEnhanced import ScrapeWebsiteToolEnhanced
+from bend.tools.ScrapflyScrapeWebsiteTool import ScrapflyScrapeWebsiteTool
+from bend.tools.DuckDuckGoSearchTool import DuckDuckGoSearchTool
 from langchain_community.tools import YahooFinanceNewsTool
+
+
+def rnd_id():
+    """Generate random ID for tools"""
+    return f"T_{uuid.uuid4().hex[:8]}"
+
 
 class MyTool:
     def __init__(self, tool_id, name, description, parameters, **kwargs):
@@ -36,136 +64,148 @@ class MyTool:
     def is_parameter_mandatory(self, param_name):
         return self.parameters_metadata.get(param_name, {}).get('mandatory', False)
 
-    def is_valid(self,show_warning=False):
+    def is_valid(self, show_warning=False):
         for param_name, metadata in self.parameters_metadata.items():
             if metadata['mandatory'] and not self.parameters.get(param_name):
                 if show_warning:
-                    st.warning(t('tools.warning_parameter_mandatory', param_name=param_name, tool_name=self.name))
+                    print(f"Warning: Parameter '{param_name}' is mandatory for tool '{self.name}'")
                 return False
         return True
+
 
 class MyScrapeWebsiteTool(MyTool):
     def __init__(self, tool_id=None, website_url=None):
         parameters = {
             'website_url': {'mandatory': False}
         }
-        super().__init__(tool_id, 'ScrapeWebsiteTool', t('tools.desc_scrape_website'), parameters, website_url=website_url)
+        super().__init__(tool_id, 'ScrapeWebsiteTool', 'Scrape website content', parameters, website_url=website_url)
 
     def create_tool(self) -> ScrapeWebsiteTool:
         return ScrapeWebsiteTool(self.parameters.get('website_url') if self.parameters.get('website_url') else None)
+
 
 class MyFileReadTool(MyTool):
     def __init__(self, tool_id=None, file_path=None):
         parameters = {
             'file_path': {'mandatory': False}
         }
-        super().__init__(tool_id, 'FileReadTool', t('tools.desc_file_read'), parameters, file_path=file_path)
+        super().__init__(tool_id, 'FileReadTool', 'Read file content', parameters, file_path=file_path)
 
     def create_tool(self) -> FileReadTool:
         return FileReadTool(self.parameters.get('file_path') if self.parameters.get('file_path') else None)
+
 
 class MyDirectorySearchTool(MyTool):
     def __init__(self, tool_id=None, directory=None):
         parameters = {
             'directory': {'mandatory': False}
         }
-        super().__init__(tool_id, 'DirectorySearchTool', t('tools.desc_directory_search'), parameters, directory_path=directory)
+        super().__init__(tool_id, 'DirectorySearchTool', 'Search directory', parameters, directory_path=directory)
 
     def create_tool(self) -> DirectorySearchTool:
         return DirectorySearchTool(self.parameters.get('directory') if self.parameters.get('directory') else None)
+
 
 class MyDirectoryReadTool(MyTool):
     def __init__(self, tool_id=None, directory_contents=None):
         parameters = {
             'directory_contents': {'mandatory': True}
         }
-        super().__init__(tool_id, 'DirectoryReadTool', t('tools.desc_directory_read'), parameters, directory_contents=directory_contents)
+        super().__init__(tool_id, 'DirectoryReadTool', 'Read directory contents', parameters, directory_contents=directory_contents)
 
     def create_tool(self) -> DirectoryReadTool:
         return DirectoryReadTool(self.parameters.get('directory_contents'))
+
 
 class MyCodeDocsSearchTool(MyTool):
     def __init__(self, tool_id=None, code_docs=None):
         parameters = {
             'code_docs': {'mandatory': False}
         }
-        super().__init__(tool_id, 'CodeDocsSearchTool', t('tools.desc_code_docs_search'), parameters, code_docs=code_docs)
+        super().__init__(tool_id, 'CodeDocsSearchTool', 'Search code documentation', parameters, code_docs=code_docs)
 
     def create_tool(self) -> CodeDocsSearchTool:
         return CodeDocsSearchTool(self.parameters.get('code_docs') if self.parameters.get('code_docs') else None)
+
 
 class MyYoutubeVideoSearchTool(MyTool):
     def __init__(self, tool_id=None, youtube_video_url=None):
         parameters = {
             'youtube_video_url': {'mandatory': False}
         }
-        super().__init__(tool_id, 'YoutubeVideoSearchTool', t('tools.desc_youtube_video_search'), parameters, youtube_video_url=youtube_video_url)
+        super().__init__(tool_id, 'YoutubeVideoSearchTool', 'Search YouTube video', parameters, youtube_video_url=youtube_video_url)
 
     def create_tool(self) -> YoutubeVideoSearchTool:
         return YoutubeVideoSearchTool(self.parameters.get('youtube_video_url') if self.parameters.get('youtube_video_url') else None)
+
 
 class MySerperDevTool(MyTool):
     def __init__(self, tool_id=None, SERPER_API_KEY=None):
         parameters = {
             'SERPER_API_KEY': {'mandatory': True}
         }
-
-        super().__init__(tool_id, 'SerperDevTool', t('tools.desc_serper_dev'), parameters)
+        super().__init__(tool_id, 'SerperDevTool', 'Google Search API via Serper.dev', parameters)
 
     def create_tool(self) -> SerperDevTool:
         os.environ['SERPER_API_KEY'] = self.parameters.get('SERPER_API_KEY')
         return SerperDevTool()
+
 
 class MyYoutubeChannelSearchTool(MyTool):
     def __init__(self, tool_id=None, youtube_channel_handle=None):
         parameters = {
             'youtube_channel_handle': {'mandatory': False}
         }
-        super().__init__(tool_id, 'YoutubeChannelSearchTool', t('tools.desc_youtube_channel_search'), parameters, youtube_channel_handle=youtube_channel_handle)
+        super().__init__(tool_id, 'YoutubeChannelSearchTool', 'Search YouTube channel', parameters, youtube_channel_handle=youtube_channel_handle)
 
     def create_tool(self) -> YoutubeChannelSearchTool:
         return YoutubeChannelSearchTool(self.parameters.get('youtube_channel_handle') if self.parameters.get('youtube_channel_handle') else None)
+
 
 class MyWebsiteSearchTool(MyTool):
     def __init__(self, tool_id=None, website=None):
         parameters = {
             'website': {'mandatory': False}
         }
-        super().__init__(tool_id, 'WebsiteSearchTool', t('tools.desc_website_search'), parameters, website=website)
+        super().__init__(tool_id, 'WebsiteSearchTool', 'Search website content', parameters, website=website)
 
     def create_tool(self) -> WebsiteSearchTool:
         return WebsiteSearchTool(self.parameters.get('website') if self.parameters.get('website') else None)
-   
+
+
 class MyCSVSearchTool(MyTool):
     def __init__(self, tool_id=None, csv=None):
         parameters = {
             'csv': {'mandatory': False}
         }
-        super().__init__(tool_id, 'CSVSearchTool', t('tools.desc_csv_search'), parameters, csv=csv)
+        super().__init__(tool_id, 'CSVSearchTool', 'Search CSV file', parameters, csv=csv)
 
     def create_tool(self) -> CSVSearchTool:
         return CSVSearchTool(csv=self.parameters.get('csv') if self.parameters.get('csv') else None)
+
 
 class MyDocxSearchTool(MyTool):
     def __init__(self, tool_id=None, docx=None):
         parameters = {
             'docx': {'mandatory': False}
         }
-        super().__init__(tool_id, 'DOCXSearchTool', t('tools.desc_docx_search'), parameters, docx=docx)
+        super().__init__(tool_id, 'DOCXSearchTool', 'Search DOCX file', parameters, docx=docx)
 
     def create_tool(self) -> DOCXSearchTool:
         return DOCXSearchTool(docx=self.parameters.get('docx') if self.parameters.get('docx') else None)
+
 
 class MyEXASearchTool(MyTool):
     def __init__(self, tool_id=None, EXA_API_KEY=None):
         parameters = {
             'EXA_API_KEY': {'mandatory': True}
         }
-        super().__init__(tool_id, 'EXASearchTool', t('tools.desc_exa_search'), parameters, EXA_API_KEY=EXA_API_KEY)
+        super().__init__(tool_id, 'EXASearchTool', 'EXA Search API', parameters, EXA_API_KEY=EXA_API_KEY)
 
     def create_tool(self) -> EXASearchTool:
         os.environ['EXA_API_KEY'] = self.parameters.get('EXA_API_KEY')
         return EXASearchTool()
+
 
 class MyGithubSearchTool(MyTool):
     def __init__(self, tool_id=None, github_repo=None, gh_token=None, content_types=None):
@@ -174,7 +214,7 @@ class MyGithubSearchTool(MyTool):
             'gh_token': {'mandatory': True},
             'content_types': {'mandatory': False}
         }
-        super().__init__(tool_id, 'GithubSearchTool', t('tools.desc_github_search'), parameters, github_repo=github_repo, gh_token=gh_token, content_types=content_types)
+        super().__init__(tool_id, 'GithubSearchTool', 'Search GitHub repository', parameters, github_repo=github_repo, gh_token=gh_token, content_types=content_types)
 
     def create_tool(self) -> GithubSearchTool:
         return GithubSearchTool(
@@ -183,45 +223,50 @@ class MyGithubSearchTool(MyTool):
             content_types=self.parameters.get('search_query').split(",") if self.parameters.get('search_query') else ["code", "repo", "pr", "issue"]
         )
 
+
 class MyJSONSearchTool(MyTool):
     def __init__(self, tool_id=None, json_path=None):
         parameters = {
             'json_path': {'mandatory': False}
         }
-        super().__init__(tool_id, 'JSONSearchTool', t('tools.desc_json_search'), parameters, json_path=json_path)
+        super().__init__(tool_id, 'JSONSearchTool', 'Search JSON file', parameters, json_path=json_path)
 
     def create_tool(self) -> JSONSearchTool:
         return JSONSearchTool(json_path=self.parameters.get('json_path') if self.parameters.get('json_path') else None)
+
 
 class MyMDXSearchTool(MyTool):
     def __init__(self, tool_id=None, mdx=None):
         parameters = {
             'mdx': {'mandatory': False}
         }
-        super().__init__(tool_id, 'MDXSearchTool', t('tools.desc_mdx_search'), parameters, mdx=mdx)
+        super().__init__(tool_id, 'MDXSearchTool', 'Search MDX file', parameters, mdx=mdx)
 
     def create_tool(self) -> MDXSearchTool:
         return MDXSearchTool(mdx=self.parameters.get('mdx') if self.parameters.get('mdx') else None)
+
 
 class MyPDFSearchTool(MyTool):
     def __init__(self, tool_id=None, pdf=None):
         parameters = {
             'pdf': {'mandatory': False}
         }
-        super().__init__(tool_id, 'PDFSearchTool', t('tools.desc_pdf_search'), parameters, pdf=pdf)
+        super().__init__(tool_id, 'PDFSearchTool', 'Search PDF file', parameters, pdf=pdf)
 
     def create_tool(self) -> PDFSearchTool:
         return PDFSearchTool(self.parameters.get('pdf') if self.parameters.get('pdf') else None)
+
 
 class MyPGSearchTool(MyTool):
     def __init__(self, tool_id=None, db_uri=None):
         parameters = {
             'db_uri': {'mandatory': True}
         }
-        super().__init__(tool_id, 'PGSearchTool', t('tools.desc_pg_search'), parameters, db_uri=db_uri)
+        super().__init__(tool_id, 'PGSearchTool', 'Search PostgreSQL database', parameters, db_uri=db_uri)
 
     def create_tool(self) -> PGSearchTool:
         return PGSearchTool(self.parameters.get('db_uri'))
+
 
 class MySeleniumScrapingTool(MyTool):
     def __init__(self, tool_id=None, website_url=None, css_element=None, cookie=None, wait_time=None):
@@ -234,13 +279,14 @@ class MySeleniumScrapingTool(MyTool):
         super().__init__(
             tool_id,
             'SeleniumScrapingTool',
-            t('tools.desc_selenium_scraping'),
+            'Scrape website with Selenium',
             parameters,
             website_url=website_url,
             css_element=css_element,
             cookie=cookie,
             wait_time=wait_time
-)
+        )
+
     def create_tool(self) -> SeleniumScrapingTool:
         cookie_arrayofdicts = [{k: v} for k, v in (item.strip('{}').split(':') for item in self.parameters.get('cookie', '').split(','))] if self.parameters.get('cookie') else None
 
@@ -251,15 +297,17 @@ class MySeleniumScrapingTool(MyTool):
             wait_time=self.parameters.get('wait_time') if self.parameters.get('wait_time') else 10
         )
 
+
 class MyTXTSearchTool(MyTool):
     def __init__(self, tool_id=None, txt=None):
         parameters = {
             'txt': {'mandatory': False}
         }
-        super().__init__(tool_id, 'TXTSearchTool', t('tools.desc_txt_search'), parameters, txt=txt)
+        super().__init__(tool_id, 'TXTSearchTool', 'Search text file', parameters, txt=txt)
 
     def create_tool(self) -> TXTSearchTool:
         return TXTSearchTool(self.parameters.get('txt'))
+
 
 class MyScrapeElementFromWebsiteTool(MyTool):
     def __init__(self, tool_id=None, website_url=None, css_element=None, cookie=None):
@@ -271,7 +319,7 @@ class MyScrapeElementFromWebsiteTool(MyTool):
         super().__init__(
             tool_id,
             'ScrapeElementFromWebsiteTool',
-            t('tools.desc_scrape_element'),
+            'Scrape specific element from website',
             parameters,
             website_url=website_url,
             css_element=css_element,
@@ -285,14 +333,16 @@ class MyScrapeElementFromWebsiteTool(MyTool):
             css_element=self.parameters.get('css_element').split(",") if self.parameters.get('css_element') else None,
             cookie=cookie_arrayofdicts
         )
-    
+
+
 class MyYahooFinanceNewsTool(MyTool):
     def __init__(self, tool_id=None):
         parameters = {}
-        super().__init__(tool_id, 'YahooFinanceNewsTool', t('tools.desc_yahoo_finance'), parameters)
+        super().__init__(tool_id, 'YahooFinanceNewsTool', 'Yahoo Finance news search', parameters)
 
     def create_tool(self) -> YahooFinanceNewsTool:
         return YahooFinanceNewsTool()
+
 
 class MyCustomApiTool(MyTool):
     def __init__(self, tool_id=None, base_url=None, headers=None, query_params=None):
@@ -301,7 +351,7 @@ class MyCustomApiTool(MyTool):
             'headers': {'mandatory': False},
             'query_params': {'mandatory': False}
         }
-        super().__init__(tool_id, 'CustomApiTool', t('tools.desc_custom_api'), parameters, base_url=base_url, headers=headers, query_params=query_params)
+        super().__init__(tool_id, 'CustomApiTool', 'Custom API tool', parameters, base_url=base_url, headers=headers, query_params=query_params)
 
     def create_tool(self) -> CustomApiTool:
         return CustomApiTool(
@@ -310,13 +360,14 @@ class MyCustomApiTool(MyTool):
             query_params=self.parameters.get('query_params') if self.parameters.get('query_params') else None
         )
 
+
 class MyCustomFileWriteTool(MyTool):
     def __init__(self, tool_id=None, base_folder=None, filename=None):
         parameters = {
             'base_folder': {'mandatory': True},
             'filename': {'mandatory': False}
         }
-        super().__init__(tool_id, 'CustomFileWriteTool', t('tools.desc_custom_file_write'), parameters,base_folder=base_folder, filename=filename)
+        super().__init__(tool_id, 'CustomFileWriteTool', 'Custom file write tool', parameters, base_folder=base_folder, filename=filename)
 
     def create_tool(self) -> CustomFileWriteTool:
         return CustomFileWriteTool(
@@ -328,7 +379,7 @@ class MyCustomFileWriteTool(MyTool):
 class MyDuckDuckGoSearchTool(MyTool):
     def __init__(self, tool_id=None):
         parameters = {}
-        super().__init__(tool_id, 'DuckDuckGoSearchTool', t('tools.desc_duckduckgo_search'), parameters)
+        super().__init__(tool_id, 'DuckDuckGoSearchTool', 'DuckDuckGo web search', parameters)
 
     def create_tool(self) -> DuckDuckGoSearchTool:
         return DuckDuckGoSearchTool()
@@ -337,17 +388,18 @@ class MyDuckDuckGoSearchTool(MyTool):
 class MyCodeInterpreterTool(MyTool):
     def __init__(self, tool_id=None):
         parameters = {}
-        super().__init__(tool_id, 'CodeInterpreterTool', t('tools.desc_code_interpreter'), parameters)
+        super().__init__(tool_id, 'CodeInterpreterTool', 'Python code interpreter', parameters)
 
     def create_tool(self) -> CodeInterpreterTool:
         return CodeInterpreterTool()
 
+
 class MyCustomCodeInterpreterTool(MyTool):
-    def __init__(self, tool_id=None,workspace_dir=None):
+    def __init__(self, tool_id=None, workspace_dir=None):
         parameters = {
             'workspace_dir': {'mandatory': False}
         }
-        super().__init__(tool_id, 'CustomCodeInterpreterTool', t('tools.desc_custom_code_interpreter'), parameters, workspace_dir=workspace_dir)
+        super().__init__(tool_id, 'CustomCodeInterpreterTool', 'Custom code interpreter with workspace', parameters, workspace_dir=workspace_dir)
 
     def create_tool(self) -> CustomCodeInterpreterTool:
         return CustomCodeInterpreterTool(workspace_dir=self.parameters.get('workspace_dir') if self.parameters.get('workspace_dir') else "workspace")
@@ -361,7 +413,7 @@ class MyScrapeWebsiteToolEnhanced(MyTool):
             'show_urls': {'mandatory': False},
             'css_selector': {'mandatory': False}
         }
-        super().__init__(tool_id, 'ScrapeWebsiteToolEnhanced', t('tools.desc_scrape_website_enhanced'), parameters, website_url=website_url, cookies=cookies, show_urls=show_urls, css_selector=css_selector)
+        super().__init__(tool_id, 'ScrapeWebsiteToolEnhanced', 'Enhanced website scraping tool', parameters, website_url=website_url, cookies=cookies, show_urls=show_urls, css_selector=css_selector)
 
     def create_tool(self) -> ScrapeWebsiteToolEnhanced:
         return ScrapeWebsiteToolEnhanced(
@@ -371,20 +423,20 @@ class MyScrapeWebsiteToolEnhanced(MyTool):
             css_selector=self.parameters.get('css_selector') if self.parameters.get('css_selector') else None
         )
 
+
 class MyScrapflyScrapeWebsiteTool(MyTool):
     def __init__(self, tool_id=None, api_key=None):
         parameters = {
             'api_key': {'mandatory': False}
         }
-        super().__init__(tool_id, 'ScrapflyScrapeWebsiteTool', t('tools.desc_scrapfly_scrape'), parameters, api_key=api_key)
+        super().__init__(tool_id, 'ScrapflyScrapeWebsiteTool', 'Scrapfly website scraping tool', parameters, api_key=api_key)
 
     def create_tool(self) -> ScrapflyScrapeWebsiteTool:
         api_key = self.parameters.get('api_key') or os.getenv('SCRAPFLY_API_KEY')
         if not api_key:
             raise ValueError("Scrapfly API key not provided and not set in .env file (SCRAPFLY_API_KEY)")
-        return ScrapflyScrapeWebsiteTool(
-            api_key=api_key
-        )
+        return ScrapflyScrapeWebsiteTool(api_key=api_key)
+
 
 # Register all tools here
 TOOL_CLASSES = {
@@ -394,7 +446,7 @@ TOOL_CLASSES = {
     'ScrapeWebsiteTool': MyScrapeWebsiteTool,
     'ScrapeWebsiteToolEnhanced': MyScrapeWebsiteToolEnhanced,
     'ScrapflyScrapeWebsiteTool': MyScrapflyScrapeWebsiteTool,
-    
+
     'SeleniumScrapingTool': MySeleniumScrapingTool,
     'ScrapeElementFromWebsiteTool': MyScrapeElementFromWebsiteTool,
     'CustomApiTool': MyCustomApiTool,
@@ -406,17 +458,17 @@ TOOL_CLASSES = {
     'DirectoryReadTool': MyDirectoryReadTool,
 
     'YoutubeVideoSearchTool': MyYoutubeVideoSearchTool,
-    'YoutubeChannelSearchTool' :MyYoutubeChannelSearchTool,
+    'YoutubeChannelSearchTool': MyYoutubeChannelSearchTool,
     'GithubSearchTool': MyGithubSearchTool,
     'CodeDocsSearchTool': MyCodeDocsSearchTool,
     'YahooFinanceNewsTool': MyYahooFinanceNewsTool,
 
     'TXTSearchTool': MyTXTSearchTool,
     'CSVSearchTool': MyCSVSearchTool,
-    'DOCXSearchTool': MyDocxSearchTool, 
+    'DOCXSearchTool': MyDocxSearchTool,
     'EXASearchTool': MyEXASearchTool,
     'JSONSearchTool': MyJSONSearchTool,
     'MDXSearchTool': MyMDXSearchTool,
     'PDFSearchTool': MyPDFSearchTool,
-    'PGSearchTool': MyPGSearchTool    
+    'PGSearchTool': MyPGSearchTool
 }
