@@ -226,3 +226,41 @@ class CrewRepository(BaseRepository[Crew]):
             List of crews
         """
         return self.db.query(Crew).filter(Crew.process == process).all()
+
+    def delete(self, id: str) -> bool:
+        """
+        Delete crew by ID
+        Overrides BaseRepository.delete to handle crew_runs cascade delete
+
+        Args:
+            id: Crew ID
+
+        Returns:
+            True if deleted, False if not found
+
+        Raises:
+            SQLAlchemyError: Database error
+        """
+        from bend.database.models.crew_run import CrewRun
+        from sqlalchemy.exc import SQLAlchemyError
+
+        try:
+            crew = self.get_by_id(id)
+            if not crew:
+                return False
+
+            # Delete all crew runs first (manual cascade)
+            self.db.query(CrewRun).filter(CrewRun.crew_id == id).delete()
+
+            # Clear relationships
+            crew.agents = []
+            crew.tasks = []
+            crew.knowledge_sources = []
+
+            # Delete the crew
+            self.db.delete(crew)
+            self.db.commit()
+            return True
+        except SQLAlchemyError as e:
+            self.db.rollback()
+            raise e

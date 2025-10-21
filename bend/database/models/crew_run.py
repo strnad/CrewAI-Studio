@@ -22,8 +22,8 @@ class CrewRun(Base):
     # Primary Key
     id = Column(String(12), primary_key=True, default=generate_crew_run_id)
 
-    # Foreign Key
-    crew_id = Column(String(11), ForeignKey("crews.id"), nullable=False)
+    # Foreign Key with CASCADE DELETE
+    crew_id = Column(String(11), ForeignKey("crews.id", ondelete="CASCADE"), nullable=False)
 
     # Execution Status: pending, running, completed, failed
     status = Column(String(20), nullable=False, default="pending")

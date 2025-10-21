@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from contextlib import asynccontextmanager
 import sys
 from pathlib import Path
 
@@ -21,23 +22,33 @@ from bend.database.connection import init_db
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
 
-# Create FastAPI app
+
+# Lifespan context manager (FastAPI recommended way)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Lifespan context manager for startup and shutdown events
+    """
+    # Startup
+    print("🗄️  Initializing database...")
+    init_db()
+    print("✅ Database initialized successfully")
+
+    yield
+
+    # Shutdown (cleanup if needed)
+    print("👋 Shutting down...")
+
+
+# Create FastAPI app with lifespan
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     docs_url=settings.api_docs_url if settings.debug else None,
     redoc_url=settings.api_redoc_url if settings.debug else None,
     openapi_url=f"{settings.api_prefix}/openapi.json" if settings.debug else None,
+    lifespan=lifespan,
 )
-
-
-# Startup event - Initialize database
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database on startup"""
-    print("🗄️  Initializing database...")
-    init_db()
-    print("✅ Database initialized successfully")
 
 # Add rate limiting
 app.state.limiter = limiter

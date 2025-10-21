@@ -69,6 +69,9 @@ Pass Rate: 100.0%
 # Crews API만 테스트
 python bend/tests/test_crews_only.py
 
+# 🆕 Crew 실행 기능 테스트 (End-to-End)
+python bend/tests/test_crew_execution.py
+
 # 기존 Python 스크립트 (상세 로그)
 python bend/tests/test_api_crews.py
 python bend/tests/test_api_agents.py
@@ -123,6 +126,100 @@ Crew의 실행 이력 조회 (최대 10개)
 - 정상 실행을 위해 `.env` 파일에 `OPENAI_API_KEY` 또는 다른 LLM provider API 키를 설정하세요
 
 ## 테스트 스크립트 목록
+
+### 🆕 `test_crew_execution.py` (새로운 End-to-End 테스트)
+**Crew 실행 기능 전체 테스트 - 실제 LLM 호출 포함**
+
+**테스트 시나리오**:
+1. ✅ Health Check
+2. ✅ Agent 생성 (AI Content Writer)
+3. ✅ Task 생성 (AI 관련 콘텐츠 작성)
+4. ✅ Crew 생성 (Agent + Task 포함)
+5. ✅ Crew 검증
+6. ✅ **Crew 실행 (kickoff)** - 실제 LLM API 호출
+7. ✅ 실행 상태 조회
+8. ✅ 실행 이력 조회
+9. ✅ Cleanup (리소스 삭제)
+
+**실행 결과 예시**:
+```
+============================================================
+CrewAI Execution Test
+============================================================
+Base URL: http://localhost:8000/api
+Time: 2025-10-21 14:30:00
+
+============================================================
+1. Health Check
+============================================================
+
+GET /api/health
+Status: 200
+...
+
+============================================================
+6. Execute Crew (Kickoff)
+============================================================
+
+⚠️  This will call the LLM API (requires API key in .env)
+⚠️  This may take 10-30 seconds depending on the model
+
+Starting crew execution...
+POST /api/crews/C_12345678/kickoff
+Status: 201
+Response:
+{
+  "execution_id": "CR_87654321",
+  "crew_id": "C_12345678",
+  "status": "completed",
+  "started_at": "2025-10-21T14:30:10",
+  "completed_at": "2025-10-21T14:30:25",
+  "result": {
+    "output": "AI in education offers transformative benefits..."
+  }
+}
+✓ Expected status 201 ✓
+✓ Execution completed in 15.42 seconds
+ℹ Execution ID: CR_87654321
+ℹ Status: completed
+
+============================================================
+Execution Result:
+============================================================
+
+AI in education offers transformative benefits including
+personalized learning experiences tailored to individual
+student needs, automated grading systems that save educators
+valuable time, and intelligent tutoring systems that provide
+24/7 support to learners worldwide.
+
+...
+
+============================================================
+Test Completed
+============================================================
+✓ 🎉 All tests completed successfully!
+ℹ Crew execution is working properly!
+```
+
+**주의사항**:
+- ⚠️ 이 테스트는 실제 LLM API를 호출합니다
+- ⚠️ `.env` 파일에 `OPENAI_API_KEY` 또는 다른 LLM provider API 키가 필요합니다
+- ⚠️ API 사용량이 발생할 수 있습니다 (약 500-1000 토큰)
+- ⚠️ 실행 시간: 10-30초 정도 소요됩니다
+
+**API 키 설정**:
+```bash
+# .env 파일 생성 또는 수정
+cd bend
+echo "OPENAI_API_KEY=sk-your-api-key-here" >> .env
+
+# 또는 다른 provider 사용
+echo "GROQ_API_KEY=your-groq-key" >> .env
+echo "ANTHROPIC_API_KEY=your-anthropic-key" >> .env
+```
+
+---
 
 ### `test_api_crews.py`
 Crews CRUD API 테스트
