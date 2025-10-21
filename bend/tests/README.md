@@ -2,7 +2,7 @@
 
 API 기능 테스트를 위한 Python 스크립트 모음
 
-## 사용 방법
+## 🚀 빠른 시작
 
 ### 1. 서버 실행
 
@@ -17,24 +17,110 @@ python run.py
 
 ### 2. API 테스트 실행
 
-다른 터미널에서 테스트 스크립트를 실행합니다:
+#### 📦 전체 API 테스트 (권장)
+
+**모든 API 엔드포인트를 한 번에 테스트:**
 
 ```bash
-# Crews API 테스트
-python bend/tests/test_api_crews.py
-
-# Agents API 테스트
-python bend/tests/test_api_agents.py
-
-# Tasks API 테스트
-python bend/tests/test_api_tasks.py
-
-# Tools API 테스트
-python bend/tests/test_api_tools.py
-
-# Knowledge Sources API 테스트
-python bend/tests/test_api_knowledge.py
+# 전체 테스트 실행
+python bend/tests/run_all_tests.py
 ```
+
+**출력 예시:**
+```
+============================================================
+CrewAI Studio - API Tests
+============================================================
+Base URL: http://localhost:8000/api
+Time: 2025-10-21 10:30:00
+
+============================================================
+1. Health Check
+============================================================
+
+GET /api/health
+Status: 200
+Response:
+{
+  "status": "healthy",
+  "timestamp": "2025-10-21T10:30:00"
+}
+✓ Expected status 200 ✓
+
+... (생략)
+
+============================================================
+Test Summary
+============================================================
+Total Tests: 45
+✓ Passed: 45
+✓ Failed: 0
+
+Pass Rate: 100.0%
+
+✓ 🎉 All tests passed!
+```
+
+#### 🎯 개별 API 테스트
+
+**특정 API만 테스트:**
+
+```bash
+# Crews API만 테스트
+python bend/tests/test_crews_only.py
+
+# 기존 Python 스크립트 (상세 로그)
+python bend/tests/test_api_crews.py
+python bend/tests/test_api_agents.py
+python bend/tests/test_api_tasks.py
+python bend/tests/test_api_tools.py
+python bend/tests/test_api_knowledge.py
+
+# 통합 테스트
+python bend/tests/test_api_integration.py
+```
+
+## 🆕 새로운 기능: Crew 실행 API
+
+**Phase 5-1: CrewAI 엔진 통합 완료**
+
+이제 Crew를 실제로 실행할 수 있습니다! 새로운 API 엔드포인트:
+
+### POST /api/crews/{crew_id}/kickoff
+Crew를 실행하고 결과를 반환합니다.
+
+**요청 예시**:
+```bash
+curl -X POST http://localhost:8000/api/crews/{crew_id}/kickoff \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Write a blog post about AI"}'
+```
+
+**응답 예시**:
+```json
+{
+  "execution_id": "CR_12345678",
+  "crew_id": "C_87654321",
+  "status": "completed",
+  "started_at": "2025-10-21T10:30:00",
+  "completed_at": "2025-10-21T10:30:05",
+  "result": {
+    "output": "Here is your blog post about AI..."
+  },
+  "error": null
+}
+```
+
+### GET /api/crews/{crew_id}/runs/{run_id}
+특정 실행 상태 조회
+
+### GET /api/crews/{crew_id}/runs
+Crew의 실행 이력 조회 (최대 10개)
+
+**테스트 참고사항**:
+- ⚠️ Crew 실행은 LLM API 키가 필요합니다 (.env 파일에 설정)
+- 테스트 스크립트는 엔드포인트 구조를 검증하며, API 키가 없으면 실행이 실패할 수 있습니다
+- 정상 실행을 위해 `.env` 파일에 `OPENAI_API_KEY` 또는 다른 LLM provider API 키를 설정하세요
 
 ## 테스트 스크립트 목록
 

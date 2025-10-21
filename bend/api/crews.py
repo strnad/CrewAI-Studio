@@ -4,15 +4,18 @@ CRUD operations for Crew management
 """
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Dict, Any
 from bend.schemas.crew import (
     CrewCreate,
     CrewUpdate,
     CrewResponse,
     CrewListResponse,
-    CrewValidationResponse
+    CrewValidationResponse,
+    CrewExecutionRequest,
+    CrewExecutionResponse
 )
 from bend.services import CrewService
+from bend.services.crew_execution_service import CrewExecutionService
 from bend.database.connection import get_db_session
 
 router = APIRouter()
@@ -119,3 +122,131 @@ async def validate_crew(crew_id: str, db: Session = Depends(get_db_session)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e)
         )
+
+
+@router.post("/{crew_id}/kickoff", response_model=CrewExecutionResponse, status_code=status.HTTP_201_CREATED)
+async def execute_crew(
+    crew_id: str,
+    inputs: Dict[str, Any] = None,
+    db: Session = Depends(get_db_session)
+):
+    """
+    Execute a crew with given inputs
+
+    Args:
+        crew_id: Crew ID to execute
+        inputs: Input parameters for the crew execution (optional)
+
+    Returns:
+        CrewExecutionResponse with execution details
+    """
+    service = CrewExecutionService(db)
+    try:
+        # Execute crew
+        crew_run = service.execute_crew(crew_id, inputs or {})
+
+        # Return execution response
+        return CrewExecutionResponse(
+            execution_id=crew_run.id,
+            crew_id=crew_run.crew_id,
+            status=crew_run.status,
+            started_at=crew_run.started_at.isoformat() if crew_run.started_at else None,
+            completed_at=crew_run.completed_at.isoformat() if crew_run.completed_at else None,
+            result={"output": crew_run.result} if crew_run.result else None,
+            error=crew_run.error
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Crew execution failed: {str(e)}"
+        )
+
+
+@router.get("/{crew_id}/runs/{run_id}", response_model=CrewExecutionResponse)
+async def get_execution_status(
+    crew_id: str,
+    run_id: str,
+    db: Session = Depends(get_db_session)
+):
+    """
+    Get status of a specific crew execution
+
+    Args:
+        crew_id: Crew ID
+        run_id: Execution run ID
+
+    Returns:
+        CrewExecutionResponse with execution status
+    """
+    service = CrewExecutionService(db)
+    crew_run = service.get_execution_status(run_id)
+
+    if not crew_run:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Execution run with id '{run_id}' not found"
+        )
+
+    if crew_run.crew_id != crew_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Execution run '{run_id}' does not belong to crew '{crew_id}'"
+        )
+
+    return CrewExecutionResponse(
+        execution_id=crew_run.id,
+        crew_id=crew_run.crew_id,
+        status=crew_run.status,
+        started_at=crew_run.started_at.isoformat() if crew_run.started_at else None,
+        completed_at=crew_run.completed_at.isoformat() if crew_run.completed_at else None,
+        result={"output": crew_run.result} if crew_run.result else None,
+        error=crew_run.error
+    )
+
+
+@router.get("/{crew_id}/runs", response_model=List[CrewExecutionResponse])
+async def get_execution_history(
+    crew_id: str,
+    limit: int = 10,
+    db: Session = Depends(get_db_session)
+):
+    """
+    Get execution history for a crew
+
+    Args:
+        crew_id: Crew ID
+        limit: Maximum number of results (default: 10)
+
+    Returns:
+        List of CrewExecutionResponse with execution history
+    """
+    service = CrewExecutionService(db)
+
+    # Check if crew exists
+    crew = service.crew_repo.get_by_id(crew_id)
+    if not crew:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Crew with id '{crew_id}' not found"
+        )
+
+    # Get execution history
+    crew_runs = service.get_crew_execution_history(crew_id, limit)
+
+    return [
+        CrewExecutionResponse(
+            execution_id=crew_run.id,
+            crew_id=crew_run.crew_id,
+            status=crew_run.status,
+            started_at=crew_run.started_at.isoformat() if crew_run.started_at else None,
+            completed_at=crew_run.completed_at.isoformat() if crew_run.completed_at else None,
+            result={"output": crew_run.result} if crew_run.result else None,
+            error=crew_run.error
+        )
+        for crew_run in crew_runs
+    ]

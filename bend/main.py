@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from bend.config import settings
 from bend.api import health, crews, agents, tasks, tools, knowledge
+from bend.database.connection import init_db
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -28,6 +29,15 @@ app = FastAPI(
     redoc_url=settings.api_redoc_url if settings.debug else None,
     openapi_url=f"{settings.api_prefix}/openapi.json" if settings.debug else None,
 )
+
+
+# Startup event - Initialize database
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup"""
+    print("🗄️  Initializing database...")
+    init_db()
+    print("✅ Database initialized successfully")
 
 # Add rate limiting
 app.state.limiter = limiter
