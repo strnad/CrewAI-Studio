@@ -2,7 +2,7 @@
 Crews API Endpoints
 CRUD operations for Crew management
 """
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 from bend.schemas.crew import (
@@ -127,33 +127,38 @@ async def validate_crew(crew_id: str, db: Session = Depends(get_db_session)):
 @router.post("/{crew_id}/kickoff", response_model=CrewExecutionResponse, status_code=status.HTTP_201_CREATED)
 async def execute_crew(
     crew_id: str,
+    background_tasks: BackgroundTasks,
     inputs: Dict[str, Any] = None,
     db: Session = Depends(get_db_session)
 ):
     """
-    Execute a crew with given inputs
+    Execute a crew with given inputs (asynchronously)
 
     Args:
         crew_id: Crew ID to execute
+        background_tasks: FastAPI background tasks
         inputs: Input parameters for the crew execution (optional)
 
     Returns:
-        CrewExecutionResponse with execution details
+        CrewExecutionResponse with execution details (status: pending)
     """
     service = CrewExecutionService(db)
     try:
-        # Execute crew
-        crew_run = service.execute_crew(crew_id, inputs or {})
+        # Create crew run record (status: pending)
+        crew_run = service.create_crew_run(crew_id, inputs or {})
 
-        # Return execution response
+        # Execute crew in background
+        background_tasks.add_task(service.execute_crew_async, crew_run.id, inputs or {})
+
+        # Return execution response immediately
         return CrewExecutionResponse(
             execution_id=crew_run.id,
             crew_id=crew_run.crew_id,
             status=crew_run.status,
             started_at=crew_run.started_at.isoformat() if crew_run.started_at else None,
             completed_at=crew_run.completed_at.isoformat() if crew_run.completed_at else None,
-            result={"output": crew_run.result} if crew_run.result else None,
-            error=crew_run.error
+            result=None,
+            error=None
         )
     except ValueError as e:
         raise HTTPException(
@@ -163,7 +168,7 @@ async def execute_crew(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Crew execution failed: {str(e)}"
+            detail=f"Failed to start crew execution: {str(e)}"
         )
 
 
@@ -250,3 +255,57 @@ async def get_execution_history(
         )
         for crew_run in crew_runs
     ]
+
+
+@router.post("/{crew_id}/runs/{run_id}/stop", response_model=CrewExecutionResponse)
+async def stop_execution(
+    crew_id: str,
+    run_id: str,
+    db: Session = Depends(get_db_session)
+):
+    """
+    Stop a running crew execution
+
+    Args:
+        crew_id: Crew ID
+        run_id: Execution run ID
+
+    Returns:
+        CrewExecutionResponse with updated status
+    """
+    service = CrewExecutionService(db)
+
+    # Get crew run
+    crew_run = service.get_execution_status(run_id)
+
+    if not crew_run:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Execution run with id '{run_id}' not found"
+        )
+
+    if crew_run.crew_id != crew_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Execution run '{run_id}' does not belong to crew '{crew_id}'"
+        )
+
+    # Check if execution is still running
+    if crew_run.status not in ["pending", "running"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot stop execution with status '{crew_run.status}'. Only 'pending' or 'running' executions can be stopped."
+        )
+
+    # Cancel execution
+    crew_run = service.cancel_execution(run_id)
+
+    return CrewExecutionResponse(
+        execution_id=crew_run.id,
+        crew_id=crew_run.crew_id,
+        status=crew_run.status,
+        started_at=crew_run.started_at.isoformat() if crew_run.started_at else None,
+        completed_at=crew_run.completed_at.isoformat() if crew_run.completed_at else None,
+        result={"output": crew_run.result} if crew_run.result else None,
+        error=crew_run.error
+    )

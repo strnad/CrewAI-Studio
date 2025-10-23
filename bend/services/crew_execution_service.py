@@ -222,9 +222,83 @@ class CrewExecutionService:
 
         return Crew(**crew_params)
 
+    def create_crew_run(self, crew_id: str, inputs: Dict[str, Any] = None) -> CrewRun:
+        """
+        Create a crew run record without executing
+
+        Args:
+            crew_id: Crew ID to execute
+            inputs: Input parameters for the crew
+
+        Returns:
+            CrewRun instance with pending status
+
+        Raises:
+            ValueError: If crew not found or invalid
+        """
+        # Get crew from database
+        db_crew = self.crew_repo.get_by_id_with_relations(crew_id)
+        if not db_crew:
+            raise ValueError(f"Crew with id '{crew_id}' not found")
+
+        # Validate crew
+        validation = self._validate_crew_for_execution(db_crew)
+        if not validation["is_valid"]:
+            raise ValueError(f"Crew validation failed: {', '.join(validation['errors'])}")
+
+        # Create execution record
+        crew_run = self.crew_run_repo.create(
+            crew_id=crew_id,
+            inputs=inputs or {},
+            status="pending"
+        )
+
+        return crew_run
+
+    def execute_crew_async(self, run_id: str, inputs: Dict[str, Any] = None) -> None:
+        """
+        Execute a crew asynchronously (background task)
+
+        Args:
+            run_id: CrewRun ID to execute
+            inputs: Input parameters for the crew
+        """
+        try:
+            # Get crew run
+            crew_run = self.crew_run_repo.get_by_id(run_id)
+            if not crew_run:
+                print(f"Error: CrewRun with id '{run_id}' not found")
+                return
+
+            # Get crew from database
+            db_crew = self.crew_repo.get_by_id_with_relations(crew_run.crew_id)
+            if not db_crew:
+                self.crew_run_repo.mark_failed(run_id, f"Crew with id '{crew_run.crew_id}' not found")
+                return
+
+            # Mark as running
+            self.crew_run_repo.mark_running(run_id)
+
+            # Convert DB crew to CrewAI crew
+            crewai_crew = self._convert_db_crew_to_crewai(db_crew)
+
+            # Execute crew
+            result = crewai_crew.kickoff(inputs=inputs or {})
+
+            # Convert result to string (it might be CrewOutput object)
+            result_str = str(result)
+
+            # Mark as completed
+            self.crew_run_repo.mark_completed(run_id, result_str)
+
+        except Exception as e:
+            # Mark as failed
+            self.crew_run_repo.mark_failed(run_id, str(e))
+            print(f"Error executing crew run {run_id}: {str(e)}")
+
     def execute_crew(self, crew_id: str, inputs: Dict[str, Any] = None) -> CrewRun:
         """
-        Execute a crew and return execution result
+        Execute a crew synchronously (legacy method, use create_crew_run + execute_crew_async instead)
 
         Args:
             crew_id: Crew ID to execute
@@ -334,3 +408,25 @@ class CrewExecutionService:
             List of CrewRun instances
         """
         return self.crew_run_repo.get_by_crew_id(crew_id, limit)
+
+    def cancel_execution(self, run_id: str) -> CrewRun:
+        """
+        Cancel a running execution
+
+        Args:
+            run_id: CrewRun ID
+
+        Returns:
+            Updated CrewRun instance with cancelled status
+        """
+        crew_run = self.crew_run_repo.get_by_id(run_id)
+        if not crew_run:
+            raise ValueError(f"CrewRun with id '{run_id}' not found")
+
+        # Update status to cancelled
+        crew_run.status = "cancelled"
+        crew_run.error = "Execution cancelled by user"
+        self.db.commit()
+        self.db.refresh(crew_run)
+
+        return crew_run

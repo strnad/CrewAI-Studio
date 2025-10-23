@@ -28,7 +28,7 @@ class CrewRun(Base):
     # Multi-tenant field (executor)
     executed_by = Column(String(12), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
 
-    # Execution Status: pending, running, completed, failed
+    # Execution Status: pending, running, completed, failed, cancelled
     status = Column(String(20), nullable=False, default="pending")
 
     # Inputs and Outputs
