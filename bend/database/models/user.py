@@ -27,7 +27,7 @@ class User(Base):
     __tablename__ = "users"
 
     # Primary Key
-    id = Column(String(12), primary_key=True)
+    id = Column(String(20), primary_key=True)
 
     # 기본 정보
     email = Column(String(255), unique=True, nullable=False, index=True)

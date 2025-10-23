@@ -143,16 +143,57 @@ WS /api/crews/{crew_id}/executions/{exec_id}/logs
 
 ---
 
-#### 6-2. Role-Based Access Control (RBAC)
+#### 6-2. Role-Based Access Control (RBAC) ✅
 **목표**: 역할 기반 권한 제어
 
-**작업 내용**:
-- [ ] 역할 정의 (admin, user, viewer)
-- [ ] Permission 데코레이터 구현
-- [ ] API 엔드포인트에 권한 검증 추가
-- [ ] 소유권 검증 (본인 데이터만 수정 가능)
+**작업 완료일**: 2025-10-23
 
-**예상 소요 시간**: 1-2일
+**완료된 작업**:
+- [x] User 모델 구현 (`bend/database/models/user.py`)
+  - [x] 시스템 역할 enum (system_admin, regular_user)
+  - [x] 사용자 상태 enum (active, inactive, suspended)
+- [x] Workspace 모델 구현 (`bend/database/models/workspace.py`)
+  - [x] 워크스페이스 생성 및 관리
+  - [x] 플랜 시스템 (free, pro, enterprise)
+- [x] WorkspaceMember 모델 구현 (`bend/database/models/workspace_member.py`)
+  - [x] 역할 정의 (owner, admin, member, viewer)
+  - [x] Permission 검증 메서드 (`has_permission()`)
+  - [x] 세부 권한 커스터마이징 (JSON)
+- [x] Workspace CRUD API (`bend/api/workspaces.py`)
+  - [x] 워크스페이스 생성/조회/수정/삭제
+  - [x] Slug 기반 조회
+  - [x] 사용자 워크스페이스 목록
+- [x] Workspace Service 레이어 (`bend/services/workspace_service.py`)
+  - [x] 비즈니스 로직 분리
+  - [x] Slug 자동 생성 및 검증
+  - [x] Owner 자동 멤버십 생성
+- [x] Workspace Repository (`bend/database/repositories/workspace_repository.py`)
+  - [x] 데이터 접근 레이어
+  - [x] Slug 중복 체크
+  - [x] 멤버 수 조회
+- [x] ID Generator 유틸리티 (`bend/utils/id_generator.py`)
+  - [x] User ID 생성 (U_ + 10자리)
+  - [x] Workspace ID 생성 (WS_ + 10자리)
+  - [x] WorkspaceMember ID 생성 (WM_ + 10자리)
+- [x] 테스트 작성 (`bend/tests/test_workspaces.py`)
+  - [x] 10개 테스트 케이스 구현
+  - [x] 전체 CRUD 플로우 검증
+  - [x] 에러 케이스 검증
+- [x] 데이터베이스 스키마 수정
+  - [x] ID 필드 크기 조정 (VARCHAR(12) → VARCHAR(20))
+  - [x] 외래키 관계 설정
+
+**구현된 기능**:
+- ✅ 4단계 역할 체계 (owner, admin, member, viewer)
+- ✅ 세분화된 권한 제어 (read, create, update, delete, execute_crew, manage_members, manage_workspace)
+- ✅ 소유권 검증 (본인/타인 리소스 구분)
+- ✅ 멀티테넌시 구조
+- ✅ 워크스페이스 플랜 시스템
+
+**다음 작업**:
+- [ ] API 엔드포인트에 권한 검증 미들웨어 적용
+- [ ] 인증된 사용자 정보를 Context에 저장
+- [ ] 리소스별 RBAC 데코레이터 구현
 
 ---
 

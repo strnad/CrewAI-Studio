@@ -177,35 +177,55 @@ system_admin (crew_system)
 ### users 테이블
 ```sql
 CREATE TABLE users (
-    id VARCHAR(12) PRIMARY KEY,
+    id VARCHAR(20) PRIMARY KEY,  -- VARCHAR(12) → VARCHAR(20) 확장
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE,
-    is_system_admin BOOLEAN DEFAULT FALSE,  -- crew_system 계정 여부
+    system_role ENUM('system_admin', 'regular_user') DEFAULT 'regular_user',  -- Boolean → Enum
+    status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',  -- Boolean → Enum
+    email_verified BOOLEAN DEFAULT FALSE,
+    last_login_at DATETIME NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_email (email),
+    INDEX idx_system_role (system_role),
+    INDEX idx_status (status)
 );
 
 -- system_admin 계정 생성 예시
-INSERT INTO users (id, email, password_hash, name, is_system_admin)
-VALUES ('crew_system', 'admin@crewai.studio', '<hashed_password>', 'System Admin', TRUE);
+INSERT INTO users (id, email, password_hash, name, system_role, status)
+VALUES ('U_crew_system', 'admin@crewai.studio', '<hashed_password>', 'System Admin', 'system_admin', 'active');
 ```
+
+**주요 변경사항** (2025-10-23):
+1. **ID 필드 확장**: `VARCHAR(12)` → `VARCHAR(20)` (WS_ 접두사 등 다양한 ID 패턴 지원)
+2. **is_system_admin → system_role**: Boolean에서 Enum으로 변경하여 확장 가능한 역할 시스템
+3. **is_active → status**: 더 세분화된 사용자 상태 관리 (active, inactive, suspended)
+4. **추가 필드**: email_verified, last_login_at
+5. **인덱스 추가**: system_role, status에 인덱스 추가로 쿼리 성능 향상
 
 ### workspace_members 테이블
 ```sql
 CREATE TABLE workspace_members (
-    id VARCHAR(12) PRIMARY KEY,
-    workspace_id VARCHAR(12) NOT NULL,
-    user_id VARCHAR(12) NOT NULL,
-    role ENUM('owner', 'admin', 'member', 'viewer') NOT NULL,
+    id VARCHAR(20) PRIMARY KEY,  -- VARCHAR(12) → VARCHAR(20) 확장
+    workspace_id VARCHAR(20) NOT NULL,  -- VARCHAR(12) → VARCHAR(20) 확장
+    user_id VARCHAR(20) NOT NULL,  -- VARCHAR(12) → VARCHAR(20) 확장
+    role ENUM('owner', 'admin', 'member', 'viewer') NOT NULL DEFAULT 'member',
     permissions JSON,  -- 세부 권한 커스터마이징 가능
     joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE (workspace_id, user_id)
+    UNIQUE KEY unique_workspace_user (workspace_id, user_id),
+    INDEX idx_workspace_id (workspace_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_role (role)
 );
 ```
+
+**주요 변경사항** (2025-10-23):
+1. **ID 필드 확장**: 모든 ID 필드를 `VARCHAR(20)`으로 확장
+2. **인덱스 추가**: workspace_id, user_id, role에 인덱스 추가
+3. **제약 조건 명명**: UNIQUE 제약 조건에 이름 지정 (unique_workspace_user)
 
 ---
 
@@ -214,7 +234,7 @@ CREATE TABLE workspace_members (
 ```python
 def check_permission(user, workspace_id, action, resource=None):
     # 1. System Admin은 모든 권한 가짐
-    if user.is_system_admin:
+    if user.system_role == UserRole.SYSTEM_ADMIN:
         return True
 
     # 2. 워크스페이스 멤버십 확인
@@ -260,27 +280,37 @@ def check_permission(user, workspace_id, action, resource=None):
 
 ### 1. System Admin 계정 생성
 ```python
-from bend.database.models.user import User
+from bend.database.models.user import User, UserRole, UserStatus
 from bend.utils.security import hash_password
-from bend.utils.id_generator import generate_id
+from bend.utils.id_generator import generate_user_id
 
 system_admin = User(
-    id="crew_system",
+    id=generate_user_id(),  # 또는 "U_crew_system"
     email="admin@crewai.studio",
     password_hash=hash_password("CHANGE_ME_IN_PRODUCTION"),
     name="System Admin",
-    is_system_admin=True,
-    is_active=True
+    system_role=UserRole.SYSTEM_ADMIN,  # is_system_admin → system_role
+    status=UserStatus.ACTIVE,  # is_active → status
+    email_verified=True
 )
 db.add(system_admin)
 db.commit()
 ```
 
+**주요 변경사항** (2025-10-23):
+1. **Enum 사용**: Boolean 대신 `UserRole.SYSTEM_ADMIN`, `UserStatus.ACTIVE` enum 사용
+2. **ID 생성**: `generate_user_id()` 함수 사용 (U_ + 10자리)
+3. **추가 필드**: email_verified 필드 추가
+
 ### 2. 첫 워크스페이스 생성 시 Owner 자동 할당
 ```python
+from bend.database.models.workspace import Workspace
+from bend.database.models.workspace_member import WorkspaceMember, WorkspaceRole
+from bend.utils.id_generator import generate_workspace_id, generate_workspace_member_id
+
 # 워크스페이스 생성
 workspace = Workspace(
-    id=generate_id(),
+    id=generate_workspace_id(),  # WS_ + 10자리
     name="My Workspace",
     slug="my-workspace",
     owner_id=current_user.id
@@ -289,14 +319,19 @@ db.add(workspace)
 
 # Owner 멤버십 자동 생성
 membership = WorkspaceMember(
-    id=generate_id(),
+    id=generate_workspace_member_id(),  # WM_ + 10자리
     workspace_id=workspace.id,
     user_id=current_user.id,
-    role="owner"
+    role=WorkspaceRole.OWNER  # "owner" → WorkspaceRole.OWNER enum
 )
 db.add(membership)
 db.commit()
 ```
+
+**주요 변경사항** (2025-10-23):
+1. **ID 생성 함수 사용**: `generate_workspace_id()`, `generate_workspace_member_id()` 사용
+2. **Enum 사용**: 문자열 "owner" 대신 `WorkspaceRole.OWNER` enum 사용
+3. **Import 명시**: 필요한 모델과 함수 import 추가
 
 ---
 

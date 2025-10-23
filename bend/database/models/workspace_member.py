@@ -22,17 +22,17 @@ class WorkspaceMember(Base):
     __tablename__ = "workspace_members"
 
     # Primary Key
-    id = Column(String(12), primary_key=True)
+    id = Column(String(20), primary_key=True)
 
     # Foreign Keys
     workspace_id = Column(
-        String(12),
+        String(20),
         ForeignKey("workspaces.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
     user_id = Column(
-        String(12),
+        String(20),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True

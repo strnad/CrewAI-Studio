@@ -18,29 +18,36 @@
 ### 1.1. users 테이블
 ```sql
 CREATE TABLE IF NOT EXISTS users (
-    id VARCHAR(12) PRIMARY KEY,
+    id VARCHAR(20) PRIMARY KEY,  -- VARCHAR(12) → VARCHAR(20) 확장
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE,
-    is_system_admin BOOLEAN DEFAULT FALSE,
+    system_role ENUM('system_admin', 'regular_user') DEFAULT 'regular_user',  -- is_system_admin → system_role
+    status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',  -- is_active → status
     email_verified BOOLEAN DEFAULT FALSE,
     last_login_at DATETIME NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_email (email),
-    INDEX idx_is_active (is_active)
+    INDEX idx_system_role (system_role),  -- 인덱스 변경
+    INDEX idx_status (status)  -- 인덱스 변경
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
+
+**주요 변경사항** (2025-10-23):
+1. **ID 필드 확장**: `VARCHAR(12)` → `VARCHAR(20)`
+2. **is_system_admin → system_role**: Boolean → Enum 변경
+3. **is_active → status**: Boolean → Enum 변경
+4. **인덱스 변경**: is_active → status, 추가로 system_role 인덱스
 
 ### 1.2. workspaces 테이블
 ```sql
 CREATE TABLE IF NOT EXISTS workspaces (
-    id VARCHAR(12) PRIMARY KEY,
+    id VARCHAR(20) PRIMARY KEY,  -- VARCHAR(12) → VARCHAR(20) 확장
     name VARCHAR(100) NOT NULL,
     slug VARCHAR(100) UNIQUE NOT NULL,
     description TEXT NULL,
-    owner_id VARCHAR(12) NOT NULL,
+    owner_id VARCHAR(20) NOT NULL,  -- VARCHAR(12) → VARCHAR(20) 확장
     plan VARCHAR(20) DEFAULT 'free',
     max_members INT DEFAULT 5,
     is_active BOOLEAN DEFAULT TRUE,
@@ -54,12 +61,16 @@ CREATE TABLE IF NOT EXISTS workspaces (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
 
+**주요 변경사항** (2025-10-23):
+1. **ID 필드 확장**: `VARCHAR(12)` → `VARCHAR(20)`
+2. **owner_id 필드 확장**: `VARCHAR(12)` → `VARCHAR(20)`
+
 ### 1.3. workspace_members 테이블
 ```sql
 CREATE TABLE IF NOT EXISTS workspace_members (
-    id VARCHAR(12) PRIMARY KEY,
-    workspace_id VARCHAR(12) NOT NULL,
-    user_id VARCHAR(12) NOT NULL,
+    id VARCHAR(20) PRIMARY KEY,  -- VARCHAR(12) → VARCHAR(20) 확장
+    workspace_id VARCHAR(20) NOT NULL,  -- VARCHAR(12) → VARCHAR(20) 확장
+    user_id VARCHAR(20) NOT NULL,  -- VARCHAR(12) → VARCHAR(20) 확장
     role ENUM('owner', 'admin', 'member', 'viewer') NOT NULL DEFAULT 'member',
     permissions JSON NULL,
     joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -71,6 +82,9 @@ CREATE TABLE IF NOT EXISTS workspace_members (
     INDEX idx_role (role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
+
+**주요 변경사항** (2025-10-23):
+1. **ID 필드 확장**: 모든 ID 필드를 `VARCHAR(20)`으로 확장
 
 ### 1.4. crew_templates 테이블
 ```sql
@@ -230,18 +244,19 @@ ADD INDEX idx_executed_by (executed_by);
 
 ### 3.1. 시스템 관리자 계정 생성
 ```python
-from bend.database.models.user import User
+from bend.database.models.user import User, UserRole, UserStatus
 from bend.utils.security import hash_password
+from bend.utils.id_generator import generate_user_id
 from datetime import datetime
 
 # System Admin 계정 생성
 system_admin = User(
-    id="crew_system",
+    id=generate_user_id(),  # U_ + 10자리 (예: U_1234567890)
     email="admin@crewai.studio",
     password_hash=hash_password("ChangeMe123!"),  # 반드시 변경 필요
     name="System Admin",
-    is_system_admin=True,
-    is_active=True,
+    system_role=UserRole.SYSTEM_ADMIN,  # is_system_admin → system_role
+    status=UserStatus.ACTIVE,  # is_active → status
     email_verified=True,
     created_at=datetime.utcnow()
 )
@@ -249,18 +264,23 @@ db.add(system_admin)
 db.commit()
 ```
 
+**주요 변경사항** (2025-10-23):
+1. **Enum 사용**: `UserRole.SYSTEM_ADMIN`, `UserStatus.ACTIVE` 사용
+2. **ID 생성**: `generate_user_id()` 함수 사용
+3. **Import 추가**: UserRole, UserStatus enum import
+
 ### 3.2. 기본 워크스페이스 생성
 ```python
 from bend.database.models.workspace import Workspace
-from bend.utils.id_generator import generate_id
+from bend.utils.id_generator import generate_workspace_id
 
 # 기존 데이터를 위한 기본 워크스페이스 생성
 default_workspace = Workspace(
-    id=generate_id(),
+    id=generate_workspace_id(),  # WS_ + 10자리 (예: WS_1234567890)
     name="Default Workspace",
     slug="default",
     description="기존 데이터를 위한 기본 워크스페이스",
-    owner_id="crew_system",
+    owner_id=system_admin.id,  # 위에서 생성한 system_admin의 ID
     plan="enterprise",
     max_members=999,
     is_active=True
@@ -270,6 +290,10 @@ db.commit()
 
 default_workspace_id = default_workspace.id
 ```
+
+**주요 변경사항** (2025-10-23):
+1. **ID 생성 함수 사용**: `generate_workspace_id()` 사용
+2. **owner_id 변경**: 하드코드된 "crew_system" 대신 system_admin.id 사용
 
 ### 3.3. 기존 리소스에 워크스페이스 할당
 ```sql
@@ -311,18 +335,25 @@ WHERE executed_by IS NULL;
 
 ### 3.4. Workspace Member 생성 (System Admin)
 ```python
-from bend.database.models.workspace_member import WorkspaceMember
+from bend.database.models.workspace_member import WorkspaceMember, WorkspaceRole
+from bend.utils.id_generator import generate_workspace_member_id
 
 # System Admin을 기본 워크스페이스의 Owner로 추가
 membership = WorkspaceMember(
-    id=generate_id(),
+    id=generate_workspace_member_id(),  # WM_ + 10자리 (예: WM_1234567890)
     workspace_id=default_workspace_id,
-    user_id="crew_system",
-    role="owner"
+    user_id=system_admin.id,  # 위에서 생성한 system_admin의 ID
+    role=WorkspaceRole.OWNER  # "owner" → WorkspaceRole.OWNER enum
 )
 db.add(membership)
 db.commit()
 ```
+
+**주요 변경사항** (2025-10-23):
+1. **ID 생성 함수 사용**: `generate_workspace_member_id()` 사용
+2. **Enum 사용**: `WorkspaceRole.OWNER` enum 사용
+3. **user_id 변경**: 하드코드된 "crew_system" 대신 system_admin.id 사용
+4. **Import 추가**: WorkspaceRole enum import
 
 ---
 
@@ -409,10 +440,14 @@ LEFT JOIN workspace_members wm ON w.id = wm.workspace_id
 GROUP BY w.id, w.name;
 
 -- 4. System Admin 확인
-SELECT id, email, name, is_system_admin, is_active
+SELECT id, email, name, system_role, status  -- is_system_admin, is_active → system_role, status
 FROM users
-WHERE is_system_admin = TRUE;
+WHERE system_role = 'system_admin';  -- is_system_admin = TRUE → system_role = 'system_admin'
 ```
+
+**주요 변경사항** (2025-10-23):
+1. **컬럼명 변경**: is_system_admin → system_role, is_active → status
+2. **조건 변경**: `is_system_admin = TRUE` → `system_role = 'system_admin'`
 
 ### 5.2. 성능 검증
 ```sql

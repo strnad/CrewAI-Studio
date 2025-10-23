@@ -13,7 +13,7 @@ class Workspace(Base):
     __tablename__ = "workspaces"
 
     # Primary Key
-    id = Column(String(12), primary_key=True)
+    id = Column(String(20), primary_key=True)
 
     # 기본 정보
     name = Column(String(100), nullable=False)
@@ -21,7 +21,7 @@ class Workspace(Base):
     description = Column(Text, nullable=True)
 
     # 소유자
-    owner_id = Column(String(12), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    owner_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     # 플랜 및 제한
     plan = Column(String(20), default="free", nullable=False)  # free, pro, enterprise

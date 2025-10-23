@@ -1314,6 +1314,193 @@ streamlit run app/app.py --server.headless True
 
 ---
 
+---
+
+## 🗓️ 2025-10-23
+
+### 🏢 워크스페이스 멀티테넌시 구현 (RBAC)
+
+**작업 일시**: 2025-10-23
+
+#### 새로 생성된 파일:
+
+**데이터베이스 모델**:
+- `bend/database/models/user.py` - 사용자 계정 모델
+  - `UserRole` enum: system_admin, regular_user
+  - `UserStatus` enum: active, inactive, suspended
+- `bend/database/models/workspace.py` - 워크스페이스 모델
+  - 플랜 시스템: free, pro, enterprise
+  - Slug 기반 URL
+- `bend/database/models/workspace_member.py` - 워크스페이스 멤버십
+  - `WorkspaceRole` enum: owner, admin, member, viewer
+  - 권한 검증 메서드 (`has_permission()`)
+
+**API 레이어**:
+- `bend/api/workspaces.py` - Workspaces CRUD API 엔드포인트
+
+**서비스 레이어**:
+- `bend/services/workspace_service.py` - 워크스페이스 비즈니스 로직
+  - Slug 자동 생성 및 검증
+  - Owner 자동 멤버십 생성
+
+**Repository 레이어**:
+- `bend/database/repositories/workspace_repository.py` - 데이터 접근 레이어
+
+**유틸리티**:
+- `bend/utils/id_generator.py` - ID 생성 유틸리티
+  - `generate_user_id()`: U_ + 10자리
+  - `generate_workspace_id()`: WS_ + 10자리
+  - `generate_workspace_member_id()`: WM_ + 10자리
+  - `generate_template_id()`: TPL_ + 9자리
+  - `generate_favorite_id()`: FAV_ + 9자리
+
+**테스트**:
+- `bend/tests/test_workspaces.py` - 10개 테스트 케이스
+  - 워크스페이스 생성 (slug 자동 생성/커스텀)
+  - 워크스페이스 조회 (ID/slug)
+  - 사용자 워크스페이스 목록
+  - 워크스페이스 업데이트
+  - 중복 slug 검증
+  - 존재하지 않는 워크스페이스 처리
+  - 워크스페이스 삭제
+
+---
+
+#### 구현된 API 엔드포인트:
+```
+POST   /api/workspaces              # 워크스페이스 생성
+GET    /api/workspaces              # 사용자 워크스페이스 목록
+GET    /api/workspaces/{id}         # ID로 조회
+GET    /api/workspaces/slug/{slug}  # Slug로 조회
+PUT    /api/workspaces/{id}         # 워크스페이스 수정
+DELETE /api/workspaces/{id}         # 워크스페이스 삭제
+```
+
+---
+
+#### 주요 기능:
+- ✅ **4단계 역할 체계**
+  - owner: 워크스페이스 소유자 (생성자)
+  - admin: 관리자 (멤버 관리 가능)
+  - member: 일반 멤버 (자신의 리소스만 관리)
+  - viewer: 읽기 전용
+
+- ✅ **세분화된 권한 제어** (`WorkspaceMember.has_permission()`)
+  - read: 리소스 조회
+  - create: 리소스 생성
+  - update: 리소스 수정 (본인/타인 구분)
+  - delete: 리소스 삭제 (본인/타인 구분)
+  - execute_crew: 크루 실행
+  - manage_members: 멤버 관리
+  - manage_workspace: 워크스페이스 관리
+
+- ✅ **자동 슬러그 생성**
+  - 이름에서 URL-safe slug 자동 생성
+  - 중복 시 숫자 suffix 추가
+  - 커스텀 slug 지원
+
+- ✅ **소유자 자동 멤버십**
+  - 워크스페이스 생성 시 owner 역할로 자동 추가
+  - CASCADE DELETE로 데이터 무결성 보장
+
+- ✅ **플랜 시스템**
+  - free: 최대 5명
+  - pro: 확장 가능
+  - enterprise: 무제한
+
+---
+
+#### 데이터베이스 스키마 변경:
+
+**ID 필드 크기 조정**:
+- User.id: `VARCHAR(12)` → `VARCHAR(20)`
+- Workspace.id: `VARCHAR(12)` → `VARCHAR(20)`
+- Workspace.owner_id: `VARCHAR(12)` → `VARCHAR(20)`
+- WorkspaceMember.id: `VARCHAR(12)` → `VARCHAR(20)`
+- WorkspaceMember.workspace_id: `VARCHAR(12)` → `VARCHAR(20)`
+- WorkspaceMember.user_id: `VARCHAR(12)` → `VARCHAR(20)`
+
+**변경 이유**:
+- Workspace ID: `"WS_" + 10자 = 13자` 생성
+- 기존 `VARCHAR(12)` 제약으로 `StringDataRightTruncation` 오류 발생
+- `VARCHAR(20)`으로 확장하여 다양한 ID 패턴 지원
+
+---
+
+#### User 모델 변경:
+
+**필드 변경** (`bend/database/models/user.py`):
+```python
+# 변경 전
+is_system_admin = Column(Boolean, default=False)
+is_active = Column(Boolean, default=True)
+
+# 변경 후
+system_role = Column(Enum(UserRole), default=UserRole.REGULAR_USER)
+status = Column(Enum(UserStatus), default=UserStatus.ACTIVE)
+```
+
+**Enum 정의**:
+```python
+class UserRole(str, enum.Enum):
+    SYSTEM_ADMIN = "system_admin"
+    REGULAR_USER = "regular_user"
+
+class UserStatus(str, enum.Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    SUSPENDED = "suspended"
+```
+
+**장점**:
+- 더 명확한 역할 구분
+- 확장 가능한 상태 관리
+- Enum 타입으로 타입 안전성 향상
+
+---
+
+#### 테스트 결과:
+
+```bash
+python bend/tests/test_workspaces.py
+```
+
+**결과**: ✅ 모든 10개 테스트 통과
+- ✅ 테스트 사용자 생성
+- ✅ 워크스페이스 생성 (slug 자동 생성)
+- ✅ 워크스페이스 생성 (커스텀 slug)
+- ✅ 워크스페이스 조회 (ID)
+- ✅ 워크스페이스 조회 (slug)
+- ✅ 사용자 워크스페이스 목록
+- ✅ 워크스페이스 업데이트
+- ✅ 중복 slug 거부 (400)
+- ✅ 존재하지 않는 워크스페이스 (404)
+- ✅ 워크스페이스 삭제
+
+---
+
+#### 다음 단계:
+
+**Phase 6-2 완료** ✅
+- [x] RBAC 모델 구현
+- [x] Workspace API 구현
+- [x] 테스트 작성 및 검증
+
+**다음 작업**:
+- [ ] API 엔드포인트에 권한 검증 미들웨어 적용
+- [ ] 인증된 사용자 정보를 Context에 저장
+- [ ] 리소스별 RBAC 데코레이터 구현
+- [ ] Phase 6-1: Keycloak/OIDC 통합
+
+---
+
+## 👥 작성자
+- 수정 일자: 2025-10-23 (집)
+- 환경: WSL2 Ubuntu + Conda (crewai_studio)
+- 목적: 워크스페이스 멀티테넌시 및 RBAC 구현
+
+---
+
 ## 👥 작성자
 - 수정 일자: 2025-10-20 (회사 + 집)
 - 환경: WSL2 Ubuntu + Conda (hfcrewai)
