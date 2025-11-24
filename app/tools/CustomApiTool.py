@@ -1,7 +1,7 @@
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Type
 from crewai.tools import BaseTool
 import requests
-from pydantic.v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 
 
 class CustomApiToolInputSchema(BaseModel):
@@ -14,7 +14,7 @@ class CustomApiToolInputSchema(BaseModel):
 class CustomApiTool(BaseTool):
     name: str = "Call Api"
     description: str = "Tool to make API calls with customizable parameters"
-    args_schema = CustomApiToolInputSchema
+    args_schema: Type[BaseModel] = CustomApiToolInputSchema
     base_url: Optional[str] = None
     default_headers: Optional[Dict[str, str]] = None
     default_query_params: Optional[Dict[str, Any]] = None

@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 from utils import rnd_id
-from crewai_tools import CodeInterpreterTool,ScrapeElementFromWebsiteTool,TXTSearchTool,SeleniumScrapingTool,PGSearchTool,PDFSearchTool,MDXSearchTool,JSONSearchTool,GithubSearchTool,EXASearchTool,DOCXSearchTool,CSVSearchTool,ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, DirectoryReadTool, CodeDocsSearchTool, YoutubeVideoSearchTool,SerperDevTool,YoutubeChannelSearchTool,WebsiteSearchTool
+from crewai_tools import CodeInterpreterTool,ScrapeElementFromWebsiteTool,TXTSearchTool,SeleniumScrapingTool,PDFSearchTool,MDXSearchTool,JSONSearchTool,GithubSearchTool,EXASearchTool,DOCXSearchTool,CSVSearchTool,ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, DirectoryReadTool, CodeDocsSearchTool, YoutubeVideoSearchTool,SerperDevTool,YoutubeChannelSearchTool,WebsiteSearchTool
 from tools.CSVSearchToolEnhanced import CSVSearchToolEnhanced
 from tools.CustomApiTool import CustomApiTool
 from tools.CustomCodeInterpreterTool import CustomCodeInterpreterTool
@@ -213,16 +213,6 @@ class MyPDFSearchTool(MyTool):
     def create_tool(self) -> PDFSearchTool:
         return PDFSearchTool(self.parameters.get('pdf') if self.parameters.get('pdf') else None)
 
-class MyPGSearchTool(MyTool):
-    def __init__(self, tool_id=None, db_uri=None):
-        parameters = {
-            'db_uri': {'mandatory': True}
-        }
-        super().__init__(tool_id, 'PGSearchTool', "A tool that can be used to semantic search a query from a database table's content.", parameters, db_uri=db_uri)
-
-    def create_tool(self) -> PGSearchTool:
-        return PGSearchTool(self.parameters.get('db_uri'))
-
 class MySeleniumScrapingTool(MyTool):
     def __init__(self, tool_id=None, website_url=None, css_element=None, cookie=None, wait_time=None):
         parameters = {
@@ -428,6 +418,5 @@ TOOL_CLASSES = {
     'EXASearchTool': MyEXASearchTool,
     'JSONSearchTool': MyJSONSearchTool,
     'MDXSearchTool': MyMDXSearchTool,
-    'PDFSearchTool': MyPDFSearchTool,
-    'PGSearchTool': MyPGSearchTool    
+    'PDFSearchTool': MyPDFSearchTool
 }
