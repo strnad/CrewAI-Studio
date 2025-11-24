@@ -418,6 +418,5 @@ TOOL_CLASSES = {
     'EXASearchTool': MyEXASearchTool,
     'JSONSearchTool': MyJSONSearchTool,
     'MDXSearchTool': MyMDXSearchTool,
-    'PDFSearchTool': MyPDFSearchTool,
-    'PGSearchTool': MyPGSearchTool    
+    'PDFSearchTool': MyPDFSearchTool
 }

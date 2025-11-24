@@ -1,5 +1,5 @@
 from crewai.tools import BaseTool
-from typing import Optional, List
+from typing import Optional, List, Type
 from duckduckgo_search import DDGS
 from pydantic import BaseModel, Field, model_validator
 
@@ -17,7 +17,7 @@ class DuckDuckGoSearchToolInputSchemaFull(DuckDuckGoSearchToolInputSchema):
 class DuckDuckGoSearchTool(BaseTool):
     name: str = "DuckDuckGo Search"
     description: str = "Search the web using DuckDuckGo and return relevant results."
-    args_schema: DuckDuckGoSearchToolInputSchema | DuckDuckGoSearchToolInputSchemaFull = DuckDuckGoSearchToolInputSchema
+    args_schema: Type[BaseModel] = DuckDuckGoSearchToolInputSchema
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -73,7 +73,7 @@ class DuckDuckGoSearchTool(BaseTool):
         except Exception as e:
             return f"Error performing search: {str(e)}"
 
-    def run(self, inputs: DuckDuckGoSearchToolInputSchema | DuckDuckGoSearchToolInputSchemaFull):
+    def run(self, inputs: DuckDuckGoSearchToolInputSchema):
         return self._run(
             inputs.query,
             inputs.max_results,
