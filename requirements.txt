@@ -236,7 +236,7 @@ typing-inspect==0.9.0
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 tzdata==2025.2
-urllib3==2.3.0
+urllib3==2.5.0
 uv==0.9.11
 uvicorn==0.38.0
 virtualenv==20.35.4
