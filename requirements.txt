@@ -173,7 +173,7 @@ pypdf==6.4.0
 pypdfium2==4.30.0
 PyPika==0.48.9
 pyproject_hooks==1.2.0
-pyreadline3==3.5.4
+pyreadline3==3.5.4; sys_platform == 'win32'
 python-dateutil==2.9.0.post0
 python-docx==1.2.0
 python-dotenv==1.2.1
@@ -181,7 +181,7 @@ python-multipart==0.0.20
 python-pptx==1.0.2
 pytube==15.0.0
 pytz==2025.2
-pywin32==311
+pywin32==311; sys_platform == 'win32'
 PyYAML==6.0.3
 rapidocr==3.4.2
 referencing==0.37.0
