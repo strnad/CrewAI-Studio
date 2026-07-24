@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import ast
 from utils import rnd_id
 from crewai_tools import CodeInterpreterTool,ScrapeElementFromWebsiteTool,TXTSearchTool,SeleniumScrapingTool,PDFSearchTool,MDXSearchTool,JSONSearchTool,GithubSearchTool,EXASearchTool,DOCXSearchTool,CSVSearchTool,ScrapeWebsiteTool, FileReadTool, DirectorySearchTool, DirectoryReadTool, CodeDocsSearchTool, YoutubeVideoSearchTool,SerperDevTool,YoutubeChannelSearchTool,WebsiteSearchTool
 from tools.CSVSearchToolEnhanced import CSVSearchToolEnhanced
@@ -312,10 +313,27 @@ class MyCustomApiTool(MyTool):
         }
         super().__init__(tool_id, 'CustomApiTool', t('tool.custom_api_desc'), parameters, base_url=base_url, headers=headers, query_params=query_params)
 
+    @staticmethod
+    def _parse_headers(value):
+        if not value:
+            return None
+        if isinstance(value, dict):
+            parsed = value
+        else:
+            try:
+                parsed = ast.literal_eval(value)
+            except (SyntaxError, ValueError) as exc:
+                raise ValueError("headers must be a dictionary literal") from exc
+        if not isinstance(parsed, dict) or not all(
+            isinstance(k, str) and isinstance(v, str) for k, v in parsed.items()
+        ):
+            raise ValueError("headers must be a dictionary of string keys and values")
+        return parsed
+
     def create_tool(self) -> CustomApiTool:
         return CustomApiTool(
             base_url=self.parameters.get('base_url') if self.parameters.get('base_url') else None,
-            headers=eval(self.parameters.get('headers')) if self.parameters.get('headers') else None,
+            headers=self._parse_headers(self.parameters.get('headers')),
             query_params=self.parameters.get('query_params') if self.parameters.get('query_params') else None
         )
 
