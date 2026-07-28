@@ -232,9 +232,37 @@ def load_crews():
 def delete_crew(crew_id):
     delete_entity('crew', crew_id)
 
+def _tool_class_key(tool):
+    """Return the stable TOOL_CLASSES key for a tool instance.
+
+    `tool.name` is a localized display string after the i18n change, so we
+    can't use it as a persistence identifier. The class itself is stable.
+    """
+    for key, cls in TOOL_CLASSES.items():
+        if type(tool) is cls:
+            return key
+    raise KeyError(f"Tool class {type(tool).__name__} is not registered in TOOL_CLASSES")
+
+def _resolve_tool_class(stored_name):
+    """Map a stored `name` value to a TOOL_CLASSES entry.
+
+    Accepts either a class key (new format) or a localized display name
+    (legacy rows written before the save format was fixed). Display-name
+    lookup probes each tool's current `.name` across all loaded locales.
+    """
+    if stored_name in TOOL_CLASSES:
+        return TOOL_CLASSES[stored_name]
+    for cls in TOOL_CLASSES.values():
+        try:
+            if cls(tool_id='_probe').name == stored_name:
+                return cls
+        except Exception:
+            continue
+    return None
+
 def save_tool(tool):
     data = {
-        'name': tool.name,
+        'name': _tool_class_key(tool),
         'description': tool.description,
         'parameters': tool.get_parameters()
     }
@@ -245,9 +273,16 @@ def load_tools():
     tools = []
     for row in rows:
         data = row[1]
-        tool_class = TOOL_CLASSES[data['name']]
+        tool_class = _resolve_tool_class(data['name'])
+        if tool_class is None:
+            print(f"Skipping unknown tool '{data['name']}' (id={row[0]})")
+            continue
         tool = tool_class(tool_id=row[0])
         tool.set_parameters(**data['parameters'])
+        # Rewrite legacy rows with the stable class key so future loads are cheap.
+        stable_key = _tool_class_key(tool)
+        if data['name'] != stable_key:
+            save_tool(tool)
         tools.append(tool)
     return tools
 
