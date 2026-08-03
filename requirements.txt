@@ -76,7 +76,7 @@ Jinja2==3.1.6
 jiter==0.11.1
 jmespath==1.0.1
 json5==0.12.1
-json_repair==0.60.1
+json_repair==0.25.2
 jsonlines==4.0.0
 jsonpatch==1.33
 jsonpointer==3.0.0
