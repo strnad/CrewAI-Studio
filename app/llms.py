@@ -19,6 +19,7 @@ def load_secrets_fron_env():
             "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY"),
             "OLLAMA_HOST": os.getenv("OLLAMA_HOST"),
             "XAI_API_KEY": os.getenv("XAI_API_KEY"),
+            "ORCAROUTER_API_KEY": os.getenv("ORCAROUTER_API_KEY"),
         }
     else:
         st.session_state.env_vars = st.session_state.env_vars
@@ -110,6 +111,26 @@ def create_xai_llm(model, temperature):
         base_url=host
     )
 
+def create_orcarouter_llm(model, temperature):
+    host = "https://api.orcarouter.ai/v1"
+    api_key = st.session_state.env_vars.get("ORCAROUTER_API_KEY")
+
+    if not api_key:
+        raise ValueError("ORCAROUTER_API_KEY must be set in .env file")
+
+    switch_environment({
+        "OPENAI_API_KEY": api_key,
+        "OPENAI_API_BASE": host,
+    })
+
+    return ChatOpenAI(
+        openai_api_key=api_key,
+        openai_api_base=host,
+        model_name=model,
+        temperature=temperature,
+        max_tokens=4095,
+    )
+
 def create_lmstudio_llm(model, temperature):
     switch_environment({
         "OPENAI_API_KEY": "lm-studio",
@@ -151,6 +172,10 @@ LLM_CONFIG = {
      "Xai": {
         "models": ["xai/grok-2-1212", "xai/grok-beta"],
         "create_llm": create_xai_llm,
+    },
+    "OrcaRouter": {
+        "models": ["orcarouter/auto", "openai/gpt-5.5", "anthropic/claude-sonnet-5"],
+        "create_llm": create_orcarouter_llm,
     },
 }
 

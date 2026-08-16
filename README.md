@@ -14,7 +14,7 @@ Welcome to CrewAI Studio! This application provides a user-friendly interface wr
 - **Knowledge sources**: You can add knowledge sources for your crews
 - **CrewAI tools** You can use crewai tools to interact with real world. ~~Crewai studio uses a forked version of crewai-tools with some bugfixes and enhancements (https://github.com/strnad/crewAI-tools)~~ (bugfixes already merged to crewai-tools)
 - **Custom Tools** Custom tools for calling APIs, writing files, enhanced code interpreter, enhanced web scraper... More will be added soon
-- **LLM providers supported**: Currently OpenAI, Groq, Anthropic, ollama, Grok and LM Studio backends are supported. OpenAI key is probably still needed for embeddings in many tools. Don't forget to load an embedding model when using LM Studio.
+- **LLM providers supported**: Currently OpenAI, Groq, Anthropic, ollama, Grok, OrcaRouter and LM Studio backends are supported. OpenAI key is probably still needed for embeddings in many tools. Don't forget to load an embedding model when using LM Studio.
 - **Single Page app export**: Feature to export crew as simple single page streamlit app.
 - **Threaded crew run**: Crews can run in background and can be stopped.
 
