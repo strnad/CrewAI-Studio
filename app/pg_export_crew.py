@@ -174,6 +174,22 @@ def create_xai_llm(model, temperature):
     return LLM(model=model, temperature=temperature, api_key=api_key, base_url=host)
 
 
+def create_orcarouter_llm(model, temperature):
+    host = "https://api.orcarouter.ai/v1"
+    api_key = os.getenv("ORCAROUTER_API_KEY")
+    if not api_key:
+        raise ValueError("ORCAROUTER_API_KEY must be set in .env file")
+    os.environ["OPENAI_API_KEY"] = api_key
+    os.environ["OPENAI_API_BASE"] = host
+    return ChatOpenAI(
+        openai_api_key=api_key,
+        openai_api_base=host,
+        model_name=model,
+        temperature=temperature,
+        max_tokens=4095,
+    )
+
+
 def create_lmstudio_llm(model, temperature):
     api_base = os.getenv("LMSTUDIO_API_BASE")
     if not api_base:
@@ -195,6 +211,7 @@ LLM_CONFIG = {
     "Anthropic": create_anthropic_llm,
     "LM Studio": create_lmstudio_llm,
     "Xai": create_xai_llm,
+    "OrcaRouter": create_orcarouter_llm,
 }
 
 
@@ -562,6 +579,7 @@ if __name__ == '__main__':
             '# OLLAMA_HOST="http://localhost:11434"',
             '# LMSTUDIO_API_BASE="http://localhost:1234/v1"',
             '# XAI_API_KEY="FILL-IN-YOUR-XAI-API-KEY"',
+            '# ORCAROUTER_API_KEY="FILL-IN-YOUR-ORCAROUTER-API-KEY"',
             '# DEFAULT_LANGUAGE="en"',
         ]
         if env_params:
