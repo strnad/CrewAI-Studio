@@ -39,7 +39,7 @@ bc1qgsn45g02wran4lph5gsyqtk0k7t98zsg6qur0y
 
 ### Using Virtual Environment
 
-**For Virtual Environment**: Ensure you have Python installed. If you dont have python instaled, you can simply use the conda installer.
+**For Virtual Environment**: Ensure you have Python installed. If you dont have python installed, you can simply use the conda installer.
 
 #### On Linux or MacOS
 
