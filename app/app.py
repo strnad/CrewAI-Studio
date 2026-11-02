@@ -11,19 +11,20 @@ from pg_results import PageResults
 from pg_knowledge import PageKnowledge
 from dotenv import load_dotenv
 from llms import load_secrets_fron_env
-from i18n import t, get_available_languages, get_current_language, set_language, setup_language_selector
+from i18n import t, setup_language_selector
 import os
 
-def pages():
+# Словарь: внутренний ID -> класс страницы
+def get_pages():
     return {
-        t('page.crews'): PageCrews(),
-        t('page.tools'): PageTools(),
-        t('page.agents'): PageAgents(),
-        t('page.tasks'): PageTasks(),
-        t('page.knowledge'): PageKnowledge(),
-        t('page.kickoff'): PageCrewRun(),
-        t('page.results'): PageResults(),
-        t('page.import_export'): PageExportCrew()
+        "crews": PageCrews(),
+        "tools": PageTools(),
+        "agents": PageAgents(),
+        "tasks": PageTasks(),
+        "knowledge": PageKnowledge(),
+        "kickoff": PageCrewRun(),
+        "results": PageResults(),
+        "import_export": PageExportCrew()
     }
 
 def load_data():
@@ -34,21 +35,39 @@ def load_data():
     ss.enabled_tools = db_utils.load_tools_state()
     ss.knowledge_sources = db_utils.load_knowledge_sources()
 
-
 def draw_sidebar():
     with st.sidebar:
         st.image("img/crewai_logo.png")
 
-        if 'page' not in ss:
-            ss.page = t('page.crews')
+        page_dict = get_pages()
+        page_ids = list(page_dict.keys())
 
-        page_keys = list(pages().keys())
-        selected_page = st.radio(t('language.select'), page_keys, index=page_keys.index(ss.page) if ss.page in page_keys else 0, label_visibility="collapsed")
-        if selected_page != ss.page:
-            ss.page = selected_page
+        # Инициализируем ID страницы, если его нет
+        if 'page_id' not in ss or ss.page_id not in page_ids:
+            ss.page_id = "crews"
+
+        # Находим текущий индекс
+        current_index = page_ids.index(ss.page_id)
+
+        # Создаем радио-кнопку с жестким key, чтобы Streamlit не терял состояние
+        selected_id = st.radio(
+            t('language.select'),  # Скрытый лейбл
+            options=page_ids,
+            index=current_index,
+            format_func=lambda x: t(f'page.{x}'), # <--- ВОТ ЗДЕСЬ ПЕРЕВОД
+            label_visibility="collapsed",
+            key="main_navigation_radio"
+        )
+
+        # Если выбрали другую страницу — обновляем ID и перезапускаем
+        if selected_id != ss.page_id:
+            ss.page_id = selected_id
             st.rerun()
 
         setup_language_selector()
+        
+        # Возвращаем класс текущей страницы для отрисовки
+        return page_dict[ss.page_id]
 
 def main():
     st.set_page_config(page_title=t('page.title'), page_icon="img/favicon.ico", layout="wide")
@@ -64,9 +83,12 @@ def main():
         
     db_utils.initialize_db()
     load_data()
-    draw_sidebar()
-    PageCrewRun.maintain_session_state() #this will persist the session state for the crew run page so crew run can be run in a separate thread
-    pages()[ss.page].draw()
+    
+    # draw_sidebar возвращает нужную страницу, и мы ее рисуем
+    current_page_obj = draw_sidebar()
+    
+    PageCrewRun.maintain_session_state()
+    current_page_obj.draw()
     
 if __name__ == '__main__':
     main()

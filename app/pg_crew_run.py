@@ -211,8 +211,8 @@ class PageCrewRun:
         return str(result)
 
     def display_result(self):
-        if ss.running and ss.page != "Kickoff!":
-            ss.page = "Kickoff!"
+        if ss.running and ss.get('page_id') != "kickoff":
+            ss.page_id = "kickoff"
             st.rerun()
         console_container = st.empty()
 
