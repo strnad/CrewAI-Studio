@@ -116,6 +116,9 @@ def setup_language_selector():
         lang_names = {
             "en": "English",
             "zh": "简体中文",
+            "ru": "Русский",
+            "es": "Español",
+            "ja": "日本語",
         }
 
         current_lang = get_current_language()
